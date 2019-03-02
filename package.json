@@ -1,0 +1,23 @@
+{
+  "name": "geno",
+  "version": "1.0.0",
+  "description": "An IDE to auto-generate voice layers for websites",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ritamsarmah/geno.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ritamsarmah/geno/issues"
+  },
+  "homepage": "https://github.com/ritamsarmah/geno#readme",
+  "devDependencies": {
+    "electron": "^4.0.6"
+  }
+}
