@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Geno</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="editor.css">
+    <link rel="stylesheet" href="../node_modules/tippy.js/themes/light-border.css">
+</head>
+
+<body>
+    <div class="grid">
+        <div class="split" id="explorer" style="background-color: red"></div>
+        <div class="split" id="editor"></div>
+        <div class="split" id="preview" style="background-color: blue"></div>
+    </div>
+</body>
+
+<script>
+    var Split = require('split.js')
+    Split(['#explorer', '#editor', '#preview'], {
+        sizes: [20, 40, 40],
+        gutterSize: 5
+    });
+
+    require('./editor.js')
+</script>
+
+</html>

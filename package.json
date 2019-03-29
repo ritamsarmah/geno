@@ -1,8 +1,9 @@
 {
   "name": "geno",
+  "productName": "Geno",
   "version": "1.0.0",
   "description": "An IDE to auto-generate voice layers for websites",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/ritamsarmah/geno.git"
   },
-  "author": "",
+  "author": "UCLA",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/ritamsarmah/geno/issues"
@@ -19,5 +20,11 @@
   "homepage": "https://github.com/ritamsarmah/geno#readme",
   "devDependencies": {
     "electron": "^4.0.6"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.16.2",
+    "popper.js": "^1.14.7",
+    "split.js": "^1.5.10",
+    "tippy.js": "^4.2.1"
   }
 }
