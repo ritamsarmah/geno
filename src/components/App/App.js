@@ -16,7 +16,7 @@ export default class App extends Component {
         <Split sizes={[20, 40, 40]} minSize={[0, 0, 0]}>
           <div className="split" style={{ backgroundColor: Colors.Background }}><Explorer /></div>
           <div className="split"><Editor /></div>
-          <div className="split"><Preview /></div>
+          <div className="split" style={{ backgroundColor: Colors.Background }}><Preview /></div>
         </Split>
       </div>
     );

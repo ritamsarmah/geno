@@ -14,7 +14,7 @@ export default class Popover extends Component {
                     <br></br>
                     
                     Triggered Functions <br></br>
-                    <input type="text"></input>
+                    <input type="text" value={this.props.triggerFns.join(', ')}></input>
 
                     <br></br>
 
@@ -22,7 +22,7 @@ export default class Popover extends Component {
                     <input type="text"></input>
                     <br></br>
 
-                    <input type="submit" value="Submit"></input>
+                    <input type="button" value="Save"></input>
                     <input type="button" value="Options"></input>
                 </form>
             </div>

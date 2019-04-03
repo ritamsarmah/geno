@@ -36,7 +36,7 @@ export default class Editor extends Component {
 
     onChange(editor, data, value) {
         // TODO: commands reset is temporary for testing (REMOVE!!)
-        this.setState({ markers: {} })
+        this.setState({ markers: {} });
         this.addGutterCircles(editor);
     }
 
@@ -45,23 +45,23 @@ export default class Editor extends Component {
         for (let lineNumber = 0; lineNumber < editor.lineCount(); lineNumber++) {
             if (editor.getLine(lineNumber).includes("function")) {
                 // CodeMirror API can't set markers as components, so add anchor and render manually
-                var anchor = makeAnchor() 
+                var anchor = makeAnchor();
                 editor.doc.setGutterMarker(lineNumber, "commands", anchor);
 
-                // TODO: add prop for Marker that maps it to a command
-                var marker = <Marker />;
+                // TODO: Map to correct function name
+                var marker = <Marker triggerFns={["hello", "world"]} />;
                 ReactDOM.render(marker, anchor);
 
-                var markers = this.state.markers
-                markers[lineNumber] = true
+                var markers = this.state.markers;
+                markers[lineNumber] = true;
                 // TODO: need a better way to map functions with command bubbles instead of lineNumbers (maybe look at function declaration with a smarter syntax parsing)
-                this.setState({ markers: markers })
+                this.setState({ markers: markers });
             } else {
                 editor.doc.setGutterMarker(lineNumber, "commands", null);
 
-                var markers = this.state.markers
-                delete markers[lineNumber]
-                this.setState({ markers: markers })
+                var markers = this.state.markers;
+                delete markers[lineNumber];
+                this.setState({ markers: markers });
             }
         }
     }
@@ -70,7 +70,7 @@ export default class Editor extends Component {
         const code = this.state.code;
         return (
             <div>
-                <div style={{ height: "5vh", backgroundColor: Colors.EditorBackground, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "12px", color: "white"}}>
+                <div style={{ height: "5vh", backgroundColor: Colors.EditorBackground, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "12px", color: "white", userSelect: "none" }}>
                     long_file_name.js
                 </div>
                 <CodeMirror
