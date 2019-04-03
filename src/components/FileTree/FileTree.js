@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 decorators.Toggle = () => (<span />);
 decorators.Header = ({ style, node }) => {
     return (
-        <div style={{ cursor: "pointer" }}>
+        <div style={{ cursor: "pointer", userSelect: "none" }}>
             <div style={style.title}>
                 <FontAwesomeIcon icon={node.children ? (node.toggled ? faFolderOpen : faFolder) : faFile} style={{ marginRight: "8px" }} /> 
                 {node.name}

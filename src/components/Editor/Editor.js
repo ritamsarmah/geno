@@ -1,42 +1,22 @@
-import React, { Component } from 'react';
-import tippy from 'tippy.js'
+import React, { Component, forwardRef } from 'react';
+import ReactDOM from 'react-dom';
+import Marker from '../Marker/Marker';
 
-import { UnControlled as CodeMirror } from 'react-codemirror2'
+import { UnControlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
 
 import './Editor.css';
-import 'tippy.js/themes/light-border.css'
+import { Colors } from '../../constants';
 
-import { Colors } from '../../constants'
+import 'codemirror/mode/xml/xml';
+import 'codemirror/mode/javascript/javascript';
 
-require('codemirror/mode/xml/xml');
-require('codemirror/mode/javascript/javascript');
-
-
-// TODO: Remove and relocate to model component
-var commands = []
-
-function makeMarker(type, id) {
+function makeAnchor(type) {
     var marker = document.createElement("div");
-    marker.style.color = Colors.Theme;
-    marker.style.border = "1px solid" + Colors.Theme
-    marker.style.borderRadius = "50%";
     marker.style.width = "12px";
     marker.style.height = "12px";
-    marker.style.cursor = "pointer";
-    marker.title = id;
-    switch (type) {
-        case "filled":
-            marker.style.backgroundColor = Colors.Theme;
-            break;
-        case "empty":
-            marker.style.backgroundColor = "clear";
-            break;
-        default:
-            break;
-    }
-    
+    marker.style.backgroundColor = "clear";
     return marker;
 }
 
@@ -44,11 +24,10 @@ export default class Editor extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            fnLines: {}
+            markers: {}
         }
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
-        this.onGutterClick = this.onGutterClick.bind(this);
     }
 
     editorDidMount(editor) {
@@ -57,49 +36,32 @@ export default class Editor extends Component {
 
     onChange(editor, data, value) {
         // TODO: commands reset is temporary for testing (REMOVE!!)
-        commands = []
+        this.setState({ markers: {} })
         this.addGutterCircles(editor);
     }
 
+    // Redraw all circles for lines with function declarations
     addGutterCircles(editor) {
         for (let lineNumber = 0; lineNumber < editor.lineCount(); lineNumber++) {
             if (editor.getLine(lineNumber).includes("function")) {
-                editor.doc.setGutterMarker(lineNumber, "commands", makeMarker("empty", lineNumber));
+                // CodeMirror API can't set markers as components, so add anchor and render manually
+                var anchor = makeAnchor() 
+                editor.doc.setGutterMarker(lineNumber, "commands", anchor);
 
-                var fnLines = this.state.fnLines
-                fnLines[lineNumber] = true
+                // TODO: add prop for Marker that maps it to a command
+                var marker = <Marker />;
+                ReactDOM.render(marker, anchor);
+
+                var markers = this.state.markers
+                markers[lineNumber] = true
                 // TODO: need a better way to map functions with command bubbles instead of lineNumbers (maybe look at function declaration with a smarter syntax parsing)
-                this.setState({ fnLines: fnLines })
+                this.setState({ markers: markers })
             } else {
                 editor.doc.setGutterMarker(lineNumber, "commands", null);
 
-                var fnLines = this.state.fnLines
-                delete fnLines[lineNumber]
-                this.setState({ fnLines: fnLines })
-            }
-        }
-    }
-
-    onGutterClick(editor, lineNumber, gutter, event) {
-        if (gutter === "commands" && this.state.fnLines[lineNumber]) {
-            if (!commands.includes(lineNumber)) {
-                var marker = makeMarker("filled", lineNumber)
-                editor.doc.setGutterMarker(lineNumber, gutter, marker);
-
-                console.log("tippy added");
-                tippy(marker, {
-                    content: "I'm a Tippy tooltip for " + lineNumber,
-                    arrow: true,
-                    trigger: 'click',
-                    placement: 'right',
-                    theme: 'light-border',
-                    animation: 'scale',
-                    inertia: true,
-                    interactive: true,
-                });
-
-                commands.push(lineNumber)
-                // TODO: Create voice command for the function
+                var markers = this.state.markers
+                delete markers[lineNumber]
+                this.setState({ markers: markers })
             }
         }
     }
@@ -108,7 +70,7 @@ export default class Editor extends Component {
         const code = this.state.code;
         return (
             <div>
-                <div style={{ height: "40px", backgroundColor: Colors.EditorBackground, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "12px", color: "white"}}>
+                <div style={{ height: "5vh", backgroundColor: Colors.EditorBackground, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "12px", color: "white"}}>
                     long_file_name.js
                 </div>
                 <CodeMirror
@@ -121,7 +83,6 @@ export default class Editor extends Component {
                     }}
                     editorDidMount={this.editorDidMount}
                     onChange={this.onChange}
-                    onGutterClick={this.onGutterClick}
                 />
             </div>
         );
