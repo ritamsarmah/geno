@@ -1,18 +1,5 @@
 {
   "name": "geno",
-<<<<<<< Updated upstream
-  "productName": "Geno",
-  "version": "1.0.0",
-  "description": "An IDE to auto-generate voice layers for websites",
-  "main": "src/main.js",
-  "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ritamsarmah/geno.git"
-=======
   "version": "0.1.0",
   "private": true,
   "main": "src/electron/main.js",
@@ -37,25 +24,10 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron ."
->>>>>>> Stashed changes
   },
-  "author": "UCLA",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ritamsarmah/geno/issues"
+  "eslintConfig": {
+    "extends": "react-app"
   },
-<<<<<<< Updated upstream
-  "homepage": "https://github.com/ritamsarmah/geno#readme",
-  "devDependencies": {
-    "electron": "^4.0.6"
-  },
-  "dependencies": {
-    "monaco-editor": "^0.16.2",
-    "popper.js": "^1.14.7",
-    "split.js": "^1.5.10",
-    "tippy.js": "^4.2.1"
-  }
-=======
   "browserslist": [
     ">0.2%",
     "not dead",
@@ -63,5 +35,4 @@
     "not op_mini all"
   ],
   "devDependencies": {}
->>>>>>> Stashed changes
 }
