@@ -3,5 +3,6 @@ export const Colors = {
     LightBackground: "#2c323a",
     Theme: "#3190FF",
     Highlight: "white",
-    Disabled: "gray"
+    Disabled: "gray",
+    EditorBackground: "#151515"
 }
