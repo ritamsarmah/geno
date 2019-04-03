@@ -1,0 +1,13 @@
+.CodeMirror {
+    height: 100vh;
+    font-size: 12px;
+    font-family: "Lucida Console", Monaco, monospace
+}
+
+/* Gutter */
+
+.commands {
+    width: 10px;
+    margin-left: 10px;
+    background-color: #151515;
+}

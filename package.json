@@ -1,5 +1,6 @@
 {
   "name": "geno",
+<<<<<<< Updated upstream
   "productName": "Geno",
   "version": "1.0.0",
   "description": "An IDE to auto-generate voice layers for websites",
@@ -11,12 +12,39 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ritamsarmah/geno.git"
+=======
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/electron/main.js",
+  "homepage": "./",
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.17",
+    "@fortawesome/free-solid-svg-icons": "^5.8.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
+    "codemirror": "^5.45.0",
+    "electron": "^4.1.3",
+    "react": "^16.8.6",
+    "react-codemirror2": "^5.1.0",
+    "react-dom": "^16.8.6",
+    "react-scripts": "2.1.8",
+    "react-split": "^2.0.4",
+    "react-treebeard": "^3.1.0",
+    "tippy.js": "^4.2.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron": "electron ."
+>>>>>>> Stashed changes
   },
   "author": "UCLA",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/ritamsarmah/geno/issues"
   },
+<<<<<<< Updated upstream
   "homepage": "https://github.com/ritamsarmah/geno#readme",
   "devDependencies": {
     "electron": "^4.0.6"
@@ -27,4 +55,13 @@
     "split.js": "^1.5.10",
     "tippy.js": "^4.2.1"
   }
+=======
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {}
+>>>>>>> Stashed changes
 }
