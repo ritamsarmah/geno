@@ -1,0 +1,8 @@
+@import "../../../theme.css";
+
+/* Decorator Header */
+
+.headerBase {
+    cursor: pointer;
+    user-select: none;
+}

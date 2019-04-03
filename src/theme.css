@@ -1,0 +1,15 @@
+:root {
+    /* Colors */
+    --main-bg-color: #21252B;
+    --light-bg-color: #282d34;
+    --editor-bg-color: #151515; 
+    --theme-color: #3190FF;
+    --highlight-color: white;
+    --disabled-color: gray;
+}
+
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

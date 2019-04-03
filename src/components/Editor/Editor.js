@@ -1,13 +1,12 @@
 import React, { Component, forwardRef } from 'react';
 import ReactDOM from 'react-dom';
-import Marker from '../Marker/Marker';
+import Marker from './Marker/Marker';
 
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
 
 import './Editor.css';
-import { Colors } from '../../constants';
 
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
@@ -70,7 +69,7 @@ export default class Editor extends Component {
         const code = this.state.code;
         return (
             <div>
-                <div style={{ height: "5vh", backgroundColor: Colors.EditorBackground, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "12px", color: "white", userSelect: "none" }}>
+                <div className="filename centered">
                     long_file_name.js
                 </div>
                 <CodeMirror

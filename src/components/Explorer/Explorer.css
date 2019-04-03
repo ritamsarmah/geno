@@ -1,0 +1,16 @@
+@import "../../theme.css";
+
+.tabBar {
+    top: 0;
+    position: relative;
+    padding: 11px;
+    background-color: var(--light-bg-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+.tabButton {
+    cursor: pointer;
+}

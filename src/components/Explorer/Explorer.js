@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-import FileTree from '../FileTree/FileTree'
+import FileTree from './FileTree/FileTree';
+import CommandList from './CommandList/CommandList';
 
 import { faMicrophone, faSearch, faFolder } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Colors } from '../../constants'
+import { Colors } from '../../constants';
+
+import './Explorer.css';
 
 const data = {
     name: 'root',
@@ -41,6 +44,12 @@ export default class Explorer extends Component {
         this.showSearch = this.showSearch.bind(this);
     }
 
+    isTabEnabled(tabNumber) {
+        const enabledColor = Colors.Highlight;
+        const disabledColor = Colors.Disabled;
+        return this.state.tab == tabNumber ? enabledColor : disabledColor;
+    }
+
     showFileTree() {
         this.setState({ tab: 0 });
     }
@@ -52,7 +61,7 @@ export default class Explorer extends Component {
     showSearch() {
         this.setState({ tab: 2 });
     }
-    
+
     render() {
         var content;
         switch (this.state.tab) {
@@ -69,22 +78,17 @@ export default class Explorer extends Component {
                 break;
         }
 
-        const enabledColor = Colors.Highlight;
-        const disabledColor = Colors.Disabled;
-
         return (
             <div>
-                <div style={{ top: "0", position: "relative", padding: "11px", backgroundColor: Colors.LightBackground }}>
-                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                        <button style={{ all: "unset", cursor: "pointer" }} onClick={this.showFileTree}>
-                            <FontAwesomeIcon icon={faFolder} color={this.state.tab == 0 ? enabledColor : disabledColor} />
-                        </button>
-                        <button style={{ all: "unset", marginLeft: "35px", cursor: "pointer" }} onClick={this.showVoiceCommands}>
-                            <FontAwesomeIcon icon={faMicrophone} color={this.state.tab == 1 ? enabledColor : disabledColor} />
-                        </button>
-                        <button style={{ all: "unset", marginLeft: "35px", cursor: "pointer" }} onClick={this.showSearch}>
-                            <FontAwesomeIcon icon={faSearch} color={this.state.tab == 2 ? enabledColor : disabledColor} />
-                        </button>
+                <div className="tabBar centered">
+                    <div className="tabButton" onClick={this.showFileTree}>
+                        <FontAwesomeIcon icon={faFolder} color={this.isTabEnabled(0)} />
+                    </div>
+                    <div className="tabButton" onClick={this.showVoiceCommands}>
+                        <FontAwesomeIcon icon={faMicrophone} color={this.isTabEnabled(1)} />
+                    </div>
+                    <div className="tabButton" onClick={this.showSearch}>
+                        <FontAwesomeIcon icon={faSearch} color={this.isTabEnabled(2)} />
                     </div>
                 </div>
                 {content}

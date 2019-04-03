@@ -4,8 +4,6 @@ import Explorer from '../Explorer/Explorer';
 import Editor from '../Editor/Editor';
 import Preview from '../Preview/Preview';
 
-import Marker from '../Marker/Marker';
-
 import './App.css';
 import { Colors } from '../../constants'
 

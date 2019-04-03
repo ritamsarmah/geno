@@ -1,0 +1,7 @@
+@import "../../theme.css";
+
+.buttons {
+    height: 5vh;
+    width: 100%;
+    background-color: var(--main-bg-color);
+}

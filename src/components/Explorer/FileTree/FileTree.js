@@ -4,10 +4,12 @@ import { Treebeard, decorators } from 'react-treebeard';
 import { faFolder, faFile, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-decorators.Toggle = () => (<span />);
+import './FileTree.css';
+
+decorators.Toggle = () => (<span />); // no toggle
 decorators.Header = ({ style, node }) => {
     return (
-        <div style={{ cursor: "pointer", userSelect: "none" }}>
+        <div className="headerBase">
             <div style={style.title}>
                 <FontAwesomeIcon icon={node.children ? (node.toggled ? faFolderOpen : faFolder) : faFile} style={{ marginRight: "8px" }} /> 
                 {node.name}

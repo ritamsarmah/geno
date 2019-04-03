@@ -1,7 +1,17 @@
+@import "../../theme.css";
+
 .CodeMirror {
     height: 95vh;
     font-size: 12px;
     font-family: "Lucida Console", Monaco, monospace;
+}
+
+.filename {
+    height: 5vh;
+    background-color: var(--editor-bg-color);
+    font-size: 12px;
+    color: white;
+    user-select: none;
 }
 
 /* Gutter */
