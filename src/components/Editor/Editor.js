@@ -1,15 +1,17 @@
-import React, { Component, forwardRef } from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import Marker from './Marker/Marker';
 
 import { UnControlled as CodeMirror } from 'react-codemirror2';
+
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
-
 import './Editor.css';
 
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
+
+var acorn = require("acorn-loose/dist/acorn-loose.js");
 
 function makeAnchor(type) {
     var marker = document.createElement("div");
@@ -19,12 +21,62 @@ function makeAnchor(type) {
     return marker;
 }
 
+function extractFunctions(code) {
+    try {
+        var results = acorn.parse(code, { locations: true });
+        if (results.sourceType === "script") {
+            return astSearch(results);
+        }
+    } catch (e) {
+        console.log(e);
+        return [];
+    }
+}
+
+function astSearch(node) {
+    var functions = [];
+
+    // console.log(node);
+    // Function Declaration
+    if (node.type === "FunctionDeclaration") {
+        functions.push({
+            name: node.id.name,
+            params: node.params.map(param => param.name),
+            lineNumber: node.loc.start.line
+        });
+    } else if (node.type === "VariableDeclaration") {
+        if ("declarations" in node && node.declarations[0].type === "VariableDeclarator") {
+            var declarator = node.declarations[0]
+
+            // Function Expressions
+            if ("init" in declarator && declarator.init != null && (declarator.init.type === "FunctionExpression" || declarator.init.type === "ArrowFunctionExpression")) {
+                var expression = declarator.init;
+                functions.push({
+                    name: declarator.id.name,
+                    params: expression.params.map(param => param.name),
+                    lineNumber: declarator.loc.start.line
+                });
+            }
+        }
+    }
+
+    // Arrow Functions
+
+    if ("body" in node) {
+        for (let i = 0; i < node.body.length; i++) {
+            functions = functions.concat(astSearch(node.body[i]));
+        }
+    }
+
+    return functions;
+}
+
 export default class Editor extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            markers: {}
-        }
+        // this.state = {
+        //     markers: {} // TODO: Load this from some JSON file that we create
+        // }
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
     }
@@ -34,39 +86,23 @@ export default class Editor extends Component {
     }
 
     onChange(editor, data, value) {
-        // TODO: commands reset is temporary for testing (REMOVE!!)
-        this.setState({ markers: {} });
         this.addGutterCircles(editor);
     }
 
     // Redraw all circles for lines with function declarations
     addGutterCircles(editor) {
-        for (let lineNumber = 0; lineNumber < editor.lineCount(); lineNumber++) {
-            if (editor.getLine(lineNumber).includes("function")) {
-                // CodeMirror API can't set markers as components, so add anchor and render manually
-                var anchor = makeAnchor();
-                editor.doc.setGutterMarker(lineNumber, "commands", anchor);
+        editor.doc.clearGutter("commands");
 
-                // TODO: Map to correct function name
-                var marker = <Marker triggerFns={["hello", "world"]} />;
-                ReactDOM.render(marker, anchor);
+        extractFunctions(editor.getValue()).forEach(f => {
+            var anchor = makeAnchor();
+            editor.doc.setGutterMarker(f.lineNumber - 1, "commands", anchor);
 
-                var markers = this.state.markers;
-                markers[lineNumber] = true;
-                // TODO: need a better way to map functions with command bubbles instead of lineNumbers (maybe look at function declaration with a smarter syntax parsing)
-                this.setState({ markers: markers });
-            } else {
-                editor.doc.setGutterMarker(lineNumber, "commands", null);
-
-                var markers = this.state.markers;
-                delete markers[lineNumber];
-                this.setState({ markers: markers });
-            }
-        }
+            var marker = <Marker triggerFns={[f.name]} />;
+            ReactDOM.render(marker, anchor);
+        });
     }
 
     render() {
-        const code = this.state.code;
         return (
             <div>
                 <div className="filename centered">

@@ -43,7 +43,9 @@ export default class FileTree extends Component {
 
     onToggle(node, toggled) {
         if (this.state.cursor) {
-            this.state.cursor.active = false;
+            var newCursor = this.state.cursor
+            newCursor.active = false;
+            this.setState({ cursor: newCursor })
         }
         node.active = true;
         if (node.children) {

@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 
-export default class CommandList extends Component {
+// export default class CommandList extends Component {
     
-}
+// }

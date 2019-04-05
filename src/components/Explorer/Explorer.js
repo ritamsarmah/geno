@@ -47,7 +47,7 @@ export default class Explorer extends Component {
     isTabEnabled(tabNumber) {
         const enabledColor = Colors.Highlight;
         const disabledColor = Colors.Disabled;
-        return this.state.tab == tabNumber ? enabledColor : disabledColor;
+        return this.state.tab === tabNumber ? enabledColor : disabledColor;
     }
 
     showFileTree() {
