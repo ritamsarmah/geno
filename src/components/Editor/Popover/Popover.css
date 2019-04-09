@@ -1,0 +1,75 @@
+@import "../../../theme.css";
+
+.popover {
+    width: 250px;
+    margin: 10px;
+}
+
+.popoverForm > input[type=text], select, textarea {
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 6px 6px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.popoverForm > input[type=text]:focus, textarea:focus {
+    outline: none;
+    border: 1px solid var(--theme-color);
+}
+
+.popoverForm > textarea {
+    height: 60px;
+    margin-bottom: 0px;
+    min-height: 60px;
+    resize: vertical;
+}
+
+.popoverForm > input[type=button] {
+    background-color: #E6E6E6;
+    color: black;
+    padding: 8px 20px;
+    width: 43%;
+    margin: 0 8px;
+    cursor: pointer;
+    border: 1px solid #E6E6E6;
+    border-radius: 4px;
+}
+
+input[type="button"]:focus {
+    outline: none;
+}
+
+input[type="button"]:active {
+    background-color: rgb(220, 220, 220);
+    border: 1px solid darkgray;
+}
+
+.popoverForm > .smallButton {
+    background-color: clear;
+    color: var(--theme-color);
+    padding: 0px;
+    border: none;
+    margin: 3px 5px 0;
+    cursor: pointer;
+    float: right;
+}
+
+.popoverTitle {
+    margin: 0 0 5px 0;
+    padding: 0px;
+    float: left;
+}
+
+#queryToggle {
+    color: rgb(90, 90, 90);
+    border-radius: 4px;
+}
+
+#queryToggle:hover {
+    background: rgb(230, 230, 230);
+    cursor: pointer;
+}
+

@@ -1,4 +1,7 @@
-const { app, dialog, Menu } = require('electron')
+const { app, dialog, Menu } = require('electron');
+const fs = require('fs');
+
+const { Paths } = require('../constants');
 
 const template = [
     {
@@ -13,7 +16,9 @@ const template = [
             {
                 label: 'Open Project...',
                 accelerator: 'CmdOrCtrl+O',
-                click: () => { dialog.showOpenDialog({ properties: ['openDirectory'] }) }
+                click: () => {
+                    dialog.showOpenDialog({ properties: ['openDirectory'] }, configureProject);
+                }
             },
             { type: 'separator' },
             {
@@ -119,6 +124,25 @@ if (process.platform === 'darwin') {
         { type: 'separator' },
         { role: 'front' }
     ]
+}
+
+/**
+ * Creates .geno directory and necessary supporting files if it does not exist
+ * Also loads project into file tree 
+ **/
+function configureProject(path) {
+    const genoPath = path + Paths.Geno;
+    const commandsPath = path + Paths.Commands;
+    console.log(genoPath);
+    console.log(commandsPath);
+
+    if (!fs.existsSync(genoPath)) {
+        fs.mkdirSync(genoPath);
+        fs.writeFileSync(commandsPath);
+    } else {
+        // TODO: Read commands.json into memory
+        // 
+    }
 }
 
 const menu = Menu.buildFromTemplate(template)

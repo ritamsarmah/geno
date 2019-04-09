@@ -38,7 +38,7 @@ const data = {
 export default class Explorer extends Component {
     constructor(props) {
         super(props);
-        this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands
+        this.state = { tab: 1 } // 0 - File Tree, 1 - Voice Commands
         this.showFileTree = this.showFileTree.bind(this);
         this.showVoiceCommands = this.showVoiceCommands.bind(this);
         this.showSearch = this.showSearch.bind(this);
@@ -69,7 +69,7 @@ export default class Explorer extends Component {
                 content = (<div style={{ margin: "5px 10px" }}><FileTree data={data} /></div>);
                 break;
             case 1:
-                content = (<div style={{ height: "100vh", backgroundColor: "blue" }}></div>);
+                content = (<CommandList />); // TODO: pass in prop for project path
                 break;
             case 2:
                 content = (<div style={{ height: "100vh", backgroundColor: "orange" }}></div>);

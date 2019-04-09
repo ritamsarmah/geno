@@ -36,7 +36,6 @@ function extractFunctions(code) {
 function astSearch(node) {
     var functions = [];
 
-    // console.log(node);
     // Function Declaration
     if (node.type === "FunctionDeclaration") {
         functions.push({
@@ -48,14 +47,23 @@ function astSearch(node) {
         if ("declarations" in node && node.declarations[0].type === "VariableDeclarator") {
             var declarator = node.declarations[0]
 
-            // Function Expressions
-            if ("init" in declarator && declarator.init != null && (declarator.init.type === "FunctionExpression" || declarator.init.type === "ArrowFunctionExpression")) {
-                var expression = declarator.init;
-                functions.push({
-                    name: declarator.id.name,
-                    params: expression.params.map(param => param.name),
-                    lineNumber: declarator.loc.start.line
-                });
+            if ("init" in declarator && declarator.init != null) {
+                // Function Expressions
+                if (declarator.init.type === "FunctionExpression" || declarator.init.type === "ArrowFunctionExpression") {
+                    var expression = declarator.init;
+                    functions.push({
+                        name: declarator.id.name,
+                        params: expression.params.map(param => param.name),
+                        lineNumber: declarator.loc.start.line
+                    });
+                // Constructor
+                } else if ("callee" in declarator.init && declarator.init.callee.name === "Function") {
+                    functions.push({
+                        name: declarator.id.name,
+                        params: declarator.init.arguments.slice(0, declarator.init.arguments.length - 1).map(arg => arg.value),
+                        lineNumber: declarator.loc.start.line
+                    }); 
+                }
             }
         }
     }
@@ -97,7 +105,7 @@ export default class Editor extends Component {
             var anchor = makeAnchor();
             editor.doc.setGutterMarker(f.lineNumber - 1, "commands", anchor);
 
-            var marker = <Marker triggerFns={[f.name]} />;
+            var marker = <Marker triggerFns={[f.name]} params={f.params} />;
             ReactDOM.render(marker, anchor);
         });
     }

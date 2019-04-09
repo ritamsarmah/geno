@@ -3,7 +3,7 @@
 .tabBar {
     top: 0;
     position: relative;
-    padding: 11px;
+    padding: 4px;
     background-color: var(--light-bg-color);
     display: flex;
     flex-direction: row;
@@ -13,4 +13,5 @@
 
 .tabButton {
     cursor: pointer;
+    margin: 10px;
 }

@@ -1,0 +1,13 @@
+.commandItem {
+    background-color: white;
+    width: auto;
+    margin: 16px;
+    padding: 10px;
+}
+
+.fn {
+    background-color: gray;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 12px;
+}
