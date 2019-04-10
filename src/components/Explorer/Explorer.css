@@ -1,8 +1,11 @@
 @import "../../theme.css";
 
 .tabBar {
+    height: 40px;
     top: 0;
-    position: relative;
+    left: 0;
+    right: 0;
+    position: sticky;
     padding: 4px;
     background-color: var(--light-bg-color);
     display: flex;

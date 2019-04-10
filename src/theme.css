@@ -2,7 +2,7 @@
     /* Colors */
     --main-bg-color: #21252B;
     --light-bg-color: #282d34;
-    --card-bg-color: rgb(55, 60, 70);
+    --very-light-bg-color: rgb(55, 60, 70);
     --editor-bg-color: #151515; 
     --theme-color: #3190FF;
     --highlight-color: white;
@@ -12,5 +12,10 @@
 .centered {
     display: flex;
     justify-content: center;
+    align-items: center;
+}
+
+.vcentered {
+    display: flex;
     align-items: center;
 }

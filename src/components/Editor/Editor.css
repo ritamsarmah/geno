@@ -1,13 +1,17 @@
 @import "../../theme.css";
 
 .CodeMirror {
-    height: 95vh;
+    height: calc(100vh - 40px);
     font-size: 12px;
     font-family: "Lucida Console", Monaco, monospace;
 }
 
 .filename {
-    height: 5vh;
+    height: 40px;
+    top: 0;
+    left: 0;
+    right: 0;
+    position: sticky;
     background-color: var(--editor-bg-color);
     font-size: 12px;
     color: white;

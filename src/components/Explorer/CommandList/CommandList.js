@@ -56,7 +56,7 @@ export default class CommandList extends Component {
             <CommandItem command={command} />
         );
         return (
-            <div style={{ width: "auto" }}>
+            <div style={{ width: "auto", height: "95vh" }}>
                 {listItems}
             </div>
         );
