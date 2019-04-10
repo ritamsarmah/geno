@@ -66,13 +66,10 @@ export default class Explorer extends Component {
         var content;
         switch (this.state.tab) {
             case 0:
-                content = (<div style={{ margin: "5px 10px" }}><FileTree data={data} /></div>);
+                content = (<div style={{ margin: "10px 20px" }}><FileTree data={data} /></div>);
                 break;
             case 1:
                 content = (<CommandList />); // TODO: pass in prop for project path
-                break;
-            case 2:
-                content = (<div style={{ height: "100vh", backgroundColor: "orange" }}></div>);
                 break;
             default:
                 break;
@@ -86,9 +83,6 @@ export default class Explorer extends Component {
                     </div>
                     <div className="tabButton" onClick={this.showVoiceCommands}>
                         <FontAwesomeIcon icon={faMicrophone} color={this.isTabEnabled(1)} />
-                    </div>
-                    <div className="tabButton" onClick={this.showSearch}>
-                        <FontAwesomeIcon icon={faSearch} color={this.isTabEnabled(2)} />
                     </div>
                 </div>
                 {content}

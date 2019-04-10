@@ -40,10 +40,12 @@ export default class Popover extends Component {
                     <p className="popoverTitle">Command Name</p>
                     <input type="text"></input>
                     
-                    <p className="popoverTitle">Triggered Functions</p>
-                    <input type="text" defaultValue={this.props.triggerFns.join(', ')}></input>
+                    <p className="popoverTitle">Triggered Function</p>
+                    <div className="popoverFn">{this.props.triggerFn}</div>
+                    <br></br>
+                    <br></br>
 
-                    <p className="popoverTitle">Sample Queries</p>
+                    <p className="popoverTitleButtons">Sample Queries</p>
                     <button className="smallButton">Record</button>
                     <button className="smallButton">Import</button>
 

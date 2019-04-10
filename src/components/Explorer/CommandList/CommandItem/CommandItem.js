@@ -4,13 +4,11 @@ import './CommandItem.css';
 
 export default class CommandItem extends Component {
     render() {
-        const functions = this.props.command.triggerFns.map((fn) =>
-            <span className="fn">{fn}</span>
-        );
         return (
-            <div className="commandItem">
-                <p>{this.props.command.name}</p>
-                {functions}
+            <div className="cmdItem">
+                <p className="cmdName">{this.props.command.name}</p>
+                <p className="cmdPath"> {this.props.command.path}</p>
+                <span className="fn">{this.props.command.triggerFn}</span>
             </div>
         );
     }

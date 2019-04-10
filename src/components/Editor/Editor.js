@@ -105,7 +105,7 @@ export default class Editor extends Component {
             var anchor = makeAnchor();
             editor.doc.setGutterMarker(f.lineNumber - 1, "commands", anchor);
 
-            var marker = <Marker triggerFns={[f.name]} params={f.params} />;
+            var marker = <Marker triggerFn={f.name} params={f.params} />;
             ReactDOM.render(marker, anchor);
         });
     }

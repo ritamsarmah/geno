@@ -11,4 +11,4 @@
 The application will automaticaly reload after making changes. You will also see any lint errors in the console (View > Toggle Developer Tools).
 
 ## Dependencies
-The project is mostly built with [Electron](http://electronjs.org) and [React](https://reactjs.org). 
+The project is built using [Electron](http://electronjs.org) and [React](https://reactjs.org). 
