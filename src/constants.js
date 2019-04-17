@@ -8,8 +8,8 @@ const Colors = {
 }
 
 const Paths = {
-    Geno: '/geno', // TODO: make this hidden variable
-    Commands: '/geno/commands.json'
+    Geno: '/.geno',
+    Commands: '/.geno/commands.json'
 }
 
 module.exports = { Colors, Paths }

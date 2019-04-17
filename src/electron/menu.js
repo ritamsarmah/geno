@@ -1,36 +1,36 @@
 const { app, dialog, Menu } = require('electron');
 const fs = require('fs');
 
-const { Paths } = require('../constants');
+const { Paths } = require('../constants.js');
 
 const template = [
     {
         label: 'File',
         submenu: [
-            {
-                label: 'New File',
-                accelerator: 'CmdOrCtrl+N',
-                click() {}
-            },
-            { type: 'separator' },
-            {
-                label: 'Open Project...',
-                accelerator: 'CmdOrCtrl+O',
-                click: () => {
-                    dialog.showOpenDialog({ properties: ['openDirectory'] }, configureProject);
-                }
-            },
-            { type: 'separator' },
-            {
-                label: 'Save',
-                accelerator: 'CmdOrCtrl+S',
-                click: () => { console.log("Save File") } // TODO: Save changes
-            },
-            {
-                label: 'Save As...',
-                accelerator: 'CmdOrCtrl+Shift+S',
-                click: () => { dialog.showSaveDialog() }
-            }
+            // {
+            //     label: 'New File',
+            //     accelerator: 'CmdOrCtrl+N',
+            //     click() {}
+            // },
+            // { type: 'separator' },
+            // {
+            //     label: 'Open Project...',
+            //     accelerator: 'CmdOrCtrl+O',
+            //     click: () => {
+            //         dialog.showOpenDialog({ properties: ['openDirectory'] }, configureProject);
+            //     }
+            // },
+            // { type: 'separator' },
+            // {
+            //     label: 'Save',
+            //     accelerator: 'CmdOrCtrl+S',
+            //     click: () => { console.log("Save File") } // TODO: Save changes
+            // },
+            // {
+            //     label: 'Save As...',
+            //     accelerator: 'CmdOrCtrl+Shift+S',
+            //     click: () => { dialog.showSaveDialog() }
+            // }
         ]
     },
     {
@@ -124,25 +124,6 @@ if (process.platform === 'darwin') {
         { type: 'separator' },
         { role: 'front' }
     ]
-}
-
-/**
- * Creates .geno directory and necessary supporting files if it does not exist
- * Also loads project into file tree 
- **/
-function configureProject(path) {
-    const genoPath = path + Paths.Geno;
-    const commandsPath = path + Paths.Commands;
-    console.log(genoPath);
-    console.log(commandsPath);
-
-    if (!fs.existsSync(genoPath)) {
-        fs.mkdirSync(genoPath);
-        fs.writeFileSync(commandsPath);
-    } else {
-        // TODO: Read commands.json into memory
-        // 
-    }
 }
 
 const menu = Menu.buildFromTemplate(template)

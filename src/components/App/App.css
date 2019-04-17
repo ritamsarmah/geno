@@ -1,3 +1,62 @@
+@import "../../theme.css";
+
+/* Initial Splash Screen */
+.splash {
+    background-color: var(--main-bg-color);
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction: column;
+}
+
+.splash > h1 {
+    color: whitesmoke;
+    margin: 0;
+}
+
+.splash > p {
+    color: lightgray;
+}
+
+/* .button {
+    background-color: var(--light-bg-color);
+    color: white;
+    padding: 8px 20px;
+    width: 100px;
+    margin: 0 8px;
+    cursor: pointer;
+    border: 1px solid #E6E6E6;
+    border-radius: 4px;
+    text-align: center;
+} */
+
+.openBtn {
+    background-color: var(--light-bg-color);
+    color: whitesmoke;
+    padding: 10px 30px;
+    margin: 0 8px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+.openBtn:hover {
+    background-color: var(--very-light-bg-color);
+}
+
+.openBtn:focus {
+    outline: none;
+}
+
+.openBtn:active {
+    background-color: var(--very-light-bg-color);
+}
+
+/* App */
+
 body {
     padding: 0px;
     margin: 0px;
@@ -17,6 +76,7 @@ body {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    background-color: var(--main-bg-color);
 }
 
 .gutter {

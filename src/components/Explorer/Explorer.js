@@ -9,6 +9,9 @@ import { Colors } from '../../constants';
 
 import './Explorer.css';
 
+const fs = window.require('fs');
+const path = require('path');
+
 const data = {
     name: 'root',
     toggled: true,
@@ -39,9 +42,57 @@ export default class Explorer extends Component {
     constructor(props) {
         super(props);
         this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands
+
         this.showFileTree = this.showFileTree.bind(this);
         this.showVoiceCommands = this.showVoiceCommands.bind(this);
-        this.showSearch = this.showSearch.bind(this);
+        this.walkDone = this.walkDone.bind(this);
+
+        this.walk(this.props.dir, this.walkDone);
+    }
+
+    walk(dir, done) {
+        var results = [];
+        fs.readdir(dir, (err, files) => {
+            if (err) return done(err);
+
+            var pending = files.length;
+
+            if (!pending)
+                return done(null, { path: path, name: path.basename(dir), type: 'folder', children: results });
+
+            files.forEach((file) => {
+                file = path.resolve(dir, file);
+                fs.stat(file, (err, stat) => {
+                    if (stat && stat.isDirectory()) {
+                        this.walk(file, (err, res) => {
+                            results.push({
+                                path: path,
+                                name: path.basename(file),
+                                type: 'folder',
+                                children: res
+                            });
+                            if (!--pending)
+                                done(null, results);
+                        });
+                    }
+                    else {
+                        results.push({
+                            path: file,
+                            name: path.basename(file),
+                            type: 'file'
+                        });
+                        if (!--pending)
+                            done(null, results);
+                    }
+                });
+            });
+        });
+    };
+
+    walkDone(err, results) {
+        this.setState({
+            dirData: results
+        })
     }
 
     isTabEnabled(tabNumber) {
@@ -58,15 +109,15 @@ export default class Explorer extends Component {
         this.setState({ tab: 1 });
     }
 
-    showSearch() {
-        this.setState({ tab: 2 });
-    }
-
     render() {
         var content;
         switch (this.state.tab) {
             case 0:
-                content = (<div style={{ margin: "10px 20px" }}><FileTree data={data} /></div>);
+                if (this.state.dirData) {
+                    content = (<div style={{ margin: "10px 20px" }}><FileTree data={this.state.dirData} /></div>);
+                } else {
+                    content = (<div className="loading"><p className="loadingText">Loading...</p></div>)
+                }
                 break;
             case 1:
                 content = (<CommandList />); // TODO: pass in prop for project path

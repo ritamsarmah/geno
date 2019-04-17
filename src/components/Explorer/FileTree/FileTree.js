@@ -6,26 +6,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import './FileTree.css';
 
-decorators.Toggle = () => (<span />); // no toggle
-decorators.Header = ({ style, node }) => {
-    return (
-        <div className="headerBase">
-            <div style={style.title}>
-                <FontAwesomeIcon icon={node.children ? (node.toggled ? faFolderOpen : faFolder) : faFile} style={{ marginRight: "8px" }} /> 
-                {node.name}
-            </div>
-        </div>
-    );
-};
-
 export default class FileTree extends Component {
     constructor(props) {
         super(props);
         this.state = {};
         this.onToggle = this.onToggle.bind(this);
+        this.loadFile = this.loadFile.bind(this);
+
         this.animations = {
             toggle: ({ node: { toggled } }) => ({
-                animation: { rotateZ: toggled ? 90 : 0 },
+                animation: null,
                 duration: 0
             }),
             drawer: (/* props */) => ({
@@ -39,6 +29,27 @@ export default class FileTree extends Component {
                 }
             })
         };
+
+        decorators.Toggle = () => (<span />); // no toggle
+        
+        decorators.Header = ({ style, node }) => {
+            var iconClass = node.children ? (node.toggled ? faFolderOpen : faFolder) : faFile;
+            return (
+                <div className="headerBase">
+                    <div style={style.title} onClick={!node.children ? () => { this.loadFile(node.name) } : null}>
+                        <FontAwesomeIcon icon={iconClass} style={{ marginRight: "8px" }} />
+                        {node.name}
+                    </div>
+                </div>
+            );
+        };
+    }
+
+    loadFile(filePath) {
+        console.log(filePath);
+        this.setState({
+            // TODO: update data with children!
+        });
     }
 
     onToggle(node, toggled) {

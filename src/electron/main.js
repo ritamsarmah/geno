@@ -18,6 +18,9 @@ function createWindow() {
     // and load the index.html of the app.
     win.loadURL("http://localhost:3000/");
 
+    // Open devtools
+    win.webContents.openDevTools()
+
     // Emitted when the window is closed.
     win.on('closed', function () {
         // Dereference the window object, usually you would store windows
