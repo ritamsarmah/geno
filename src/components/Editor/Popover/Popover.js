@@ -1,11 +1,16 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import AnalysisView from '../AnalysisView/AnalysisView';
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import './Popover.css'
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faPlus, faMicrophone } from '@fortawesome/free-solid-svg-icons';
+
+// const { BrowserWindow } = window.require('electron');
+const electron = window.require('electron');
+const BrowserWindow = electron.remote.BrowserWindow;
+
+var optionsWindow;
 
 export default class Popover extends Component {
 
@@ -13,12 +18,10 @@ export default class Popover extends Component {
         super(props);
         this.state = {
             queriesExpanded: false,
-            editMode: false,
             renderAnalysis: false,
             selectedQuery: null,
         };
         this.toggleQueries = this.toggleQueries.bind(this);
-        this.toggleEdit = this.toggleEdit.bind(this);
         this.showAnalysis = this.showAnalysis.bind(this);
         this.handleAnalysisUnmount = this.handleAnalysisUnmount.bind(this);
     }
@@ -27,18 +30,14 @@ export default class Popover extends Component {
         this.setState({ queriesExpanded: !this.state.queriesExpanded });
     }
 
-    toggleEdit() {
-        this.setState({ editMode: !this.state.editMode });
-    }
-
     save() {
         // TODO
         console.log("Save");
     }
 
     showOptions() {
-        // TODO
-        console.log("Options");
+        let optionsWindow = new BrowserWindow({ width: 300, height: 500 });
+        optionsWindow.on('closed', () => { optionsWindow = null });
     }
 
     showAnalysis(query) {
@@ -53,29 +52,11 @@ export default class Popover extends Component {
         this.setState({ renderAnalysis: false });
     }
 
+    deleteQuery(query) {
+        // TODO
+    }
+
     render() {
-        var queries;
-        var height = this.state.queriesExpanded ? "140px" : "70px";
-        var resize = this.state.queriesExpanded ? "vertical" : "none";
-
-        if (this.state.editMode) {
-            queries = (
-                <textarea id="queriesEdit" style={{
-                    height: height,
-                    resize: resize
-                }} defaultValue={this.props.command.queries.map(q => q.query).join('\n')}></textarea>
-            );
-        } else {
-            queries = (
-                <div id="queriesView" style={{
-                    height: height,
-                    resize: resize
-                }}>
-                    {this.props.command.queries.map(q => <div className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.query}</div>)}
-                </div>
-            );
-        }
-
         return (
             <div>
                 <div className="popover">
@@ -89,22 +70,34 @@ export default class Popover extends Component {
                         <br></br>
 
                         <p className="popoverTitleButtons">Sample Queries</p>
-                        <button className="smallButton" type="button">Record</button>
-                        <button className="smallButton" onClick={this.toggleEdit} type="button">{this.state.editMode ? "View" : "Edit"}</button>
 
                         <div style={{ marginTop: "30px" }}>
-                            {queries}
+                            <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
+                            <span className="iconButton" onClick={this.addQuery}>
+                                <FontAwesomeIcon icon={faPlus} />
+                            </span>
+                            <span className="iconButton" onClick={this.addQuery}>
+                                <FontAwesomeIcon icon={faMicrophone} />
+                            </span>
+
+                            <div id="queriesView" style={{
+                                height: this.state.queriesExpanded ? "140px" : "70px",
+                                resize: this.state.queriesExpanded ? "vertical" : "none"
+                            }}>
+                                {this.props.command.queries.map(q => <div className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.query}</div>)}
+                            </div>
+
                             <div id="queryToggle" onClick={this.toggleQueries}>
                                 <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
                             </div>
                         </div>
 
                         <br></br>
-                        <input type="button" value="Save" onClick={this.save} type="button"></input>
-                        <input type="button" value="Options" onClick={this.showOptions} type="button"></input>
+                        <input type="button" value="Save" onClick={this.save}></input>
+                        <input type="button" value="Options" onClick={this.showOptions}></input>
                     </form>
                 </div>
-                {this.state.renderAnalysis ? <AnalysisView query={this.state.selectedQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
+                {this.state.renderAnalysis ? <AnalysisView query={this.state.selectedQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
             </div>
         );
     }

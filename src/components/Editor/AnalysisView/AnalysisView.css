@@ -21,9 +21,20 @@
     text-align: center;
 }
 
+.nlpContent:focus {
+    outline: none;
+}
+
 .close {
     position: absolute;
     top: 6px;
     left: 10px;
+    cursor: pointer;
+}
+
+.delete {
+    position: absolute;
+    top: 6px;
+    right: 10px;
     cursor: pointer;
 }

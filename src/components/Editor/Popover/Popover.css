@@ -5,7 +5,7 @@
     margin: 10px;
 }
 
-.popoverForm > input[type=text], select, textarea {
+input[type=text], select, textarea {
     width: 100%;
     margin-bottom: 14px;
     padding: 6px 6px;
@@ -15,12 +15,12 @@
     box-sizing: border-box;
 }
 
-.popoverForm > input[type=text]:focus, textarea:focus {
+input[type=text]:focus, textarea:focus {
     outline: none;
     border: 1px solid var(--theme-color);
 }
 
-.popoverForm > input[type=button] {
+input[type=button] {
     background-color: #E6E6E6;
     color: black;
     padding: 8px 20px;
@@ -29,16 +29,6 @@
     cursor: pointer;
     border: 1px solid #E6E6E6;
     border-radius: 4px;
-}
-
-.popoverForm > .smallButton {
-    background-color: clear;
-    color: var(--theme-color);
-    padding: 0px;
-    border: none;
-    margin: 3px 5px 0;
-    cursor: pointer;
-    float: right;
 }
 
 button, input[type="button"]:focus {
@@ -66,6 +56,35 @@ input[type="button"]:active {
     float: left;
 }
 
+.popoverForm > .smallTitleButton {
+    background-color: clear;
+    color: var(--theme-color);
+    padding: 0px;
+    border: none;
+    margin: 3px 5px 0;
+    cursor: pointer;
+    float: right;
+}
+
+/* Icon Button */
+.iconButton {
+    color: black;
+    padding: 5px 8px;
+    height: 8px;
+    width: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.iconButton:active {
+    background-color: rgb(220, 220, 220);
+}
+
+.iconButton:focus {
+    outline: none;
+}
+
 .popoverFn {
     background-color: clear;
     border-radius: 3px;
@@ -79,15 +98,13 @@ input[type="button"]:active {
 }
 
 /* Queries */
-
-#queriesEdit, #queriesView {
-    height: 70px;
-    min-height: 70px;
+#addQueryInput {
+    width: 75%;
 }
 
-#queriesEdit {
-    resize: vertical;
-    margin-bottom: 2px;
+#queriesView {
+    height: 70px;
+    min-height: 70px;
 }
 
 #queriesView {
@@ -96,6 +113,7 @@ input[type="button"]:active {
     overflow: scroll;
     margin-bottom: 4px;
     padding: 4px;
+    user-select: none;
 }
 
 #queryToggle {
@@ -120,4 +138,3 @@ input[type="button"]:active {
     cursor: pointer;
     border-radius: 4px;
 }
-

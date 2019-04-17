@@ -38,7 +38,7 @@ const data = {
 export default class Explorer extends Component {
     constructor(props) {
         super(props);
-        this.state = { tab: 1 } // 0 - File Tree, 1 - Voice Commands
+        this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands
         this.showFileTree = this.showFileTree.bind(this);
         this.showVoiceCommands = this.showVoiceCommands.bind(this);
         this.showSearch = this.showSearch.bind(this);
