@@ -58,7 +58,7 @@ export default class Explorer extends Component {
             var pending = files.length;
 
             if (!pending)
-                return done(null, { path: path, name: path.basename(dir), type: 'folder', children: results });
+                return done(null, { path: path, name: path.basename(dir), type: 'dir', children: results });
 
             files.forEach((file) => {
                 file = path.resolve(dir, file);
@@ -68,7 +68,7 @@ export default class Explorer extends Component {
                             results.push({
                                 path: path,
                                 name: path.basename(file),
-                                type: 'folder',
+                                type: 'dir',
                                 children: res
                             });
                             if (!--pending)
@@ -79,7 +79,7 @@ export default class Explorer extends Component {
                         results.push({
                             path: file,
                             name: path.basename(file),
-                            type: 'file'
+                            type: path.extname(file)
                         });
                         if (!--pending)
                             done(null, results);
@@ -90,6 +90,7 @@ export default class Explorer extends Component {
     };
 
     walkDone(err, results) {
+        // TODO: Maybe sort results alphabetically
         this.setState({
             dirData: results
         })

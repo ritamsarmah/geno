@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
 
-import { faFolder, faFile, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { faFolder, faFolderOpen, faFileAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import './FileTree.css';
@@ -33,10 +33,13 @@ export default class FileTree extends Component {
         decorators.Toggle = () => (<span />); // no toggle
         
         decorators.Header = ({ style, node }) => {
-            var iconClass = node.children ? (node.toggled ? faFolderOpen : faFolder) : faFile;
+            var iconClass = node.children ? (node.toggled ? faFolderOpen : faFolder) : faFileAlt;
+            console.log(node.type);
+            var titleClass = (node.type !== 'dir' && node.type !== '.js' && node.type !== '.ts') ? "invalidFile" : "validFile";
+            var toggledClass = (titleClass === "validFile" && node.active) ? " selected" : "";
             return (
-                <div className="headerBase">
-                    <div style={style.title} onClick={!node.children ? () => { this.loadFile(node.name) } : null}>
+                <div className={"headerBase" + toggledClass}>
+                    <div className={titleClass} style={style.title} onClick={!node.children ? () => { this.loadFile(node.name) } : null}>
                         <FontAwesomeIcon icon={iconClass} style={{ marginRight: "8px" }} />
                         {node.name}
                     </div>

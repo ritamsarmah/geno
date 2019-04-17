@@ -3,6 +3,19 @@
 /* Decorator Header */
 
 .headerBase {
-    cursor: pointer;
     user-select: none;
+    padding-left: 5px;
+    border-radius: 2px;
+}
+
+.selected {
+    background-color: #31363F;
+}
+
+.validFile {
+    cursor: pointer;
+}
+
+.invalidFile {
+    color: rgb(88, 93, 97)
 }

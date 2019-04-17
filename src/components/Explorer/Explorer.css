@@ -12,6 +12,7 @@
     flex-direction: row;
     justify-content: space-evenly;
     flex-wrap: wrap;
+    z-index: 9999;
 }
 
 .tabButton {
