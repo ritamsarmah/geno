@@ -1,6 +1,7 @@
 const Colors = {
     Background: "#21252B",
     LightBackground: "#282d34",
+    LighterBackground: "#31363F",
     Theme: "#3190FF",
     Highlight: "white",
     Disabled: "gray",

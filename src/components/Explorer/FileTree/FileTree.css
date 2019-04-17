@@ -9,7 +9,7 @@
 }
 
 .selected {
-    background-color: #31363F;
+    background-color: var(--lighter-bg-color);
 }
 
 .validFile {
@@ -17,5 +17,5 @@
 }
 
 .invalidFile {
-    color: rgb(88, 93, 97)
+    color: var(--disabled-color);
 }

@@ -21,18 +21,6 @@
     color: lightgray;
 }
 
-/* .button {
-    background-color: var(--light-bg-color);
-    color: white;
-    padding: 8px 20px;
-    width: 100px;
-    margin: 0 8px;
-    cursor: pointer;
-    border: 1px solid #E6E6E6;
-    border-radius: 4px;
-    text-align: center;
-} */
-
 .openBtn {
     background-color: var(--light-bg-color);
     color: whitesmoke;
@@ -56,10 +44,13 @@
 }
 
 /* App */
-
 body {
     padding: 0px;
     margin: 0px;
+}
+
+.editor {
+    background-color: var(--editor-bg-color);
 }
 
 /* Split Pane CSS Rules */

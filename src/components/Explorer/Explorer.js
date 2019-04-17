@@ -115,7 +115,7 @@ export default class Explorer extends Component {
         switch (this.state.tab) {
             case 0:
                 if (this.state.dirData) {
-                    content = (<div style={{ margin: "10px 20px" }}><FileTree data={this.state.dirData} /></div>);
+                    content = (<div style={{ margin: "10px 20px" }}><FileTree data={this.state.dirData} selectFile={this.props.selectFile} /></div>);
                 } else {
                     content = (<div className="loading"><p className="loadingText">Loading...</p></div>)
                 }

@@ -17,10 +17,12 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      dir: null // stores current project dir
+      dir: null, // Current project directory
+      currentFile: null // Current file in editor
     }
     this.openFileBrowser = this.openFileBrowser.bind(this);
     this.configureProject = this.configureProject.bind(this);
+    this.selectFile = this.selectFile.bind(this);
   }
 
   openFileBrowser() {
@@ -48,13 +50,20 @@ export default class App extends Component {
     // });
   }
 
+  // Callback for FileTree in Explorer to set Editor file
+  selectFile(filePath) {
+    this.setState({
+      currentFile: filePath
+    });
+  }
+
   render() {
     if (this.state.dir) {
       return (
         <div className="App">
           <Split sizes={[20, 40, 40]} minSize={[0, 0, 0]}>
-            <div className="split"><Explorer dir={this.state.dir}/></div>
-            <div className="split"><Editor /></div>
+            <div className="split"><Explorer dir={this.state.dir} selectFile={this.selectFile}/></div>
+            <div className="split"><Editor file={this.state.currentFile}/></div>
             <div className="split"><Preview dir={this.state.dir}/></div>
           </Split>
         </div>

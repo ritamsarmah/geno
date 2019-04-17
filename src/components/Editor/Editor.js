@@ -11,6 +11,9 @@ import './Editor.css';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
 
+const fs = window.require('fs');
+const path = require('path');
+
 var acorn = require("acorn-loose/dist/acorn-loose.js");
 
 function makeAnchor(type) {
@@ -56,13 +59,13 @@ function astSearch(node) {
                         params: expression.params.map(param => param.name),
                         lineNumber: declarator.loc.start.line
                     });
-                // Constructor
+                    // Constructor
                 } else if ("callee" in declarator.init && declarator.init.callee.name === "Function") {
                     functions.push({
                         name: declarator.id.name,
                         params: declarator.init.arguments.slice(0, declarator.init.arguments.length - 1).map(arg => arg.value),
                         lineNumber: declarator.loc.start.line
-                    }); 
+                    });
                 }
             }
         }
@@ -82,9 +85,11 @@ function astSearch(node) {
 export default class Editor extends Component {
     constructor(props) {
         super(props);
-        // this.state = {
-        //     markers: {} // TODO: Load this from some JSON file that we create
-        // }
+        this.state = {
+            // markers: {} // TODO: Load this from some JSON file that we create
+            file: this.props.file,
+            text: null
+        }
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
     }
@@ -93,8 +98,25 @@ export default class Editor extends Component {
         this.addGutterCircles(editor);
     }
 
+    componentDidUpdate(prevProps) {
+        if (this.props.file !== prevProps.file) {
+            this.readFile(this.props.file);
+        }
+    }
+
+    readFile(file) {
+        fs.readFile(file, "utf8", (err, data) => {
+            this.setState({
+                text: data
+            });
+        });
+    }
+
     onChange(editor, data, value) {
         this.addGutterCircles(editor);
+        this.setState({
+            text: value
+        })
     }
 
     // Redraw all circles for lines with function declarations
@@ -111,23 +133,31 @@ export default class Editor extends Component {
     }
 
     render() {
-        return (
-            <div>
-                <div className="filename centered">
-                    long_file_name.js
+        if (this.props.file) {
+            return (
+                <div>
+                    <div className="filename centered">
+                        {path.basename(this.props.file)}
                 </div>
-                <CodeMirror
-                    value="function hello() { return 'world' }"
-                    options={{
-                        theme: "base16-dark",
-                        mode: "javascript",
-                        lineNumbers: true,
-                        gutters: ["commands"]
-                    }}
-                    editorDidMount={this.editorDidMount}
-                    onChange={this.onChange}
-                />
-            </div>
-        );
+                    <CodeMirror
+                        value={this.state.text}
+                        options={{
+                            theme: "base16-dark",
+                            mode: "javascript",
+                            lineNumbers: true,
+                            gutters: ["commands"]
+                        }}
+                        editorDidMount={this.editorDidMount}
+                        onChange={this.onChange}
+                    />
+                </div>
+            );
+        } else {
+            return (
+                <div className="noFileScreen">
+                    <p>Select a file from the explorer</p>
+                </div>
+            );
+        }
     }
 }

@@ -11,7 +11,6 @@ export default class FileTree extends Component {
         super(props);
         this.state = {};
         this.onToggle = this.onToggle.bind(this);
-        this.loadFile = this.loadFile.bind(this);
 
         this.animations = {
             toggle: ({ node: { toggled } }) => ({
@@ -34,12 +33,11 @@ export default class FileTree extends Component {
         
         decorators.Header = ({ style, node }) => {
             var iconClass = node.children ? (node.toggled ? faFolderOpen : faFolder) : faFileAlt;
-            console.log(node.type);
-            var titleClass = (node.type !== 'dir' && node.type !== '.js' && node.type !== '.ts') ? "invalidFile" : "validFile";
+            var titleClass = this.validNode(node) ? "validFile" : "invalidFile";
             var toggledClass = (titleClass === "validFile" && node.active) ? " selected" : "";
             return (
                 <div className={"headerBase" + toggledClass}>
-                    <div className={titleClass} style={style.title} onClick={!node.children ? () => { this.loadFile(node.name) } : null}>
+                    <div className={titleClass} style={style.title}>
                         <FontAwesomeIcon icon={iconClass} style={{ marginRight: "8px" }} />
                         {node.name}
                     </div>
@@ -48,11 +46,9 @@ export default class FileTree extends Component {
         };
     }
 
-    loadFile(filePath) {
-        console.log(filePath);
-        this.setState({
-            // TODO: update data with children!
-        });
+    // Directory or JavaScript/TypeScript File
+    validNode(node) {
+        return node.type === 'dir' || node.type === '.js' || node.type === '.ts';
     }
 
     onToggle(node, toggled) {
@@ -66,6 +62,10 @@ export default class FileTree extends Component {
             node.toggled = toggled;
         }
         this.setState({ cursor: node });
+
+        if (this.validNode(node) && node.type !== 'dir') {
+            this.props.selectFile(node.path);
+        }
     }
 
     render() {
