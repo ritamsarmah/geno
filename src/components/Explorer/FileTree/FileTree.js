@@ -46,21 +46,31 @@ export default class FileTree extends Component {
         };
     }
 
+    componentWillUnmount() {
+        const { cursor } = this.state;
+
+        if (cursor) {
+            cursor.active = false;
+        }
+    }
+
     // Directory or JavaScript/TypeScript File
     validNode(node) {
         return node.type === 'dir' || node.type === '.js' || node.type === '.ts';
     }
 
     onToggle(node, toggled) {
-        if (this.state.cursor) {
-            var newCursor = this.state.cursor
-            newCursor.active = false;
-            this.setState({ cursor: newCursor })
+        const { cursor } = this.state;
+
+        if (cursor) {
+            cursor.active = false;
         }
+        
         node.active = true;
         if (node.children) {
             node.toggled = toggled;
         }
+
         this.setState({ cursor: node });
 
         if (this.validNode(node) && node.type !== 'dir') {
