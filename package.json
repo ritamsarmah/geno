@@ -1,5 +1,6 @@
 {
   "name": "geno",
+  "productName": "Geno",
   "version": "0.1.0",
   "private": true,
   "main": "src/electron/main.js",

@@ -10,6 +10,8 @@ import './Editor.css';
 
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSave } from '@fortawesome/free-solid-svg-icons';
 
 const fs = window.require('fs');
 const path = require('path');
@@ -87,11 +89,13 @@ export default class Editor extends Component {
         super(props);
         this.state = {
             // markers: {} // TODO: Load this from some JSON file that we create
-            file: this.props.file,
-            text: null
+            file: null,
+            lastSavedText: null,
+            currentText: null
         }
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
+        this.saveFile = this.saveFile.bind(this);
     }
 
     editorDidMount(editor) {
@@ -99,24 +103,51 @@ export default class Editor extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.file !== prevProps.file) {
-            this.readFile(this.props.file);
+        // File change
+        if (this.state.file !== this.props.file) {
+            // Save previous file
+            if (this.props.forceSaveFile) {
+                this.saveFile(this.state.file, false);
+            }
+            this.setState({
+                file: this.props.file
+            }, () => {
+                this.readFile(this.props.file);
+            });
         }
     }
 
     readFile(file) {
         fs.readFile(file, "utf8", (err, data) => {
             this.setState({
-                text: data
+                lastSavedText: data,
+                currentText: data
             });
+            this.props.setSelectFile(true);
+        });
+    }
+
+    saveFile(file, trackLastSave) {
+        var data = this.state.currentText;
+        fs.writeFile(file, data, 'utf8', (err) => {
+            if (err) alert(err);
+            if (trackLastSave) {
+                this.setState({ lastSavedText: data });
+            }
+            this.props.setSelectFile(true);
         });
     }
 
     onChange(editor, data, value) {
         this.addGutterCircles(editor);
-        this.setState({
-            text: value
-        })
+        this.setState({ currentText: value });
+        if (this.state.lastSavedText !== this.state.currentText) {
+            document.getElementById("saveButton").style.color = "gray";
+            this.props.setSelectFile(false);
+        } else {
+            document.getElementById("saveButton").style.color = "white";
+            this.props.setSelectFile(true);
+        }
     }
 
     // Redraw all circles for lines with function declarations
@@ -133,14 +164,18 @@ export default class Editor extends Component {
     }
 
     render() {
-        if (this.props.file) {
+        if (this.state.file) {
             return (
                 <div>
                     <div className="filename centered">
-                        {path.basename(this.props.file)}
-                </div>
+                        <span id="saveButton" style={{ color: "white" }} onClick={() => this.saveFile(this.state.file, true)}>
+                            <FontAwesomeIcon icon={faSave} size="lg" />
+                        </span>
+                        {path.basename(this.state.file)}
+                    </div>
                     <CodeMirror
-                        value={this.state.text}
+                        id="codeMirror"
+                        value={this.state.lastSavedText}
                         options={{
                             theme: "base16-dark",
                             mode: "javascript",

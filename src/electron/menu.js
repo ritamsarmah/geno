@@ -21,11 +21,11 @@ const template = [
             //     }
             // },
             // { type: 'separator' },
-            // {
-            //     label: 'Save',
-            //     accelerator: 'CmdOrCtrl+S',
-            //     click: () => { console.log("Save File") } // TODO: Save changes
-            // },
+            {
+                label: 'Save',
+                accelerator: 'CmdOrCtrl+S',
+                click: () => { console.log("Save File") } // TODO: Save changes
+            }
             // {
             //     label: 'Save As...',
             //     accelerator: 'CmdOrCtrl+Shift+S',

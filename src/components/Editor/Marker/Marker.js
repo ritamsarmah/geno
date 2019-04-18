@@ -85,7 +85,7 @@ export default class Marker extends Component {
     render() {
         var content = (this.props.triggerFn in markerMap) ? (<Popover command={markerMap[this.props.triggerFn]} />) : (<span></span>)
         return (
-            <Tippy content={content} arrow={true} trigger="click" placement="right" theme="light-border" animation="scale" inertia={true} interactive={true}>
+            <Tippy content={content} arrow={true} trigger="click" placement="right-end" theme="light-border" animation="scale" inertia={true} interactive={true}>
                 <div className={this.state.filled ? "filledMarker" : "emptyMarker"} onClick={this.onClick}></div>
             </Tippy>
         );

@@ -60,21 +60,29 @@ export default class FileTree extends Component {
     }
 
     onToggle(node, toggled) {
-        const { cursor } = this.state;
+        if (this.validNode(node)) {
+            if (node.type !== 'dir') {
+                this.props.selectFile(node.path, (shouldToggle) => {
+                    console.log(shouldToggle);
+                    if (shouldToggle) {
+                        const { cursor } = this.state;
+                        if (cursor) cursor.active = false;
 
-        if (cursor) {
-            cursor.active = false;
-        }
-        
-        node.active = true;
-        if (node.children) {
-            node.toggled = toggled;
-        }
+                        node.active = true;
+                        if (node.children) node.toggled = toggled;
 
-        this.setState({ cursor: node });
+                        this.setState({ cursor: node });
+                    }
+                })
+            } else {
+                const { cursor } = this.state;
+                if (cursor) cursor.active = false;
 
-        if (this.validNode(node) && node.type !== 'dir') {
-            this.props.selectFile(node.path);
+                node.active = true;
+                if (node.children) node.toggled = toggled;
+
+                this.setState({ cursor: node });
+            }
         }
     }
 

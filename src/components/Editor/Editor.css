@@ -29,6 +29,15 @@
     user-select: none;
 }
 
+#saveButton {
+    margin-right: 10px;
+}
+
+#saveButton:hover {
+    cursor: pointer;
+    color: white;
+}
+
 /* Gutter */
 
 .commands {
