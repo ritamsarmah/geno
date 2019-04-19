@@ -96,10 +96,12 @@ export default class Editor extends Component {
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
         this.saveFile = this.saveFile.bind(this);
+        this.codeMirror = null;
     }
 
     editorDidMount(editor) {
         this.addGutterCircles(editor);
+        this.codeMirror = editor;
     }
 
     componentDidUpdate(prevProps) {
@@ -123,6 +125,7 @@ export default class Editor extends Component {
                 lastSavedText: data,
                 currentText: data
             });
+            console.log(this.codeMirror.doc.clearHistory());
             this.props.setSelectFile(true);
         });
     }
@@ -174,7 +177,6 @@ export default class Editor extends Component {
                         {path.basename(this.state.file)}
                     </div>
                     <CodeMirror
-                        id="codeMirror"
                         value={this.state.lastSavedText}
                         options={{
                             theme: "base16-dark",
