@@ -1,0 +1,40 @@
+.analysisView {
+    z-index: 999999999;
+    position: absolute;
+    top: 100px;
+    left: 120%;
+    /* margin-left: calc(-1 * 250px); */
+    
+    width: 500px;
+    padding: 30px;
+    
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.nlpContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.nlpContent:focus {
+    outline: none;
+}
+
+.close {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+    cursor: pointer;
+}
+
+.delete {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    cursor: pointer;
+}

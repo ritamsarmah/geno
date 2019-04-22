@@ -1,0 +1,21 @@
+@import "../../../theme.css";
+
+/* Decorator Header */
+
+.headerBase {
+    user-select: none;
+    padding-left: 5px;
+    border-radius: 2px;
+}
+
+.selected {
+    background-color: var(--lighter-bg-color);
+}
+
+.validFile {
+    cursor: pointer;
+}
+
+.invalidFile {
+    color: var(--disabled-color);
+}

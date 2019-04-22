@@ -1,0 +1,42 @@
+@import "../../theme.css";
+
+.buttons {
+    height: 40px;
+    top: 0;
+    left: 0;
+    right: 0;
+    position: sticky;
+    background-color: var(--main-bg-color);
+    justify-content: space-between;
+}
+
+.preview {
+    height: calc(100vh - 47px);
+    width: 100%;
+}
+
+.demoCtrls {
+    right: 0;
+}
+
+.previewBtn {
+    background-color: var(--main-bg-color);
+    color: whitesmoke;
+    padding: 8px 16px;
+    margin: 0 8px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+.previewBtn:hover {
+    background-color: var(--light-bg-color)
+}
+
+.previewBtn:focus {
+    outline: none;
+}
+
+.previewBtn:active {
+    background-color: var(--very-light-bg-color);
+}
