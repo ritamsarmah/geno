@@ -25,10 +25,10 @@ export default class AnalysisView extends Component {
     render() {
         return (
             <div className="analysisView">
-                <div class="close" onClick={this.dismiss}>
+                <div className="close" onClick={this.dismiss}>
                     <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>
                 </div>
-                <div class="delete" onClick={this.dismiss}>
+                <div className="delete" onClick={this.delete}>
                     <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
                 </div>
                 <div className="nlpContent" contentEditable="true">

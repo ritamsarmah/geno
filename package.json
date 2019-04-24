@@ -14,6 +14,8 @@
     "acorn-loose": "^6.0.0",
     "codemirror": "^5.45.0",
     "electron": "^4.1.3",
+    "lodash-id": "^0.14.0",
+    "lowdb": "^1.0.0",
     "react": "^16.8.6",
     "react-codemirror2": "^5.1.0",
     "react-dom": "^16.8.6",
