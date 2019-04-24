@@ -55,8 +55,11 @@ export default class Popover extends Component {
         });
     }
 
-    handleAnalysisUnmount() {
+    handleAnalysisUnmount(updatedQuery) {
         this.setState({ renderAnalysis: false });
+        this.setState({
+            command: database.updateQuery(this.state.command.id, updatedQuery)
+        });
         // TODO: save changes to query and query settings/re-read from database
     }
 

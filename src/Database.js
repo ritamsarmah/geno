@@ -72,6 +72,13 @@ class Database {
             entities: []
         }
         this.db.get('commands').getById(commandId).get('queries').insert(data).write();
+        // TODO perform analyis and execute some callback...
+        return this.db.get('commands').getById(commandId).value();
+    }
+
+    updateQuery(commandId, updatedQuery) {
+        this.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
+        // TODO perform analyis and execute some callback...
         return this.db.get('commands').getById(commandId).value();
     }
 
