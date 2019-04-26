@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import CommandItem from './CommandItem/CommandItem';
 
-import database from '../../../Database';
+import database from '../../../common/Database';
 
 import './CommandList.css';
 

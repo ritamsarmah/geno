@@ -7,7 +7,7 @@ import { faChevronDown, faChevronUp, faPlus, faMicrophone } from '@fortawesome/f
 
 import './Popover.css'
 
-import database from '../../../Database';
+import database from '../../../common/Database';
 
 const electron = window.require('electron');
 const BrowserWindow = electron.remote.BrowserWindow;
@@ -32,22 +32,27 @@ export default class Popover extends Component {
         this.deleteCommand = this.deleteCommand.bind(this);
         this.changeCommandName = this.changeCommandName.bind(this);
         this.addQuery = this.addQuery.bind(this);
+        this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
     }
 
+    /* Dismisses this component */
     dismiss() {
         this.props.unmountMe();
     }
 
+    /* Toggle resizing of sample queries list */
     toggleQueries() {
         this.setState({ queriesExpanded: !this.state.queriesExpanded });
     }
 
+    /* Open a window with advanced options */
     showOptions() {
-        let optionsWindow = new BrowserWindow({ width: 300, height: 500, title: "Options" });
+        optionsWindow = new BrowserWindow({ width: 300, height: 500, title: "Options" });
         optionsWindow.on('closed', () => { optionsWindow = null });
     }
 
+    /* Shows AnalysisView for editing a selected query */
     showAnalysis(query) {
         this.setState({
             renderAnalysis: true,
@@ -55,28 +60,29 @@ export default class Popover extends Component {
         });
     }
 
+    /* Handles unmount of AnalysisView */
     handleAnalysisUnmount(updatedQuery) {
-        this.setState({ renderAnalysis: false });
         this.setState({
+            renderAnalysis: false,
             command: database.updateQuery(this.state.command.id, updatedQuery)
         });
-        // TODO: save changes to query and query settings/re-read from database
     }
 
-    /* Command/Query Database Changes */
-
+    /* Updates command name in database */
     changeCommandName() {
-        var commandNameInput = document.getElementById("commandNameInput");
+        var commandNameInput = document.getElementById("addQueryInput");
         database.updateCommand(this.state.command.id, {
             name: commandNameInput.value
         });
     }
 
+    /* Deletes command from database */
     deleteCommand() {
         database.removeCommand(this.state.command.id);
         this.dismiss();
     }
 
+    /* Adds query for command to database */
     addQuery() {
         var queryInput = document.getElementById('addQueryInput');
         if (queryInput.value != "") {
@@ -87,6 +93,13 @@ export default class Popover extends Component {
         }
     }
 
+    /* Update query for command in database */
+    updateQuery(query) {
+        // Don't want to trigger setState updates
+        this.state.command = database.updateQuery(this.state.command.id, query)
+    }
+
+    /* Deletes query for command from database */
     deleteQuery(query) {
         this.setState({
             command: database.removeQuery(this.state.command.id, query.id)
@@ -134,7 +147,7 @@ export default class Popover extends Component {
                         <input type="button" value="Options" onClick={this.showOptions}></input>
                     </form>
                 </div>
-                {this.state.renderAnalysis ? <AnalysisView query={this.state.selectedQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
+                {this.state.renderAnalysis ? <AnalysisView parameters={this.state.command.parameters} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
             </div>
         );
     }

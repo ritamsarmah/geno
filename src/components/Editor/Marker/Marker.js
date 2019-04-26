@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Popover from '../Popover/Popover';
 import Tippy from '@tippy.js/react';
 
-import database from '../../../Database';
+import database from '../../../common/Database';
 
 import './Marker.css'
 import 'tippy.js/themes/light-border.css';

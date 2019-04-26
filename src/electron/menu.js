@@ -1,7 +1,4 @@
 const { app, dialog, Menu } = require('electron');
-const fs = require('fs');
-
-const { Paths } = require('../constants.js');
 
 const template = [
     {

@@ -4,10 +4,10 @@ import Explorer from '../Explorer/Explorer';
 import Editor from '../Editor/Editor';
 import Preview from '../Preview/Preview';
 
-import database from '../../Database';
+import database from '../../common/Database';
 
 import './App.css';
-import { Paths, Context } from '../../constants'
+import { Paths, Context } from '../../common/constants'
 
 const electron = window.require('electron');
 const dialog = electron.remote.dialog;
