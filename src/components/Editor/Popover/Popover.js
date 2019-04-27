@@ -73,7 +73,7 @@ export default class Popover extends Component {
 
     /* Updates command name in database */
     changeCommandName() {
-        var commandNameInput = document.getElementById("addQueryInput");
+        var commandNameInput = document.getElementById("commandNameInput");
         database.updateCommand(this.state.command.id, {
             name: commandNameInput.value
         });
@@ -127,9 +127,9 @@ export default class Popover extends Component {
                         <br></br>
                         <br></br>
 
-                        <p className="popoverTitleButtons">Sample Queries</p>
+                        <p className="popoverTitle">Sample Queries</p>
 
-                        <div style={{ marginTop: "30px" }}>
+                        <div>
                             <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
                             <span className="iconButton" onClick={this.addQuery}>
                                 <FontAwesomeIcon icon={faPlus} />

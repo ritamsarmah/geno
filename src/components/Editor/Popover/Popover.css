@@ -48,13 +48,14 @@ input[type="button"]:active {
     margin: 0 0 5px 0;
     padding: 0px;
     text-align: left;
+    user-select: none;
 }
 
-.popoverTitleButtons {
+/* .popoverTitleButtons { 
     margin: 0 0 5px 0;
     padding: 0px;
     float: left;
-}
+} */
 
 .popoverForm > .smallTitleButton {
     background-color: clear;
