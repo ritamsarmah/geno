@@ -8,6 +8,9 @@ import { faChevronDown, faChevronUp, faPlus, faMicrophone } from '@fortawesome/f
 import './Popover.css'
 
 import database from '../../../common/Database';
+import Speech from '../../../common/Speech';
+
+var speech = new Speech();
 
 const electron = window.require('electron');
 const BrowserWindow = electron.remote.BrowserWindow;
@@ -91,6 +94,11 @@ export default class Popover extends Component {
             }, () => queryInput.value = "");
             // TODO propagate update to parent marker??
         }
+    }
+
+    /* Record query using microphone */
+    recordQuery() {
+        speech.startListening();
     }
 
     /* Update query for command in database */

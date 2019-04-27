@@ -44,11 +44,10 @@ export default class App extends Component {
     const genoPath = path[0] + Paths.Geno;
     const commandsPath = path[0] + Paths.Commands;
 
-    database.configureProject(path[0]);
-
     fs.mkdir(genoPath, (err) => {
       fs.writeFile(commandsPath, "", { flag: 'wx' }, (err) => {
         this.setState({ dir: path[0] });
+        database.configureProject(path[0]);
       });
     });
 
@@ -113,7 +112,7 @@ export default class App extends Component {
         <div className="App">
           <Split sizes={[20, 40, 40]} minSize={[0, 0, 0]}>
             <div className="split"><Explorer dir={this.state.dir} selectFile={this.selectFile} /></div>
-            <div className="split"><Editor file={this.state.currentFile} setSelectFile={this.setSelectFile} forceSaveFile={this.state.forceSaveFile} /></div>
+            <div className="split"><Editor dir={this.state.dir} file={this.state.currentFile} setSelectFile={this.setSelectFile} forceSaveFile={this.state.forceSaveFile} /></div>
             <div className="split"><Preview dir={this.state.dir} /></div>
           </Split>
         </div>
