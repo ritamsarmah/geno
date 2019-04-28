@@ -130,13 +130,16 @@ export default class Popover extends Component {
                         <p className="popoverTitle">Sample Queries</p>
 
                         <div>
-                            <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
-                            <span className="iconButton" onClick={this.addQuery}>
-                                <FontAwesomeIcon icon={faPlus} />
-                            </span>
-                            <span className="iconButton" onClick={this.recordQuery}>
+                            <div>
+                                <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
+                                <span className="iconButton" onClick={this.addQuery}>
+                                    <FontAwesomeIcon icon={faPlus} />
+                                </span>
+                            </div>
+                            
+                            {/* <span className="iconButton" onClick={this.recordQuery}>
                                 <FontAwesomeIcon icon={faMicrophone} />
-                            </span>
+                            </span> */}
 
                             <div id="queriesView" style={{
                                 height: this.state.queriesExpanded ? "140px" : "70px",

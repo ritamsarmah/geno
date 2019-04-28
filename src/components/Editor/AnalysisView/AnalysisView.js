@@ -55,10 +55,29 @@ export default class AnalysisView extends Component {
 
     /* Create text segment for NLP information */
     createEntitySegment(entity, finalSegment) {
+        var text = this.state.query.query.substring(entity.start, entity.end)
+        var color = entity.name != null ? utils.stringToColor(text) : "black"
         return (
-            <span id={entity.name} className="textSegment" style={{ color: utils.stringToColor(entity.name) }} onFocus={this.removeHighlights}>
-                {this.state.query.query.substring(entity.start, entity.end) + (finalSegment ? "" : " ")}
+            <span id={entity.name} className="textSegment" style={{ color: color }} onFocus={this.removeHighlights}>
+                {text + (finalSegment ? "" : " ")}
             </span>
+        )
+    }
+
+    changeEntityName(query, entity) {
+        console.log(entity.name);
+        // TODO: Swap entity selections in database
+    }
+
+    /* Create dropdown for text segment */
+    createDropdown(query, entity) {
+        var names = this.props.parameters.map(p => p.name);
+        names.push("intent");
+
+        return (
+            <select defaultValue={entity.name} onChange={() => this.changeEntityName(query)}>
+                {names.map(name => <option key={name} value={name}>{name}</option>)}
+            </select>
         )
     }
 
@@ -85,35 +104,18 @@ export default class AnalysisView extends Component {
         if (newQuery.entities.length == 0) {
             content.innerHTML = newQuery.query;
         } else {
-            var options = this.props.parameters.map(p => p.name);
-            options.push("intent");
-
             newQuery.entities.forEach((entity, i) => {
                 const dummy = document.createElement("span"); // Create dummy div to render
                 content.appendChild(dummy);
                 var spaceNeeded = (i == newQuery.entities.length - 1); // Add space between text segments
-                var segment = this.createEntitySegment(entity, spaceNeeded);
 
-                // Render and add dropdown
-                ReactDOM.render(segment, dummy, () => {
-                    var span = document.getElementById(entity.name);
-
-                    var dropdown = document.createElement("select");
-                    options.forEach(opt => {
-                        // TODO: create id so we can reaccess option to change data
-                        var option = document.createElement("option");
-                        option.value = opt;
-                        option.innerHTML = opt;
-                        dropdown.append(option);
-                    });
-
-                    options.forEach((opt, i) => {
-                        if (opt === entity.name) {
-                            dropdown.selectedIndex = i;
-                            return;
-                        }
-                    });
-                    span.appendChild(dropdown);
+                ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
+                    if (entity.name != null) {
+                        var span = document.getElementById(entity.name);
+                        const dropdownDummy = document.createElement("span"); // Create dummy div to render
+                        span.appendChild(dropdownDummy);
+                        ReactDOM.render(this.createDropdown(newQuery, entity), dropdownDummy);
+                    }
                 });
             });
         }

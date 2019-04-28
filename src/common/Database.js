@@ -86,6 +86,10 @@ class Database {
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
         return this.db.get('commands').getById(commandId).value();
     }
+
+    updateEntity() { //TODO: proper parameters
+       // TODO: swap in commands.json
+    }
 }
 
 var database = new Database();
