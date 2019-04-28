@@ -2,16 +2,15 @@
 
 .buttons {
     height: 40px;
-    top: 0;
-    left: 0;
-    right: 0;
-    position: sticky;
     background-color: var(--main-bg-color);
-    justify-content: space-between;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }
 
-.preview {
-    height: calc(100vh - 47px);
+#preview {
+    height: calc(100vh - 40px);
     width: 100%;
 }
 
@@ -23,7 +22,7 @@
     background-color: var(--main-bg-color);
     color: whitesmoke;
     padding: 8px 16px;
-    margin: 0 8px;
+    margin: 8px 4px;
     cursor: pointer;
     border: none;
     border-radius: 4px;
@@ -40,3 +39,26 @@
 .previewBtn:active {
     background-color: var(--very-light-bg-color);
 }
+
+.disabled {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+#addressBar {
+    flex: 1;
+    background-color: var(--very-light-bg-color);
+    color: whitesmoke;
+    overflow: hidden;
+    padding: 5px 7px;
+    margin: 0px 4px;
+    display: inline-block;
+    border-radius: 4px;
+    border: none;
+    box-sizing: border-box;
+}
+
+/* #addressBar:focus {
+    outline: none;
+    border: 1px solid var(--theme-color);
+} */

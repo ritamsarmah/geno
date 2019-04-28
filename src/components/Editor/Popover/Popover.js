@@ -72,10 +72,9 @@ export default class Popover extends Component {
     }
 
     /* Updates command name in database */
-    changeCommandName() {
-        var commandNameInput = document.getElementById("commandNameInput");
+    changeCommandName(event) {
         database.updateCommand(this.state.command.id, {
-            name: commandNameInput.value
+            name: event.target.value
         });
     }
 
