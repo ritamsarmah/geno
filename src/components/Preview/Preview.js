@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRedoAlt, faCircle, faCog, faChevronLeft, faChevronRight, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer } from '@fortawesome/free-solid-svg-icons';
 
+import { Colors } from '../../common/constants';
 import './Preview.css'
 
 export default class Preview extends Component {
@@ -24,13 +25,13 @@ export default class Preview extends Component {
 
     componentDidMount() {
         this.preview = document.getElementById("preview");
-        this.preview.addEventListener("did-start-loading", this.syncAddress);
+        this.preview.addEventListener("did-navigate", this.syncAddress);
+        this.preview.addEventListener("did-navigate-in-page", this.syncAddress);
     }
 
     /* Sync address bar and state when webview load */
-    syncAddress() {
-        console.log(this.preview.src);
-        this.changeAddressBar(this.preview.src);
+    syncAddress(event) {
+        this.changeAddressBar(event.url);
     }
 
     /* Change webview src */
@@ -77,16 +78,17 @@ export default class Preview extends Component {
         return (
             <div>
                 <div className="buttons">
-                    <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faPlay} size="lg"></FontAwesomeIcon></button>
+                    <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faPlay} size="lg" color={Colors.Theme}></FontAwesomeIcon></button>
+                    <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
+                    <button title="Go Forward" className="previewBtn" onClick={this.goForward}><FontAwesomeIcon icon={faChevronRight} size="lg" disabled></FontAwesomeIcon></button>
+                    <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
                     <input id="addressBar" value={this.state.address} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
                         if (event.key === 'Enter') {
                             this.navigate();
+                            event.target.blur();
                         }
                     }}></input>
-                    <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
-                    <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
-                    <button title="Go Forward" className="previewBtn" onClick={this.goForward}><FontAwesomeIcon icon={faChevronRight} size="lg" disabled></FontAwesomeIcon></button>
-                    <button className="previewBtn"><FontAwesomeIcon icon={faCircle} color="red" size="lg"></FontAwesomeIcon></button>
+                    <button title="Record Command by Demo" className="previewBtn"><FontAwesomeIcon icon={faMousePointer} size="lg"></FontAwesomeIcon></button>
                 </div>
                 <webview id="preview" src={this.state.src} autosize="on"></webview>
             </div>
