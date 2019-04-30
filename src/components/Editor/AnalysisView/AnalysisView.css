@@ -1,5 +1,6 @@
 .textSegment {
     position: relative;
+    border-bottom: 3px solid;
 }
 
 #analysisView {
@@ -58,16 +59,22 @@ select {
     position: absolute;
     top: 20px;
     left: 0;
-    max-width: 98%;
-    padding: 0;
-    margin: 0;
+    width: 100%;
+    padding: 0px 3px;
+    margin-top: 2px;
     text-align-last: center;
+    background-color: white;
 
-    -webkit-appearance: button;
+    -webkit-appearance: button-bevel;
 }
 
 select:focus {
     outline: none;
+}
+
+select:hover {
+    background-color: rgb(230, 230, 230);
+    cursor: pointer;
 }
 
 .spin {

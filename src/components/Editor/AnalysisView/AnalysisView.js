@@ -55,11 +55,12 @@ export default class AnalysisView extends Component {
 
     /* Create text segment for NLP information */
     createEntitySegment(entity, finalSegment) {
-        var text = this.state.query.query.substring(entity.start, entity.end)
-        var color = entity.name != null ? utils.stringToColor(text) : "black"
+        var text = this.state.query.query.substring(entity.start, entity.end);
+        var color = entity.name != null ? utils.stringToColor(entity.name) : "lightgray";
+        var marginRight = finalSegment ? "0px" : "10px";
         return (
-            <span id={entity.name} className="textSegment" style={{ color: color }} onFocus={this.removeHighlights}>
-                {text + (finalSegment ? "" : " ")}
+            <span id={entity.name} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
+                {text}
             </span>
         )
     }
@@ -74,8 +75,11 @@ export default class AnalysisView extends Component {
         var names = this.props.parameters.map(p => p.name);
         names.push("intent");
 
+        var text = this.state.query.query.substring(entity.start, entity.end);
+        var color = entity.name != null ? utils.stringToColor(entity.name) : "lightgray";
+
         return (
-            <select defaultValue={entity.name} onChange={() => this.changeEntityName(query)}>
+            <select defaultValue={entity.name} style={{ color: color }} onChange={() => this.changeEntityName(query, entity)}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         )
