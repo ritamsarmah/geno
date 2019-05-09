@@ -186,7 +186,7 @@ export default class Popover extends Component {
                             </div>
                         </form>
                     </div>
-                    {this.state.renderAnalysis ? <AnalysisView parameters={this.state.command.parameters} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
+                    {this.state.renderAnalysis ? <AnalysisView commandId={this.state.command.id} parameters={this.state.command.parameters} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
                 </div>
             );
         }

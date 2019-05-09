@@ -87,12 +87,16 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
-    updateEntity() { //TODO: proper parameters
-       // TODO: swap in commands.json
+    swapEntityNames(commandId, queryId, first, second) { //TODO: proper parameters
+        var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: first });
+        var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: second });
+        firstEntity.assign({ name: second }).write();
+        secondEntity.assign({ name: first }).write();
+        return this.getCommandForId(commandId);
     }
 
     updateBackupQuery(commandId, parameter, backupQuery) {
-        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write()
+        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
         return this.getCommandForId(commandId);
     }
 }

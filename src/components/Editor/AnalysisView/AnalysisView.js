@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faTrash, faSyncAlt, faPen } from '@fortawesome/free-solid-svg-icons';
 
+import database from '../../../common/Database';
 import utils from '../../../common/utils';
 
 import "./AnalysisView.css"
@@ -65,9 +66,13 @@ export default class AnalysisView extends Component {
         )
     }
 
-    changeEntityName(query, entity) {
-        console.log(entity.name);
-        // TODO: Swap entity selections in database
+    /* Swap entity selection in dropdown */
+    swapEntityNames(query, event) {
+        var first = event.target.dataset.curr;
+        var second = event.target.value;
+        event.target.dataset.curr = event.target.value;
+        database.swapEntityNames(this.props.commandId, query.id, first, second);
+        this.updateNLPInfo();
     }
 
     /* Create dropdown for text segment */
@@ -79,7 +84,7 @@ export default class AnalysisView extends Component {
         var color = entity.name != null ? utils.stringToColor(entity.name) : "lightgray";
 
         return (
-            <select defaultValue={entity.name} style={{ color: color }} onChange={() => this.changeEntityName(query, entity)}>
+            <select data-curr={entity.name} defaultValue={entity.name} style={{ color: color }} onChange={(event) => this.swapEntityNames(query, event)}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         )
