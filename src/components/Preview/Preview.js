@@ -5,14 +5,17 @@ import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCod
 
 import { Colors } from '../../common/constants';
 import './Preview.css'
+import builder from '../../common/Builder';
+
+const electron = window.require('electron');
+const app = electron.remote.app;
 
 export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            // TODO: change to localhost
-            address: "http://google.com",
-            src: "http://google.com"
+            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`
         }
 
         this.syncAddress = this.syncAddress.bind(this);
@@ -22,6 +25,7 @@ export default class Preview extends Component {
         this.goForward = this.goForward.bind(this);
         this.reloadPreview = this.reloadPreview.bind(this);
         this.openDevTools = this.openDevTools.bind(this);
+        this.buildApp = this.buildApp.bind(this);
         this.recordMouseEvents = this.recordMouseEvents.bind(this);
     }
 
@@ -29,10 +33,19 @@ export default class Preview extends Component {
         this.preview = document.getElementById("preview");
         this.preview.addEventListener("did-navigate", this.syncAddress);
         this.preview.addEventListener("did-navigate-in-page", this.syncAddress);
+        this.preview.addEventListener('permissionrequest', e => {
+            if (e.permission === 'media') {
+                e.request.allow();
+            }
+        });
+
         this.preview.addEventListener('ipc-message', (event) => {
-            console.log(event.channel)
-            // Prints "pong"
+            if (event.channel === "mouseEvent") {
+                this.receivedMouseEvent(event.args[0]);
+            }
         })
+
+        // TODO: might use event listener for "console-message"
     }
 
     /* Sync address bar and state when webview load */
@@ -52,35 +65,26 @@ export default class Preview extends Component {
         this.setState({ address: src });
     }
 
-    /* Navigate back */
+    /* Navigate back in webview*/
     goBack() {
         this.preview.goBack();
-        this.setState({
-            address: this.preview.src,
-            src: this.preview.src
-        })
+        this.setState({ address: this.preview.src })
     }
 
-    /* Navigate forward */
+    /* Navigate forward in webview */
     goForward() {
         this.preview.goForward();
-        this.setState({
-            address: this.preview.src,
-            src: this.preview.src
-        })
+        this.setState({ address: this.preview.src })
     }
 
-    /* Navigate to new page */
+    /* Navigate to new page in webview */
     navigate() {
-        this.setState({
-            src: this.state.address
-        })
+        this.setState({ src: this.state.address });
     }
 
-    /* Reload */
+    /* Reload webview */
     reloadPreview() {
         this.preview.reload();
-        this.syncAddress();
     }
 
     /* Open Dev Tools for Preview */
@@ -88,10 +92,21 @@ export default class Preview extends Component {
         this.preview.isDevToolsOpened() ? this.preview.closeDevTools() : this.preview.openDevTools();
     }
 
+    /* Turn command data into JavaScript to inject into user's web app */
+    buildApp(event) {
+        builder.build();
+        this.reloadPreview();
+    }
+
+    /* Tell webview to start recording mouse events */
     recordMouseEvents() {
-        // TODO: execute javacsript, use https://electronjs.org/docs/api/ipc-renderer to communicate
-        // TODO: https://stackoverflow.com/questions/46968479/how-to-get-return-value-from-webview-executejavascript-in-electron
-        this.preview.send('ping');
+        this.preview.send('recordMouseEvents');
+    }
+
+    /* Listener triggered after receiving ipc message from preview webview */
+    receivedMouseEvent(event) {
+        //TODO
+        console.log(event);
     }
 
     render() {
@@ -102,7 +117,7 @@ export default class Preview extends Component {
                     <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
                     <button title="Go Forward" className="previewBtn" onClick={this.goForward}><FontAwesomeIcon icon={faChevronRight} size="lg" disabled></FontAwesomeIcon></button>
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
-                    <input id="addressBar" value={this.state.address} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
+                    <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
                         if (event.key === 'Enter') {
                             this.navigate();
                             event.target.blur();
@@ -111,7 +126,7 @@ export default class Preview extends Component {
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
                     <button title="Record Command by Demo" className="previewBtn" onClick={this.recordMouseEvents}><FontAwesomeIcon icon={faMousePointer} size="lg"></FontAwesomeIcon></button>
                 </div>
-                <webview id="preview" src={this.state.src} autosize="on" preload={`file://Users/ritamsarmah/Documents/College/Geno/Code/geno/src/components/Preview/inject.js`}></webview>
+                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
             </div>
         );
     }

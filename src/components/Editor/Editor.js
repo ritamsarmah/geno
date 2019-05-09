@@ -193,7 +193,7 @@ export default class Editor extends Component {
         } else {
             return (
                 <div className="noFileScreen">
-                    <p>Select a file from the explorer</p>
+                    <p style={{ textAlign: "center" }}>Select a file from the explorer</p>
                 </div>
             );
         }

@@ -1,21 +1,13 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import AnalysisView from '../AnalysisView/AnalysisView';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPlus, faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import './Popover.css'
 
 import database from '../../../common/Database';
 import Speech from '../../../common/Speech';
-
-var speech = new Speech();
-
-const electron = window.require('electron');
-const BrowserWindow = electron.remote.BrowserWindow;
-
-var optionsWindow;
 
 export default class Popover extends Component {
 
@@ -25,10 +17,13 @@ export default class Popover extends Component {
             queriesExpanded: false,
             renderAnalysis: false,
             selectedQuery: null,
-            command: this.props.command
+            command: this.props.command,
+            showingOptions: false
         };
         this.dismiss = this.dismiss.bind(this);
         this.toggleQueries = this.toggleQueries.bind(this);
+        this.showOptions = this.showOptions.bind(this);
+        this.hideOptions = this.hideOptions.bind(this);
         this.showAnalysis = this.showAnalysis.bind(this);
         this.handleAnalysisUnmount = this.handleAnalysisUnmount.bind(this);
 
@@ -37,6 +32,7 @@ export default class Popover extends Component {
         this.addQuery = this.addQuery.bind(this);
         this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
+        this.changeBackupQuery = this.changeBackupQuery.bind(this);
     }
 
     /* Dismisses this component */
@@ -49,10 +45,19 @@ export default class Popover extends Component {
         this.setState({ queriesExpanded: !this.state.queriesExpanded });
     }
 
-    /* Open a window with advanced options */
+    /* Switch to advanced options */
     showOptions() {
-        optionsWindow = new BrowserWindow({ width: 300, height: 500, title: "Options" });
-        optionsWindow.on('closed', () => { optionsWindow = null });
+        this.setState({
+            renderAnalysis: false,
+            showingOptions: true
+        })
+    }
+
+    /* Switch to first form */
+    hideOptions() {
+        this.setState({
+            showingOptions: false
+        });
     }
 
     /* Shows AnalysisView for editing a selected query */
@@ -95,11 +100,6 @@ export default class Popover extends Component {
         }
     }
 
-    /* Record query using microphone */
-    recordQuery() {
-        speech.startListening();
-    }
-
     /* Update query for command in database */
     updateQuery(query) {
         // Don't want to trigger setState updates
@@ -113,52 +113,82 @@ export default class Popover extends Component {
         });
     }
 
+    /* Change value for backup query */
+    changeBackupQuery(event, paramName) {
+        this.setState({
+            command: database.updateBackupQuery(this.state.command.id, paramName, event.target.value)
+        });
+    }
+
     render() {
-        return (
-            <div>
-                <div className="popover">
-                    <form className="popoverForm">
-                        <p className="popoverTitle">Command Name</p>
-                        <input id="commandNameInput" type="text" defaultValue={this.state.command.name} onChange={this.changeCommandName}></input>
+        if (this.state.showingOptions) {
+            return (
+                <div>
+                    <div className="popover">
+                        <form className="popoverForm">
+                            <p className="popoverTitle">Function Parameters</p>
+                            {this.state.command.parameters.map(p => {
+                                return (
+                                    <div key ={p.name}>
+                                        <p className="paramTitle">{p.name}</p>
+                                        <p className="popoverSubtitle">Request If Empty</p>
+                                        <input type="text" defaultValue={p.backupQuery} onChange={(event) => this.changeBackupQuery(event, p.name)}></input>
+                                    </div>
+                                )
+                            })}
 
-                        <p className="popoverTitle">Triggered Function</p>
-                        <div className="popoverFn">{this.state.command.triggerFn}</div>
-                        <br></br>
-                        <br></br>
 
-                        <p className="popoverTitle">Sample Queries</p>
-
-                        <div>
-                            <div>
-                                <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
-                                <span className="iconButton" onClick={this.addQuery}>
-                                    <FontAwesomeIcon icon={faPlus} />
-                                </span>
-                            </div>
-                            
-                            {/* <span className="iconButton" onClick={this.recordQuery}>
-                                <FontAwesomeIcon icon={faMicrophone} />
-                            </span> */}
-
-                            <div id="queriesView" style={{
-                                height: this.state.queriesExpanded ? "140px" : "70px",
-                                resize: this.state.queriesExpanded ? "vertical" : "none"
-                            }}>
-                                {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.query}</div>)}
-                            </div>
-
-                            <div id="queryToggle" onClick={this.toggleQueries}>
-                                <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
-                            </div>
-                        </div>
-
-                        <br></br>
-                        <input type="button" style={{ color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
-                        <input type="button" value="Options" onClick={this.showOptions}></input>
-                    </form>
+                            <br></br>
+                            <input type="button" value="Done" onClick={this.hideOptions}></input>
+                        </form>
+                    </div>
                 </div>
-                {this.state.renderAnalysis ? <AnalysisView parameters={this.state.command.parameters} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
-            </div>
-        );
+            );
+        } else {
+            return (
+                <div>
+                    <div className="popover">
+                        <form className="popoverForm">
+                            <p className="popoverTitle">Command Name</p>
+                            <input id="commandNameInput" type="text" defaultValue={this.state.command.name} onChange={this.changeCommandName}></input>
+
+                            <p className="popoverTitle">Triggered Function</p>
+                            <div className="popoverFn">{this.state.command.triggerFn}</div>
+                            <br></br>
+                            <br></br>
+
+                            <p className="popoverTitle">Sample Queries</p>
+
+                            <div>
+                                <div>
+                                    <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
+                                    <span className="iconButton" onClick={this.addQuery}>
+                                        <FontAwesomeIcon icon={faPlus} />
+                                    </span>
+                                </div>
+
+                                <div id="queriesView" style={{
+                                    height: this.state.queriesExpanded ? "140px" : "70px",
+                                    resize: this.state.queriesExpanded ? "vertical" : "none"
+                                }}>
+                                    {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.query}</div>)}
+                                </div>
+
+                                <div id="queryToggle" onClick={this.toggleQueries}>
+                                    <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
+                                </div>
+                            </div>
+
+                            <br></br>
+                            <div id="bottomButtons">
+                                <input type="button" style={{ color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
+                                <input type="button" style={{ marginLeft: "8px" }} value="Options" onClick={this.showOptions}></input>
+                            </div>
+                        </form>
+                    </div>
+                    {this.state.renderAnalysis ? <AnalysisView parameters={this.state.command.parameters} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
+                </div>
+            );
+        }
     }
 }

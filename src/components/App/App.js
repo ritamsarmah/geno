@@ -5,6 +5,7 @@ import Editor from '../Editor/Editor';
 import Preview from '../Preview/Preview';
 
 import database from '../../common/Database';
+import builder from '../../common/Builder';
 
 import './App.css';
 import { Paths, Context } from '../../common/constants'
@@ -48,6 +49,7 @@ export default class App extends Component {
       fs.writeFile(commandsPath, "", { flag: 'wx' }, (err) => {
         this.setState({ dir: path[0] });
         database.configureProject(path[0]);
+        builder.configureProject(path[0]);
       });
     });
 

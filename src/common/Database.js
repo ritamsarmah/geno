@@ -34,7 +34,7 @@ class Database {
             .value();
     }
 
-    findCommandForId(id) {
+    getCommandForId(id) {
         return this.db.get('commands')
             .getById(id)
             .value();
@@ -73,22 +73,27 @@ class Database {
         }
         this.db.get('commands').getById(commandId).get('queries').insert(data).write();
         // TODO perform analyis and execute some callback...
-        return this.db.get('commands').getById(commandId).value();
+        return this.getCommandForId(commandId);
     }
 
     updateQuery(commandId, updatedQuery) {
         this.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
         // TODO perform analyis and execute some callback...
-        return this.db.get('commands').getById(commandId).value();
+        return this.getCommandForId(commandId);
     }
 
     removeQuery(commandId, queryId) {
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
-        return this.db.get('commands').getById(commandId).value();
+        return this.getCommandForId(commandId);
     }
 
     updateEntity() { //TODO: proper parameters
        // TODO: swap in commands.json
+    }
+
+    updateBackupQuery(commandId, parameter, backupQuery) {
+        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write()
+        return this.getCommandForId(commandId);
     }
 }
 

@@ -1,7 +1,7 @@
 @import "../../../../theme.css";
 
 .cmdItem {
-    background-color: var(--very-light-bg-color);
+    background-color: var(--lighter-bg-color);
     width: auto;
     margin: 16px;
     padding: 0px 14px 10px;
