@@ -15,6 +15,7 @@ class Database {
         this.addQuery = this.addQuery.bind(this);
     }
 
+    /* Config method to set user's project directory */
     configureProject(dir) {
         this.dir = dir;
         const commandsPath = this.dir + Paths.Commands;
@@ -23,23 +24,28 @@ class Database {
         this.db._.mixin(lodashId)
     }
 
-    /* Commands */
+    /*** Command Functions ***/
+
+    /* Get all commands */
     getCommands() {
         return this.db.get('commands').value();
     }
 
+    /* Get command for file and triggerFn */
     findCommand(file, triggerFn) {
         return this.db.get('commands')
             .find({ file: file, triggerFn: triggerFn })
             .value();
     }
 
+    /* Get command for ID */
     getCommandForId(id) {
         return this.db.get('commands')
             .getById(id)
             .value();
     }
 
+    /* Add a command */
     addCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {
             return { name: p, backupQuery: "" }
@@ -64,7 +70,12 @@ class Database {
         return this.db.get('commands').removeById(id).write();
     }
 
-    /* Queries */
+    /*** Query Functions ***/
+    
+    getQueryForId(commandId, queryId) {
+        return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value()
+    }
+
     addQuery(commandId, query) {
         var data = {
             query: query,
@@ -87,12 +98,12 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
-    swapEntityNames(commandId, queryId, first, second) { //TODO: proper parameters
+    swapEntityNames(commandId, queryId, first, second) {
         var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: first });
         var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: second });
         firstEntity.assign({ name: second }).write();
         secondEntity.assign({ name: first }).write();
-        return this.getCommandForId(commandId);
+        return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
     updateBackupQuery(commandId, parameter, backupQuery) {

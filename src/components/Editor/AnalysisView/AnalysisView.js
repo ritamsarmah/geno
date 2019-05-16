@@ -68,23 +68,33 @@ export default class AnalysisView extends Component {
 
     /* Swap entity selection in dropdown */
     swapEntityNames(query, event) {
-        var first = event.target.dataset.curr;
-        var second = event.target.value;
-        event.target.dataset.curr = event.target.value;
-        database.swapEntityNames(this.props.commandId, query.id, first, second);
-        this.updateNLPInfo();
+        var firstSelect = event.target;
+
+        var first = firstSelect.dataset.curr;
+        var second = firstSelect.value;
+
+        var secondSelect = document.getElementById(`geno-select-${second}`);
+        secondSelect.value = first;
+        
+        secondSelect.dataset.curr = first;
+        firstSelect.dataset.curr = second;
+
+        secondSelect.id = `geno-select-${first}`;
+        firstSelect.id = `geno-select-${second}`
+
+        this.state.query = database.swapEntityNames(this.props.commandId, query.id, first, second);
     }
 
     /* Create dropdown for text segment */
     createDropdown(query, entity) {
         var names = this.props.parameters.map(p => p.name);
-        names.push("intent");
+        names.push("Intent");
 
-        var text = this.state.query.query.substring(entity.start, entity.end);
-        var color = entity.name != null ? utils.stringToColor(entity.name) : "lightgray";
+        var text = query.query.substring(entity.start, entity.end);
+        var color = utils.stringToColor(entity.name);
 
         return (
-            <select data-curr={entity.name} defaultValue={entity.name} style={{ color: color }} onChange={(event) => this.swapEntityNames(query, event)}>
+            <select id={`geno-select-${entity.name}`} data-curr={entity.name} defaultValue={entity.name} style={{ color: color }} onChange={(event) => this.swapEntityNames(query, event)}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         )

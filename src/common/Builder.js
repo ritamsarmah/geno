@@ -2,6 +2,8 @@ import { Paths } from "./constants";
 
 import database from './Database';
 
+const electron = window.require('electron');
+const app = electron.remote.app;
 const fs = window.require('fs');
 
 class Builder {
@@ -26,24 +28,21 @@ class Builder {
         // TODO: check if this is the right file with the function name (function might not exist and could cause error)
 
         // Add function to output function for a provided query
-        var generatedCode = `
-var funcForQuery = ${JSON.stringify(queryMap)}
+        var generatedCode = `\n\nvar funcForQuery = ${JSON.stringify(queryMap)}`;
+        var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
+        var jsDest = this.dir + '/geno/geno.js';
 
-function triggerFunction(query, ...args) {
-    if (query in funcForQuery) {
-        var f = funcForQuery[query];
-        var func = window[f.triggerFn];
-        var res = func(...args)
-        console.log(res);
-    }
-}
+        var cssSource = `${app.getAppPath()}/src/common/exported/geno.css`;
+        var cssDest = this.dir + '/geno/geno.css';
 
-function showGeno() {
-    
-}
-        `
-
-        fs.writeFileSync(this.dir + '/geno.js', generatedCode, 'utf8');
+        fs.mkdir(this.dir + '/geno', (err) => {
+            fs.copyFile(jsSource, jsDest, (err) => {
+                fs.appendFileSync(jsDest, generatedCode);
+            });
+            fs.copyFile(cssSource, cssDest, (err) => {
+            });
+        });
+        
     }
 }
 

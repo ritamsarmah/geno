@@ -10,8 +10,8 @@ const Colors = {
 }
 
 const Paths = {
-    Geno: '/.geno',
-    Commands: '/.geno/commands.json'
+    Geno: '/geno',
+    Commands: '/geno/commands.json'
 }
 
 module.exports = { Colors, Paths }
