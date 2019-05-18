@@ -1,7 +1,4 @@
 const { app, dialog, Menu } = require('electron');
-const fs = require('fs');
-
-const { Paths } = require('../constants.js');
 
 const template = [
     {
@@ -21,11 +18,11 @@ const template = [
             //     }
             // },
             // { type: 'separator' },
-            {
-                label: 'Save',
-                accelerator: 'CmdOrCtrl+S',
-                click: () => { console.log("Save File") } // TODO: Save changes
-            }
+            // {
+            //     label: 'Save',
+            //     accelerator: 'CmdOrCtrl+S',
+            //     click: () => { console.log("Save File") } // TODO: Save changes
+            // }
             // {
             //     label: 'Save As...',
             //     accelerator: 'CmdOrCtrl+Shift+S',

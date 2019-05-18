@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import FileTree from './FileTree/FileTree';
 import CommandList from './CommandList/CommandList';
 
-import { faMicrophone, faSearch, faFolder } from "@fortawesome/free-solid-svg-icons";
+import { faMicrophone, faFolder } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Colors } from '../../constants';
+import { Colors } from '../../common/constants';
 
 import './Explorer.css';
 

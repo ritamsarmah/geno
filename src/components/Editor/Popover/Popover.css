@@ -5,7 +5,7 @@
     margin: 10px;
 }
 
-input[type=text], select, textarea {
+input[type=text], textarea {
     width: 100%;
     margin-bottom: 14px;
     padding: 6px 6px;
@@ -21,14 +21,24 @@ input[type=text]:focus, textarea:focus {
 }
 
 input[type=button] {
-    background-color: #E6E6E6;
-    color: black;
+    background-color: #F2F2F2;
+    color: #5F6368;
     padding: 8px 20px;
-    width: 43%;
-    margin: 0 8px;
+    width: 100%;
     cursor: pointer;
-    border: 1px solid #E6E6E6;
+    border: 1px solid #F2F2F2;
     border-radius: 4px;
+}
+
+input[type="button"]:hover {
+    border-color: darkgray;
+    color: black;
+    box-shadow: none;
+}
+
+input[type="button"]:active {
+    border-color: var(--theme-color);
+    box-shadow: none;
 }
 
 button, input[type="button"]:focus {
@@ -39,31 +49,18 @@ button:hover {
     text-decoration-line: underline;
 }
 
-input[type="button"]:active {
-    background-color: rgb(220, 220, 220);
-    border: 1px solid darkgray;
+#bottomButtons {
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    width: 100%;
 }
 
 .popoverTitle {
     margin: 0 0 5px 0;
     padding: 0px;
     text-align: left;
-}
-
-.popoverTitleButtons {
-    margin: 0 0 5px 0;
-    padding: 0px;
-    float: left;
-}
-
-.popoverForm > .smallTitleButton {
-    background-color: clear;
-    color: var(--theme-color);
-    padding: 0px;
-    border: none;
-    margin: 3px 5px 0;
-    cursor: pointer;
-    float: right;
+    user-select: none;
 }
 
 /* Icon Button */
@@ -99,7 +96,7 @@ input[type="button"]:active {
 
 /* Queries */
 #addQueryInput {
-    width: 75%;
+    width: 87%;
 }
 
 #queriesView {
@@ -137,4 +134,22 @@ input[type="button"]:active {
     color: white;
     cursor: pointer;
     border-radius: 4px;
+}
+
+/* Options View */
+.paramTitle {
+    margin: 0 0 5px 0;
+    padding: 0px;
+    text-align: left;
+    user-select: none;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.popoverSubtitle {
+    margin: 0 0 5px 0;
+    padding: 0px;
+    text-align: left;
+    user-select: none;
+    font-size: 12px;
+    color: gray;
 }

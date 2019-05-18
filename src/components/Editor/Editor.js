@@ -88,7 +88,6 @@ export default class Editor extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            // markers: {} // TODO: Load this from some JSON file that we create
             file: null,
             lastSavedText: null,
             currentText: null
@@ -161,7 +160,9 @@ export default class Editor extends Component {
             var anchor = makeAnchor();
             editor.doc.setGutterMarker(f.lineNumber - 1, "commands", anchor);
 
-            var marker = <Marker triggerFn={f.name} params={f.params} />;
+            // Use file path relative to project directory for project portability
+            var file = path.relative(this.props.dir, this.state.file);
+            var marker = <Marker file={file} triggerFn={f.name} params={f.params} />;
             ReactDOM.render(marker, anchor);
         });
     }
@@ -192,7 +193,7 @@ export default class Editor extends Component {
         } else {
             return (
                 <div className="noFileScreen">
-                    <p>Select a file from the explorer</p>
+                    <p style={{ textAlign: "center" }}>Select a file from the explorer</p>
                 </div>
             );
         }

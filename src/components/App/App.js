@@ -4,13 +4,18 @@ import Explorer from '../Explorer/Explorer';
 import Editor from '../Editor/Editor';
 import Preview from '../Preview/Preview';
 
+import database from '../../common/Database';
+import builder from '../../common/Builder';
+
 import './App.css';
-import { Paths } from '../../constants'
+import { Paths, Context } from '../../common/constants'
 
 const electron = window.require('electron');
 const dialog = electron.remote.dialog;
+const fs = window.require('fs');
 const pjson = require('../../../package.json');
 const path = require('path');
+
 
 export default class App extends Component {
   constructor(props) {
@@ -40,15 +45,17 @@ export default class App extends Component {
     const genoPath = path[0] + Paths.Geno;
     const commandsPath = path[0] + Paths.Commands;
 
-    this.setState({ dir: path[0] }); // TODO: remove this line and uncomment bottom section
-    // fs.mkdir(genoPath, (err) => {
-    //   if (err) { console.log(err); }
+    fs.mkdir(genoPath, (err) => {
+      fs.writeFile(commandsPath, "", { flag: 'wx' }, (err) => {
+        this.setState({ dir: path[0] });
+        database.configureProject(path[0]);
+        builder.configureProject(path[0]);
+      });
+    });
 
-    //   fs.writeFile(commandsPath, "blah", (err) => {
-    //     if (err) { console.log(err); }
-    //     this.setState({ dir: path[0] });
-    //   });
-    // });
+    // TODO: configure defaults in commandsPath using lowdb
+    // db.defaults({ posts: [], user: {}, count: 0 })
+    //   .write()
   }
 
   // Callback for FileTree in Explorer to set Editor file
@@ -106,8 +113,8 @@ export default class App extends Component {
       return (
         <div className="App">
           <Split sizes={[20, 40, 40]} minSize={[0, 0, 0]}>
-            <div className="split"><Explorer dir={this.state.dir} selectFile={this.selectFile}/></div>
-            <div className="split"><Editor file={this.state.currentFile} setSelectFile={this.setSelectFile} forceSaveFile={this.state.forceSaveFile} /></div>
+            <div className="split"><Explorer dir={this.state.dir} selectFile={this.selectFile} /></div>
+            <div className="split"><Editor dir={this.state.dir} file={this.state.currentFile} setSelectFile={this.setSelectFile} forceSaveFile={this.state.forceSaveFile} /></div>
             <div className="split"><Preview dir={this.state.dir} /></div>
           </Split>
         </div>
