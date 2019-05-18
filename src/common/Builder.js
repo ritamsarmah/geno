@@ -35,12 +35,19 @@ class Builder {
         var cssSource = `${app.getAppPath()}/src/common/exported/geno.css`;
         var cssDest = this.dir + '/geno/geno.css';
 
+        var msCogSource = `${app.getAppPath()}/src/common/exported/microsoft.cognitiveservices.speech.sdk.bundle-min.js`;
+        var msCogDest = this.dir + '/geno/microsoft.cognitiveservices.speech.sdk.bundle-min.js';
+
+        var speechSource = `${app.getAppPath()}/src/common/exported/speech-processor.js`;
+        var speechDest = this.dir + '/geno/speech-processor.js'
+
         fs.mkdir(this.dir + '/geno', (err) => {
             fs.copyFile(jsSource, jsDest, (err) => {
                 fs.appendFileSync(jsDest, generatedCode);
             });
-            fs.copyFile(cssSource, cssDest, (err) => {
-            });
+            fs.copyFile(cssSource, cssDest, (err) => {});
+            fs.copyFile(msCogSource, msCogDest, (err) => {});
+            fs.copyFile(speechSource, speechDest, (err) => {});
         });
         
     }

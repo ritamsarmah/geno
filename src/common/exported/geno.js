@@ -19,9 +19,7 @@ const GENO_THEME_COLOR = '#4A90E2';
 
 // TODO: Refactor so not global variables
 var chatHistory = [];
-var lastMsg = '';
-var currMsg = '';
-var tempTranscript = '';
+
 var isCollapsed = true;
 var isListening = false;
 var timeout = null;
@@ -33,12 +31,32 @@ var currMsgElement = null;
 var listeningIndicator = null;
 var micButton = null;
 
+/* Speech SDK */
+var subscriptionKey = "b10bdec3ffb34169be91f737dfc32805";
+var serviceRegion = "westus";
+var authorizationToken;
+var SpeechSDK;
+var reco;
+
 document.addEventListener("DOMContentLoaded", function () {
     box = document.getElementById('geno-ui');
     lastMsgElement = document.getElementById('geno-prev');
     currMsgElement = document.getElementById('geno-curr');
     listeningIndicator = document.getElementById('geno-indicator');
     micButton = document.getElementById('geno-mic');
+
+    if (!!window.SpeechSDK) {
+        SpeechSDK = window.SpeechSDK;
+
+        // in case we have a function for getting an authorization token, call it.
+        if (typeof RequestAuthorizationToken === "function") {
+            RequestAuthorizationToken();
+        }
+    } else {
+        micButton.disabled = true;
+        micButton.style.pointerEvents = "none";
+        micButton.style.color = GENO_ERROR_COLOR;
+    }
 });
 
 /* UI Handling */
@@ -50,6 +68,12 @@ function addGenoPopover() {
     popover.id = "geno-ui";
     popover.classList.add("geno-slide-out");
     popover.innerHTML = `
+    <div class="geno-chat">
+        <div id="geno-prev"></div>
+        <div id="geno-curr">
+            ...
+        </div>
+    </div>
     <div class="geno-indicator-box">
         <div class="geno-button-center">
             <div id="geno-indicator" class="la-ball-scale-multiple la-2x">
@@ -60,12 +84,6 @@ function addGenoPopover() {
             <div id="geno-mic" style="height:30px; width: 20px;" onclick="togglePopover()">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="microphone" class="svg-inline--fa fa-microphone fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M176 352c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96zm160-160h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16z"></path></svg>
             </div>
-        </div>
-    </div>
-    <div class="geno-chat">
-        <div id="geno-prev"></div>
-        <div id="geno-curr" class="geno-center">
-            ...
         </div>
     </div>
     <div id="geno-close" onclick="collapsePopover()">
@@ -96,7 +114,6 @@ function collapsePopover() {
 
 function enableGeno() {
     if (!isListening) {
-        clearChat();
         changeBorderColor('listen');
         startListening();
         listeningIndicator.style.visibility = "visible";
@@ -109,38 +126,12 @@ function disableGeno() {
         stopListening();
         listeningIndicator.style.visibility = "hidden";
         micButton.style.color = "black";
+        changeBorderColor();
     }
 }
 
-function updateFinalTranscript(text) {
-    currMsg += text;
-    currMsgElement.innerText = currMsg;
-}
-
-function updateTempTranscript(text) {
-    tempTranscript = text;
-    currMsgElement.innerText = currMsg + tempTranscript;
-}
-
-function addNewChatText(text) {
-    if (lastMsg != '') { chatHistory.push(lastMsg); }
-
-    lastMsg = currMsg;
-    currMsg = text;
-
-    lastMsgElement.innerText = lastMsg;
-    currMsgElement.innerText = currMsg;
-    disableGeno();
-}
-
-function clearChat() {
-    if (lastMsg != '') { chatHistory.push(lastMsg); }
-    if (currMsg != '') { chatHistory.push(currMsg); }
-
-    changeBorderColor();
-    lastMsg = currMsg = tempTranscript = '';
-    lastMsgElement.innerText = lastMsg;
-    currMsgElement.innerText = '...';
+function updateChatHistory() {
+    chatHistory.push(currMsgElement.textContent);
 }
 
 function changeBorderColor(alert) {
@@ -160,16 +151,71 @@ function changeBorderColor(alert) {
             return;
     }
 
-    // Go back to default color after 3 seconds
+    // Notifcation behavior, go back to default color after 3 seconds
     timeout = setTimeout(changeBorderColor, 3000);
 }
 
 /** Speech Commands **/
 
 function startListening() {
-    console.log("Listening");
+
+    currMsgElement.textContent = "...";
+    var lastRecognized = "";
+    isListening = true;
+    micButton.disabled = true;
+
+    // if we got an authorization token, use the token. Otherwise use the provided subscription key
+    var speechConfig;
+    if (authorizationToken) {
+        speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(authorizationToken, serviceRegion);
+    } else {
+        if (subscriptionKey === "" || subscriptionKey === "subscription") {
+            alert("Please enter your Microsoft Cognitive Services Speech subscription key!");
+            return;
+        }
+        speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+    }
+
+    speechConfig.speechRecognitionLanguage = "en-US";
+    var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+    reco = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+    
+    // Intermediate recognition
+    reco.recognizing = function (s, e) {
+        currMsgElement.textContent = lastRecognized + e.result.text;
+    };
+
+    // Final recognition
+    reco.recognized = function (s, e) {
+        lastRecognized += e.result.text + "\r\n";
+        currMsgElement.textContent = lastRecognized;
+    };
+
+    // Signals that a new session has started with the speech service
+    reco.sessionStarted = function (s, e) {
+        micButton.disabled = false;
+    };
+
+    // Starts recognition
+    reco.startContinuousRecognitionAsync();
 }
 
 function stopListening() {
-    console.log("Stop listening")
+    isListening = false;
+    updateChatHistory();
+    micButton.disabled = true;
+
+    reco.stopContinuousRecognitionAsync(
+        function () {
+            reco.close();
+            reco = undefined;
+            micButton.disabled = false;
+        },
+        function (err) {
+            isListening = false;
+            reco.close();
+            reco = undefined;
+            micButton.disabled = false;
+        }
+    );
 }

@@ -29,7 +29,7 @@
 
 .geno-indicator-box {
     width: var(--indicator-box-width);
-    height: var(--height);
+    height: 100%;
     background: lightgray;
 
     display: flex;
@@ -39,7 +39,8 @@
 
 .geno-chat {
     width: var(--chat-box-width);
-    height: var(--height);
+    height: 100%;
+    right: 0px;
     background: transparent;
     display: inline-block;
     position: absolute;
@@ -47,6 +48,7 @@
 }
 
 #geno-curr {
+    height: calc(100% - 20px);
     padding: 20px;
     font-size: 16px;
     font-family: var(--body-font);
@@ -66,9 +68,9 @@
 .geno-center {
     margin: auto;
     position: relative;
-    top: 50%;
+    /* top: 50%;
     -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
+    transform: translateY(-50%); */
 }
 
 .geno-button-center {
@@ -83,7 +85,7 @@
 #geno-indicator {
     position: absolute;
     color: var(--theme-color);
-    /* visibility: hidden; */
+    visibility: hidden;
 }
 
 /* Microphone Button */
