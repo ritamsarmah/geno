@@ -7,7 +7,6 @@ import { faChevronDown, faChevronUp, faPlus } from '@fortawesome/free-solid-svg-
 import './Popover.css'
 
 import database from '../../../common/Database';
-import Speech from '../../../common/Speech';
 
 export default class Popover extends Component {
 
@@ -92,7 +91,7 @@ export default class Popover extends Component {
     /* Adds query for command to database */
     addQuery() {
         var queryInput = document.getElementById('addQueryInput');
-        if (queryInput.value != "") {
+        if (queryInput.value !== "") {
             this.setState({
                 command: database.addQuery(this.state.command.id, queryInput.value)
             }, () => queryInput.value = "");

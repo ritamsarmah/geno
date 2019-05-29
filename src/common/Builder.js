@@ -1,5 +1,3 @@
-import { Paths } from "./constants";
-
 import database from './Database';
 
 const electron = window.require('electron');

@@ -19,6 +19,7 @@ const GENO_THEME_COLOR = '#4A90E2';
 
 // TODO: Refactor so not global variables
 var chatHistory = [];
+var lastRecognized = "";
 
 var isCollapsed = true;
 var isListening = false;
@@ -52,6 +53,22 @@ document.addEventListener("DOMContentLoaded", function () {
         if (typeof RequestAuthorizationToken === "function") {
             RequestAuthorizationToken();
         }
+
+        // if we got an authorization token, use the token. Otherwise use the provided subscription key
+        var speechConfig;
+        if (authorizationToken) {
+            speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(authorizationToken, serviceRegion);
+        } else {
+            if (subscriptionKey === "" || subscriptionKey === "subscription") {
+                alert("Please enter your Microsoft Cognitive Services Speech subscription key!");
+                return;
+            }
+            speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+        }
+
+        speechConfig.speechRecognitionLanguage = "en-US";
+        var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+        reco = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
     } else {
         micButton.disabled = true;
         micButton.style.pointerEvents = "none";
@@ -63,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* Adds Geno popover to body of webpage */
 function addGenoPopover() {
-    console.log("Showing Geno");
     var popover = document.createElement("div");
     popover.id = "geno-ui";
     popover.classList.add("geno-slide-out");
@@ -104,6 +120,7 @@ function togglePopover() {
     isListening ? disableGeno() : enableGeno();
 }
 
+/* Hide popover */
 function collapsePopover() {
     if (!isCollapsed) {
         box.style.right = "-342px";
@@ -112,6 +129,7 @@ function collapsePopover() {
     disableGeno();
 }
 
+/* Start listening action with UI feedback */
 function enableGeno() {
     if (!isListening) {
         changeBorderColor('listen');
@@ -121,6 +139,7 @@ function enableGeno() {
     }
 }
 
+/* Stop any listening action with UI feedback */
 function disableGeno() {
     if (isListening) {
         stopListening();
@@ -130,10 +149,12 @@ function disableGeno() {
     }
 }
 
+/* Adds current message to chat history */
 function updateChatHistory() {
     chatHistory.push(currMsgElement.textContent);
 }
 
+/* Modify UI color based on event type */
 function changeBorderColor(alert) {
     clearTimeout(timeout);
     switch (alert) {
@@ -157,49 +178,76 @@ function changeBorderColor(alert) {
 
 /** Speech Commands **/
 
+/* Start listening using Microsoft Cognitive Services API */
 function startListening() {
-
     currMsgElement.textContent = "...";
-    var lastRecognized = "";
+    lastRecognized = "";
     isListening = true;
     micButton.disabled = true;
-
-    // if we got an authorization token, use the token. Otherwise use the provided subscription key
-    var speechConfig;
-    if (authorizationToken) {
-        speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(authorizationToken, serviceRegion);
-    } else {
-        if (subscriptionKey === "" || subscriptionKey === "subscription") {
-            alert("Please enter your Microsoft Cognitive Services Speech subscription key!");
-            return;
-        }
-        speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-    }
-
-    speechConfig.speechRecognitionLanguage = "en-US";
-    var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-    reco = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
     
     // Intermediate recognition
     reco.recognizing = function (s, e) {
+        console.log("(recognizing) Reason: " + SpeechSDK.ResultReason[e.result.reason] + " Text: " + e.result.text);
         currMsgElement.textContent = lastRecognized + e.result.text;
     };
 
     // Final recognition
     reco.recognized = function (s, e) {
+        // Indicates that recognizable speech was not detected, and that recognition is done.
+        if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
+            var noMatchDetail = SpeechSDK.NoMatchDetails.fromResult(e.result);
+            console.log("(recognized)  Reason: " + SpeechSDK.ResultReason[e.result.reason] + " NoMatchReason: " + SpeechSDK.NoMatchReason[noMatchDetail.reason]);
+        } else {
+            console.log("(recognized)  Reason: " + SpeechSDK.ResultReason[e.result.reason] + " Text: " + e.result.text);
+        }
+
         lastRecognized += e.result.text + "\r\n";
         currMsgElement.textContent = lastRecognized;
     };
 
+    // The event signals that the service has stopped processing speech.
+    // https://docs.microsoft.com/javascript/api/microsoft-cognitiveservices-speech-sdk/speechrecognitioncanceledeventargs?view=azure-node-latest
+    // This can happen for two broad classes of reasons.
+    // 1. An error is encountered.
+    //    In this case the .errorDetails property will contain a textual representation of the error.
+    // 2. No additional audio is available.
+    //    Caused by the input stream being closed or reaching the end of an audio file.
+    reco.canceled = function (s, e) {
+        console.log(e);
+        console.log("(cancel) Reason: " + SpeechSDK.CancellationReason[e.reason]);
+        if (e.reason === SpeechSDK.CancellationReason.Error) {
+            console.log(e.errorDetails);
+        }
+    };
+
     // Signals that a new session has started with the speech service
     reco.sessionStarted = function (s, e) {
+        console.log("(sessionStarted) SessionId: " + e.sessionId);
         micButton.disabled = false;
+    };
+
+    // Signals the end of a session with the speech service.
+    reco.sessionStopped = function (s, e) {
+        console.log("(sessionStopped) SessionId: " + e.sessionId);
+        sdkStartContinousRecognitionBtn.disabled = false;
+        sdkStopContinousRecognitionBtn.disabled = true;
+    };
+
+    // Signals that the speech service has started to detect speech.
+    reco.speechStartDetected = function (s, e) {
+        console.log("(speechStartDetected) SessionId: " + e.sessionId);
+    };
+
+    // Signals that the speech service has detected that speech has stopped.
+    reco.speechEndDetected = function (s, e) {
+        console.log("(speechEndDetected) SessionId: " + e.sessionId);
     };
 
     // Starts recognition
     reco.startContinuousRecognitionAsync();
 }
 
+/* Stop listening using Microsoft Cognitive Services API */
 function stopListening() {
     isListening = false;
     updateChatHistory();
@@ -207,15 +255,15 @@ function stopListening() {
 
     reco.stopContinuousRecognitionAsync(
         function () {
+            console.log("Stopped listening")
             reco.close();
-            reco = undefined;
             micButton.disabled = false;
         },
         function (err) {
             isListening = false;
             reco.close();
-            reco = undefined;
             micButton.disabled = false;
+            console.log(err);
         }
     );
 }

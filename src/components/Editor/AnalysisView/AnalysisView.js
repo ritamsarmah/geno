@@ -90,7 +90,6 @@ export default class AnalysisView extends Component {
         var names = this.props.parameters.map(p => p.name);
         names.push("Intent");
 
-        var text = query.query.substring(entity.start, entity.end);
         var color = utils.stringToColor(entity.name);
 
         return (
@@ -120,13 +119,13 @@ export default class AnalysisView extends Component {
 
         var newQuery = this.state.query; //  TODO: Retrieve new analysis of query from server
 
-        if (newQuery.entities.length == 0) {
+        if (newQuery.entities.length === 0) {
             content.innerHTML = newQuery.query;
         } else {
             newQuery.entities.forEach((entity, i) => {
                 const dummy = document.createElement("span"); // Create dummy div to render
                 content.appendChild(dummy);
-                var spaceNeeded = (i == newQuery.entities.length - 1); // Add space between text segments
+                var spaceNeeded = (i === newQuery.entities.length - 1); // Add space between text segments
 
                 ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
                     if (entity.name != null) {

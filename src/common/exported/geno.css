@@ -48,8 +48,8 @@
 }
 
 #geno-curr {
-    height: calc(100% - 20px);
-    padding: 20px;
+    height: 54px;
+    margin: 20px;
     font-size: 16px;
     font-family: var(--body-font);
     overflow: hidden;

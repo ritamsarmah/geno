@@ -50,7 +50,7 @@ export default class Preview extends Component {
 
     /* Sync address bar and state when webview load */
     syncAddress(event) {
-        if (event != undefined) {
+        if (event !== undefined) {
             this.changeAddressBar(event.url);
         }
     }
