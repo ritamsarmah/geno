@@ -20,7 +20,7 @@ function createWindow() {
     win.loadURL("http://localhost:3000/");
 
     // Open devtools
-    win.webContents.openDevTools()
+    // win.webContents.openDevTools()
 
     // Emitted when the window is closed.
     win.on('closed', function () {

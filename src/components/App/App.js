@@ -13,8 +13,9 @@ import { Paths } from '../../common/constants'
 const electron = window.require('electron');
 const dialog = electron.remote.dialog;
 const fs = window.require('fs');
-const pjson = require('../../../package.json');
 const path = require('path');
+
+const pjson = require('../../../package.json');
 
 export default class App extends Component {
   constructor(props) {
@@ -45,7 +46,7 @@ export default class App extends Component {
     const commandsPath = path[0] + Paths.Commands;
 
     fs.mkdir(genoPath, (err) => {
-      fs.writeFile(commandsPath, "", { flag: 'wx' }, (err) => {
+      fs.writeFile(commandsPath, "{\"commands\":[]}", { flag: 'wx' }, (err) => {
         this.setState({ dir: path[0] });
         database.configureProject(path[0]);
         builder.configureProject(path[0]);

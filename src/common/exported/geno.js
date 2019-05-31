@@ -3,11 +3,18 @@ addGenoPopover();
 
 /* TODO: (Replace) Execute appropriate function based on match to query */
 function triggerFunction(query, ...args) {
-    if (query in funcForQuery) {
-        var f = funcForQuery[query];
-        var func = window[f.triggerFn];
-        var res = func(...args)
-        console.log(res);
+    if (typeof query != "string") {
+        return;
+    }
+    for (var k in funcForQuery) {
+        if (query.toLowerCase().includes(k.toLowerCase())) {
+            console.log("Found function for", k);
+            var f = funcForQuery[k];
+            var func = window[f.triggerFn];
+            console.log(func);
+            var res = func(...args);
+            console.log(res);
+        }
     }
 }
 
@@ -53,22 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (typeof RequestAuthorizationToken === "function") {
             RequestAuthorizationToken();
         }
-
-        // if we got an authorization token, use the token. Otherwise use the provided subscription key
-        var speechConfig;
-        if (authorizationToken) {
-            speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(authorizationToken, serviceRegion);
-        } else {
-            if (subscriptionKey === "" || subscriptionKey === "subscription") {
-                alert("Please enter your Microsoft Cognitive Services Speech subscription key!");
-                return;
-            }
-            speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
-        }
-
-        speechConfig.speechRecognitionLanguage = "en-US";
-        var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        reco = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
     } else {
         micButton.disabled = true;
         micButton.style.pointerEvents = "none";
@@ -185,6 +176,22 @@ function startListening() {
     isListening = true;
     micButton.disabled = true;
     
+    // if we got an authorization token, use the token. Otherwise use the provided subscription key
+    var speechConfig;
+    if (authorizationToken) {
+        speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(authorizationToken, serviceRegion);
+    } else {
+        if (subscriptionKey === "" || subscriptionKey === "subscription") {
+            alert("Please enter your Microsoft Cognitive Services Speech subscription key!");
+            return;
+        }
+        speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
+    }
+
+    speechConfig.speechRecognitionLanguage = "en-US";
+    var audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+    reco = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
     // Intermediate recognition
     reco.recognizing = function (s, e) {
         console.log("(recognizing) Reason: " + SpeechSDK.ResultReason[e.result.reason] + " Text: " + e.result.text);
@@ -217,6 +224,8 @@ function startListening() {
         console.log("(cancel) Reason: " + SpeechSDK.CancellationReason[e.reason]);
         if (e.reason === SpeechSDK.CancellationReason.Error) {
             console.log(e.errorDetails);
+            currMsgElement.value = "[An error occured. Try again.]"
+            stopListening()
         }
     };
 
@@ -229,8 +238,6 @@ function startListening() {
     // Signals the end of a session with the speech service.
     reco.sessionStopped = function (s, e) {
         console.log("(sessionStopped) SessionId: " + e.sessionId);
-        sdkStartContinousRecognitionBtn.disabled = false;
-        sdkStopContinousRecognitionBtn.disabled = true;
     };
 
     // Signals that the speech service has started to detect speech.
@@ -244,26 +251,18 @@ function startListening() {
     };
 
     // Starts recognition
-    reco.startContinuousRecognitionAsync();
+    reco.recognizeOnceAsync();
 }
 
 /* Stop listening using Microsoft Cognitive Services API */
 function stopListening() {
     isListening = false;
     updateChatHistory();
-    micButton.disabled = true;
-
-    reco.stopContinuousRecognitionAsync(
-        function () {
-            console.log("Stopped listening")
-            reco.close();
-            micButton.disabled = false;
-        },
-        function (err) {
-            isListening = false;
-            reco.close();
-            micButton.disabled = false;
-            console.log(err);
-        }
-    );
+    console.log("Stopped listening")
+    if (reco) {
+        reco.close();
+        reco = undefined;
+        triggerFunction(chatHistory.slice(-1)[0]);
+    }
+    micButton.disabled = false;
 }
