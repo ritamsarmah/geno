@@ -126,11 +126,11 @@ export default class Popover extends Component {
                     <div className="popover">
                         <form className="popoverForm">
                             <p className="popoverTitle">Function Parameters</p>
+                            <p className="popoverSubtitle">Add follow up questions to ask when a parameter is not provided by user.</p>
                             {this.state.command.parameters.map(p => {
                                 return (
                                     <div key ={p.name}>
                                         <p className="paramTitle">{p.name}</p>
-                                        <p className="popoverSubtitle">Request If Empty</p>
                                         <input type="text" defaultValue={p.backupQuery} onChange={(event) => this.changeBackupQuery(event, p.name)}></input>
                                     </div>
                                 )
