@@ -15,7 +15,7 @@ export default class CommandItem extends Component {
                 <p className="cmdName">{this.props.command.name}</p>
                 <p className="cmdPath"> {path.basename(this.props.command.file)}</p>
                 <span className="fn">{this.props.command.triggerFn}</span>
-                <div class="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
+                <div className="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
                     <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
                 </div>
             </div>

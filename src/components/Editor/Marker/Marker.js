@@ -14,7 +14,11 @@ export default class Marker extends Component {
         // Fill marker if voice command for the function already exists
         var command = database.findCommand(this.props.file, this.props.triggerFn);
 
-        // TODO: check for updates to parameters list, etc.
+        // Check for changes to parameters list
+        if (command != null &&
+            JSON.stringify(this.props.params.sort()) !== JSON.stringify(command.parameters.map(p => p.name).sort())) {
+            database.updateParameters(command.id, this.props.params);
+        }
 
         this.state = {
             command: command

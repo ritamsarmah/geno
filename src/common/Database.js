@@ -106,6 +106,18 @@ class Database {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
+    /*** Parameter Functions ***/
+    
+    updateParameters(commandId, params) {
+        var command = this.db.get('commands').getById(commandId);
+        var oldParams = command.get('parameters');
+        var newParams = params.map(p => {
+            var oldParam = oldParams.find({ name: p }).value()
+            return oldParam ? oldParam : { name: p, backupQuery: "" }
+        });
+        command.assign({ parameters: newParams }).write();
+    }
+
     updateBackupQuery(commandId, parameter, backupQuery) {
         this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
         return this.getCommandForId(commandId);
