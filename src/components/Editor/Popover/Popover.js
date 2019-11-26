@@ -32,6 +32,7 @@ export default class Popover extends Component {
         this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
+        this.trainModel = this.trainModel.bind(this);
     }
 
     /* Dismisses this component */
@@ -68,17 +69,17 @@ export default class Popover extends Component {
     }
 
     /* Handles unmount of AnalysisView */
-    handleAnalysisUnmount(updatedQuery) {
+    handleAnalysisUnmount() {
+        // TODO: Check if need updateQuery again
         this.setState({
             renderAnalysis: false,
-            command: database.updateQuery(this.state.command.id, updatedQuery)
         });
     }
 
     /* Updates command name in database */
     changeCommandName(event) {
         database.updateCommand(this.state.command.id, {
-            name: event.target.value
+            name: event.target.value.replace(/ /g, "_")
         });
     }
 
@@ -100,9 +101,11 @@ export default class Popover extends Component {
     }
 
     /* Update query for command in database */
-    updateQuery(query) {
-        // Don't want to trigger setState updates
-        this.state.command = database.updateQuery(this.state.command.id, query)
+    updateQuery(oldText, query, callback) {
+        database.updateQuery(this.state.command.id, oldText, query, (command, updatedQuery) => {
+            this.state.command = command; // Don't want to trigger setState updates
+            callback(updatedQuery);
+        })
     }
 
     /* Deletes query for command from database */
@@ -116,6 +119,19 @@ export default class Popover extends Component {
     changeBackupQuery(event, paramName) {
         this.setState({
             command: database.updateBackupQuery(this.state.command.id, paramName, event.target.value)
+        });
+    }
+
+    trainModel(e) {
+        var button = e.target
+        button.value = "Training..."
+        database.trainModel(this.state.command.id, (res, status) => {
+            if (status === 200) {
+                console.log(res);
+                button.value = "Train Model (Success)"
+            } else {
+                button.value = "Train Model (Failed)"
+            }
         });
     }
 
@@ -135,8 +151,6 @@ export default class Popover extends Component {
                                     </div>
                                 )
                             })}
-
-
                             <br></br>
                             <input type="button" value="Done" onClick={this.hideOptions}></input>
                         </form>
@@ -177,15 +191,15 @@ export default class Popover extends Component {
                                     <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
                                 </div>
                             </div>
-
+                            <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
                             <br></br>
                             <div id="bottomButtons">
-                                <input type="button" style={{ color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
-                                <input type="button" style={{ marginLeft: "8px" }} value="Options" onClick={this.showOptions}></input>
+                                <input type="button" value="Options" onClick={this.showOptions}></input>
+                                <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
                             </div>
                         </form>
                     </div>
-                    {this.state.renderAnalysis ? <AnalysisView commandId={this.state.command.id} parameters={this.state.command.parameters} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
+                    {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
                 </div>
             );
         }

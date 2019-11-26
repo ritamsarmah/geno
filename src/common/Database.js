@@ -51,11 +51,12 @@ class Database {
             return { name: p, backupQuery: "" }
         });
         var cmd = {
-            name: "Untitled Command",
+            name: "untitled_command",
             file: file,
             triggerFn: triggerFn,
             parameters: parameters,
-            queries: []
+            queries: [],
+            isTrained: false
         };
 
         this.db.get('commands').insert(cmd).write()
@@ -67,6 +68,7 @@ class Database {
     }
 
     removeCommand(id) {
+        // TODO: Delete command from server
         return this.db.get('commands').removeById(id).write();
     }
 
@@ -79,22 +81,41 @@ class Database {
     addQuery(commandId, query) {
         var data = {
             query: query,
-            userCustom: false,
             entities: []
         }
         this.db.get('commands').getById(commandId).get('queries').insert(data).write();
-        // TODO perform analyis and execute some callback...
+        // TODO perform entity analysis and execute some callback...
         return this.getCommandForId(commandId);
     }
 
-    updateQuery(commandId, updatedQuery) {
-        this.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
-        // TODO perform analyis and execute some callback...
-        return this.getCommandForId(commandId);
+    updateQuery(commandId, oldText, updatedQuery, callback) {
+        // Perform entity analysis and execute callback
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", 'http://localhost:3001/query/update');
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        var thisDb = this
+        xhr.onreadystatechange = () => {
+            thisDb.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                // Only update if successful request
+                var json = JSON.parse(this.responseText);
+                updatedQuery.entities = json.entities
+            }
+            callback(thisDb.getCommandForId(commandId), thisDb.getQueryForId(commandId, updatedQuery.id));
+        };
+
+        xhr.send(JSON.stringify({
+            "dev_id": 1,
+            "intent": this.getCommandForId(commandId).name,
+            "old_query": oldText,
+            "new_query": updatedQuery.query
+        }));
     }
 
     removeQuery(commandId, queryId) {
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
+        // TODO: Delete query from model
         return this.getCommandForId(commandId);
     }
 
@@ -103,6 +124,7 @@ class Database {
         var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: second });
         firstEntity.assign({ name: second }).write();
         secondEntity.assign({ name: first }).write();
+        // TODO: network request to model to tell it about changes
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
@@ -121,6 +143,34 @@ class Database {
     updateBackupQuery(commandId, parameter, backupQuery) {
         this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
         return this.getCommandForId(commandId);
+    }
+
+    trainModel(commandId, callback) {
+        var command = this.getCommandForId(commandId)
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", 'http://localhost:3001/intent/train');
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        var databaseThis = this;
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE) {
+                if (this.status === 200) {
+                    databaseThis.updateCommand(commandId, { "isTrained": true });
+                }
+                callback(this.response, this.status);
+            }
+        }
+
+        var params = {
+            "dev_id": 1,
+            "intent": command.name,
+            "queries": command.queries.map(q => q.query),
+            "parameters": command.parameters.map(q => q.name)
+        }
+
+        xhr.send(JSON.stringify(params));
     }
 }
 

@@ -27,6 +27,20 @@
     z-index: 1;
 }
 
+#geno-suggest {
+    max-width: var(--chat-box-width);
+    position: fixed;
+    right: 10px;
+    bottom: 130px;
+    border-radius: var(--border-radius);
+    padding: 10px;
+    font-family: var(--body-font);
+    font-size: 13px;
+    text-align: right;
+
+    background-color: gainsboro;
+}
+
 .geno-indicator-box {
     width: var(--indicator-box-width);
     height: 100%;

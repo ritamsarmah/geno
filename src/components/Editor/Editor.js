@@ -33,7 +33,6 @@ function extractFunctions(code) {
             return astSearch(results);
         }
     } catch (e) {
-        console.log(e);
         return [];
     }
 }
@@ -124,7 +123,7 @@ export default class Editor extends Component {
                 lastSavedText: data,
                 currentText: data
             });
-            console.log(this.codeMirror.doc.clearHistory());
+            this.codeMirror.doc.clearHistory();
             this.props.setSelectFile(true);
         });
     }

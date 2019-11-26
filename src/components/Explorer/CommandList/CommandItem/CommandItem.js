@@ -4,8 +4,6 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 import './CommandItem.css';
 
-const fs = window.require('fs');
-
 const path = require('path');
 
 export default class CommandItem extends Component {

@@ -55,7 +55,7 @@
     cursor: pointer;
 }
 
-select {
+.entitySelect {
     position: absolute;
     top: 20px;
     left: 0;
@@ -68,11 +68,11 @@ select {
     -webkit-appearance: button-bevel;
 }
 
-select:focus {
+.entitySelect:focus {
     outline: none;
 }
 
-select:hover {
+.entitySelect:hover {
     background-color: rgb(230, 230, 230);
     cursor: pointer;
 }

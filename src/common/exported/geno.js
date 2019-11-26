@@ -7,23 +7,28 @@ function genoSpeak(phrase) {
     synth.speak(utterThis);
 }
 
-/* TODO: (Replace) Execute appropriate function based on match to query */
-function triggerFunction(query, ...args) {
-    if (typeof query != "string") {
-        return;
-    }
-    for (var k in funcForQuery) {
-        if (query.toLowerCase().includes(k.toLowerCase())) {
-            console.log("Found function for", k);
-            var f = funcForQuery[k];
-            var func = window[f.triggerFn];
-            console.log(func);
-            var res = func(...args);
-            console.log(res);
-        }
-    }
+/* Execute appropriate function based on match to query */
+function triggerFunction(query) {
+    if (typeof query != "string") return;
     
-    // TODO Need to intelligently parse numbers from number words
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://localhost:3001/response');
+
+    xhr.onload = function () {
+        // TODO
+        // Request finished. Do processing here.
+        console.log(this.responseText)
+        var json = JSON.parse(this.responseText);
+        var matchingFunction = json['intent']['name'];
+        console.log(functionIntentMap[matchingFunction]);
+    };
+
+    var params = {
+        "dev_id": 1, // TODO: replace dynamically
+        "query": "What is in my savings?",
+    };
+
+    xhr.send(JSON.stringify(params));
 }
 
 /* Constants */
@@ -45,6 +50,7 @@ var lastMsgElement = null;
 var currMsgElement = null;
 var listeningIndicator = null;
 var micButton = null;
+var suggestion = null;
 
 var recognition;
 
@@ -54,19 +60,20 @@ document.addEventListener("DOMContentLoaded", function () {
     currMsgElement = document.getElementById('geno-curr');
     listeningIndicator = document.getElementById('geno-indicator');
     micButton = document.getElementById('geno-mic');
+    suggestion = document.getElementById('geno-suggest');
 
-    if (!!window.SpeechSDK) {
-        SpeechSDK = window.SpeechSDK;
+    // if (!!window.SpeechSDK) {
+    //     SpeechSDK = window.SpeechSDK;
 
-        // in case we have a function for getting an authorization token, call it.
-        if (typeof RequestAuthorizationToken === "function") {
-            RequestAuthorizationToken();
-        }
-    } else {
-        micButton.disabled = true;
-        micButton.style.pointerEvents = "none";
-        micButton.style.color = GENO_ERROR_COLOR;
-    }
+    //     // in case we have a function for getting an authorization token, call it.
+    //     if (typeof RequestAuthorizationToken === "function") {
+    //         RequestAuthorizationToken();
+    //     }
+    // } else {
+    //     micButton.disabled = true;
+    //     micButton.style.pointerEvents = "none";
+    //     micButton.style.color = GENO_ERROR_COLOR;
+    // }
 });
 
 /* UI Handling */
@@ -101,12 +108,19 @@ function addGenoPopover() {
     </div>
     `
     document.body.appendChild(popover);
+
+    var el = document.createElement("div");
+    el.id = "geno-suggest";
+    el.style.visibility = "hidden";
+    el.textContent = "What is the balance in my checking account?"
+    document.body.appendChild(el);
 }
 
 /* Hide/show popover */
 function togglePopover() {
     if (isCollapsed) {
         box.style.right = "10px";
+        suggestion.style.visibility = "visible"
         isCollapsed = false;
     }
 
@@ -117,6 +131,7 @@ function togglePopover() {
 function collapsePopover() {
     if (!isCollapsed) {
         box.style.right = "-342px";
+        suggestion.style.visibility = "hidden"
         isCollapsed = true
     }
     disableGeno();
@@ -188,6 +203,8 @@ function startListening() {
         recognition.onresult = function (event) {
             console.log(event.results[0][0].transcript);
             currMsgElement.textContent = event.results[0][0].transcript;
+            // TODO: check for matches with queries and show suggestion
+            // suggestion.style.viYsibility = "visible"
         };
 
         recognition.onstart = function (s, e) {
