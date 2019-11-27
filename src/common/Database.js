@@ -68,7 +68,15 @@ class Database {
     }
 
     removeCommand(id) {
-        // TODO: Delete command from server
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", 'http://localhost:3001/intent/delete');
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        xhr.send(JSON.stringify({
+            "dev_id": 1,
+            "intent": this.getCommandForId(id).name,
+        }));
+
         return this.db.get('commands').removeById(id).write();
     }
 
@@ -114,8 +122,17 @@ class Database {
     }
 
     removeQuery(commandId, queryId) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", 'http://localhost:3001/query/delete');
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        xhr.send(JSON.stringify({
+            "dev_id": 1,
+            "intent": this.getCommandForId(commandId).name,
+            "query": this.getQueryForId(commandId, queryId).query
+        }));
+
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
-        // TODO: Delete query from model
         return this.getCommandForId(commandId);
     }
 
