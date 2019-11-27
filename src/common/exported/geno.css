@@ -27,18 +27,44 @@
     z-index: 1;
 }
 
-#geno-suggest {
+#geno-bubble {
     max-width: var(--chat-box-width);
     position: fixed;
     right: 10px;
     bottom: 130px;
-    border-radius: var(--border-radius);
     padding: 10px;
+       
+    border: 1px solid var(--theme-color);
+    border-radius: var(--border-radius);
+
     font-family: var(--body-font);
     font-size: 13px;
     text-align: right;
+}
 
-    background-color: gainsboro;
+.geno-bubble:after {
+	content: '';
+	position: absolute;
+	right: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 20px solid transparent;
+	border-left-color: #00aabb;
+	border-right: 0;
+	border-bottom: 0;
+	margin-top: -10px;
+	margin-right: -20px;
+}
+
+.geno-suggest {
+    color: var(--theme-color);
+    background-color: white;
+}
+
+.geno-last-phrase {
+    color: white;
+    background-color: var(--theme-color);
 }
 
 .geno-indicator-box {

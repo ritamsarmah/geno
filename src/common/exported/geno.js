@@ -1,10 +1,23 @@
 // TODO: Run showGeno() based on if developer selected default popover to be used
 addGenoPopover();
 
-function genoSpeak(phrase) {
-    var synth = speechSynthesis;
-    var utterThis = new SpeechSynthesisUtterance(phrase);
-    synth.speak(utterThis);
+function genoRespond(phrase, speak = true) {
+    // Display phrase as text
+    currMsgElement.textContent = phrase;
+    updateChatHistory(phrase, "geno");
+
+    // Speak phrase
+    if (speak) {
+        var synth = speechSynthesis;
+        var utterThis = new SpeechSynthesisUtterance(phrase);
+        synth.speak(utterThis);
+    }
+}
+
+// Asks a question and listens for a response
+function genoAsk(phrase, speak = true) {
+    genoRespond(phrase, speak);
+    enableGeno();
 }
 
 /* Execute appropriate function based on match to query */
@@ -12,23 +25,52 @@ function triggerFunction(query) {
     if (typeof query != "string") return;
     
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://localhost:3001/response');
+    var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(1) + "&query=" + encodeURIComponent(query);
+    xhr.open('GET', url);
 
     xhr.onload = function () {
-        // TODO
-        // Request finished. Do processing here.
-        console.log(this.responseText)
         var json = JSON.parse(this.responseText);
-        var matchingFunction = json['intent']['name'];
-        console.log(functionIntentMap[matchingFunction]);
+        // TODO: Error handle if low intent confidence => did not recognize phrase
+        console.log(json)
+        var confidence = json['intent']['confidence'];
+        var info = functionIntentMap[json['intent']['name']];
+        var fn = window.functionFromString(info['triggerFn']);
+        if (typeof fn === 'function' && confidence > 0.70) {
+            var expectedArgs = Object.keys(info['parameters']);
+            var args = json['entities'].map(e => {
+                // TODO: Intelligently convert
+                var parsed = parseInt(e['text']);
+                if (isNaN(parsed)) {
+                    return e['text'];
+                } else {
+                    return parsed;
+                }
+            }); // TODO: args array should be ordered so params match entity
+            if (args.length < expectedArgs.length) { // TODO: if arg missing, then execute backup query, repeat until args array is full
+                genoRespond("I need more information");
+                // genoAsk(info['parameters'][expectedArgs[args.length - 1]])
+            }
+            var result = fn.apply(null, args);
+            console.log(result);
+        } else {
+            genoRespond("Sorry, I didn't understand.");
+            changeBorderColor('error');
+        }
     };
 
-    var params = {
-        "dev_id": 1, // TODO: replace dynamically
-        "query": "What is in my savings?",
-    };
+    xhr.send();
+}
 
-    xhr.send(JSON.stringify(params));
+function functionFromString(string) {
+    var scope = window;
+    var scopeSplit = string.split('.');
+    for (i = 0; i < scopeSplit.length - 1; i++) {
+        scope = scope[scopeSplit[i]];
+
+        if (scope == undefined) return;
+    }
+
+    return scope[scopeSplit[scopeSplit.length - 1]];
 }
 
 /* Constants */
@@ -46,34 +88,19 @@ var timeout = null;
 
 /* HTML elements */
 var box = null;
-var lastMsgElement = null;
 var currMsgElement = null;
 var listeningIndicator = null;
 var micButton = null;
-var suggestion = null;
+var bubble = null;
 
 var recognition;
 
 document.addEventListener("DOMContentLoaded", function () {
     box = document.getElementById('geno-ui');
-    lastMsgElement = document.getElementById('geno-prev');
     currMsgElement = document.getElementById('geno-curr');
     listeningIndicator = document.getElementById('geno-indicator');
     micButton = document.getElementById('geno-mic');
-    suggestion = document.getElementById('geno-suggest');
-
-    // if (!!window.SpeechSDK) {
-    //     SpeechSDK = window.SpeechSDK;
-
-    //     // in case we have a function for getting an authorization token, call it.
-    //     if (typeof RequestAuthorizationToken === "function") {
-    //         RequestAuthorizationToken();
-    //     }
-    // } else {
-    //     micButton.disabled = true;
-    //     micButton.style.pointerEvents = "none";
-    //     micButton.style.color = GENO_ERROR_COLOR;
-    // }
+    bubble = document.getElementById('geno-bubble');
 });
 
 /* UI Handling */
@@ -85,7 +112,6 @@ function addGenoPopover() {
     popover.classList.add("geno-slide-out");
     popover.innerHTML = `
     <div class="geno-chat">
-        <div id="geno-prev"></div>
         <div id="geno-curr">
             ...
         </div>
@@ -110,7 +136,7 @@ function addGenoPopover() {
     document.body.appendChild(popover);
 
     var el = document.createElement("div");
-    el.id = "geno-suggest";
+    el.id = "geno-bubble";
     el.style.visibility = "hidden";
     el.textContent = "What is the balance in my checking account?"
     document.body.appendChild(el);
@@ -120,7 +146,8 @@ function addGenoPopover() {
 function togglePopover() {
     if (isCollapsed) {
         box.style.right = "10px";
-        suggestion.style.visibility = "visible"
+        bubble.style.visibility = "visible";
+        bubble.className = "geno-suggest";
         isCollapsed = false;
     }
 
@@ -131,7 +158,7 @@ function togglePopover() {
 function collapsePopover() {
     if (!isCollapsed) {
         box.style.right = "-342px";
-        suggestion.style.visibility = "hidden"
+        bubble.style.visibility = "hidden"
         isCollapsed = true
     }
     disableGeno();
@@ -158,8 +185,14 @@ function disableGeno() {
 }
 
 /* Adds current message to chat history */
-function updateChatHistory() {
-    chatHistory.push(currMsgElement.textContent);
+function updateChatHistory(message, who) {
+    if (message != "..." && message != "") {
+        chatHistory.push({ "message": message, "who": who });
+        if (who == "user") {
+            bubble.textContent = message;
+            bubble.className = "geno-last-phrase";
+        }
+    }
 }
 
 /* Modify UI color based on event type */
@@ -201,10 +234,10 @@ function startListening() {
 
         // Intermediate recognition
         recognition.onresult = function (event) {
-            console.log(event.results[0][0].transcript);
             currMsgElement.textContent = event.results[0][0].transcript;
             // TODO: check for matches with queries and show suggestion
-            // suggestion.style.viYsibility = "visible"
+            bubble.className = "geno-suggest";
+            bubble.style.visibility = "visible";
         };
 
         recognition.onstart = function (s, e) {
@@ -221,13 +254,18 @@ function startListening() {
 
 /* Stop listening using SpeechRecognition */
 function stopListening() {
-    isListening = false;
-    updateChatHistory();
     console.log("Stopped listening")
+    isListening = false;
+    updateChatHistory(currMsgElement.textContent, "user");
     if (recognition) {
         recognition.stop();
         recognition = undefined;
-        triggerFunction(chatHistory.slice(-1)[0]);
+        if (currMsgElement.textContent != "...") {
+            var msg = chatHistory.slice(-1)[0];
+            if (msg) {
+                triggerFunction(msg.message);
+            }
+        }
     }
     micButton.disabled = false;
 }
