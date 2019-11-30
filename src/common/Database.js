@@ -137,10 +137,10 @@ class Database {
     }
 
     swapEntityNames(commandId, queryId, first, second) {
-        var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: first });
-        var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ name: second });
-        firstEntity.assign({ name: second }).write();
-        secondEntity.assign({ name: first }).write();
+        var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: first });
+        var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: second });
+        firstEntity.assign({ entity: second }).write();
+        secondEntity.assign({ entity: first }).write();
         // TODO: network request to model to tell it about changes
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
@@ -175,6 +175,63 @@ class Database {
             if (this.readyState === XMLHttpRequest.DONE) {
                 if (this.status === 200) {
                     databaseThis.updateCommand(commandId, { "isTrained": true });
+                    // Add entity information for command
+                    var json = JSON.parse(this.responseText);
+                    json['rasa_nlu_data']['common_examples'].forEach(ex => {
+                        if (ex.intent === command.name) {
+                            // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
+                            var entities = [];
+
+                            if ('entities' in ex) {
+                                var entityStartIndices = {}
+
+                                ex.entities.forEach(entity => {
+                                    entityStartIndices[entity.start] = entity;
+                                });
+
+                                console.log("ENTT", ex.entities);
+                                console.log(entityStartIndices);
+
+                                var startIndex = 0;
+                                var endIndex = 0;
+                                // Create new "entity" objects for non-entities
+                                loop1:
+                                while (endIndex < ex.text.length) {
+                                    // Skip pre-discovered entities
+                                    while (startIndex in entityStartIndices) {
+                                        entities.push(entityStartIndices[startIndex]);
+                                        startIndex = entityStartIndices[startIndex].end + 1;
+                                        endIndex = startIndex;
+                                        
+                                        // Reached end of string
+                                        if (startIndex >= ex.text.length) {
+                                            break loop1;
+                                        }
+                                    }
+
+                                    // Reached non-entity, lengthen substring until next pre-discovered entity found
+                                    // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
+                                    while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
+                                        endIndex++;
+                                    }
+
+                                    entities.push({
+                                        start: startIndex,
+                                        end: endIndex - 1,
+                                        entity: null
+                                    });
+
+                                    startIndex = endIndex;
+                                }
+                            }
+
+                            databaseThis.db
+                                .get('commands').getById(commandId)
+                                .get('queries').find({ query: ex.text })
+                                .assign({ entities: entities })
+                                .write()
+                        }
+                    });
                 }
                 callback(this.response, this.status);
             }

@@ -30,26 +30,26 @@ function triggerFunction(query) {
 
     xhr.onload = function () {
         var json = JSON.parse(this.responseText);
-        // TODO: Error handle if low intent confidence => did not recognize phrase
-        console.log(json)
         var confidence = json['intent']['confidence'];
         var info = functionIntentMap[json['intent']['name']];
         var fn = window.functionFromString(info['triggerFn']);
+        console.log(json);
+        
         if (typeof fn === 'function' && confidence > 0.70) {
-            var expectedArgs = Object.keys(info['parameters']);
-            var args = json['entities'].map(e => {
-                // TODO: Intelligently convert
-                var parsed = parseInt(e['text']);
-                if (isNaN(parsed)) {
-                    return e['text'];
-                } else {
-                    return parsed;
+            var expectedArgs = Object.keys(info['parameters']); // NOTE: these are in correct order
+            var args = [];
+            expectedArgs.forEach(arg => {
+                var entity = json['entities'].find(e => e['entity'] === arg);
+                var value = entity['value'];
+                if (!isNaN(parseInt(value))) {
+                    value = parseInt(value);
                 }
-            }); // TODO: args array should be ordered so params match entity
-            if (args.length < expectedArgs.length) { // TODO: if arg missing, then execute backup query, repeat until args array is full
-                genoRespond("I need more information");
+                args.append(value);
+            });
+            // if (args.length < expectedArgs.length) { // TODO: if arg missing, then execute backup query, repeat until args array is full
+                // genoRespond("I need more information");
                 // genoAsk(info['parameters'][expectedArgs[args.length - 1]])
-            }
+            // }
             var result = fn.apply(null, args);
             console.log(result);
         } else {
@@ -254,12 +254,14 @@ function startListening() {
 
 /* Stop listening using SpeechRecognition */
 function stopListening() {
-    console.log("Stopped listening")
+    console.log("Stopped listening");
     isListening = false;
-    updateChatHistory(currMsgElement.textContent, "user");
     if (recognition) {
         recognition.stop();
         recognition = undefined;
+
+        updateChatHistory(currMsgElement.textContent, "user");
+
         if (currMsgElement.textContent != "...") {
             var msg = chatHistory.slice(-1)[0];
             if (msg) {
