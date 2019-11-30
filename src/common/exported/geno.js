@@ -1,24 +1,25 @@
 // TODO: Run showGeno() based on if developer selected default popover to be used
 addGenoPopover();
 
-function genoRespond(phrase, speak = true) {
+function genoRespond(phrase, speak = true, callback = null) {
     // Display phrase as text
     currMsgElement.textContent = phrase;
     updateChatHistory(phrase, "geno");
 
     // Speak phrase
     if (speak) {
-        var synth = speechSynthesis;
-        var utterThis = new SpeechSynthesisUtterance(phrase);
-        synth.speak(utterThis);
+        var utterance = new SpeechSynthesisUtterance(phrase);
+        utterance.onend = callback;
+        speechSynthesis.speak(utterance);
     }
 }
 
 /* Asks a question and listens for a response */
-function genoAsk(phrase, speak = true, callback) {
-    genoRespond(phrase, speak);
-    onFinalResult = callback;
-    enableGeno();
+function genoAsk(phrase, speak = true, callback = null) {
+    genoRespond(phrase, speak, () => {
+        onFinalResult = callback;
+        enableGeno();
+    });
 }
 
 var currentTrigger; /* Used to track current trigger function processing */
