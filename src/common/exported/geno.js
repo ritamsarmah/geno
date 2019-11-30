@@ -14,11 +14,14 @@ function genoRespond(phrase, speak = true) {
     }
 }
 
-// Asks a question and listens for a response
-function genoAsk(phrase, speak = true) {
+/* Asks a question and listens for a response */
+function genoAsk(phrase, speak = true, callback) {
     genoRespond(phrase, speak);
+    onFinalResult = callback;
     enableGeno();
 }
+
+var currentTrigger; /* Used to track current trigger function processing */
 
 /* Execute appropriate function based on match to query */
 function triggerFunction(query) {
@@ -30,28 +33,20 @@ function triggerFunction(query) {
 
     xhr.onload = function () {
         var json = JSON.parse(this.responseText);
-        var confidence = json['intent']['confidence'];
-        var info = functionIntentMap[json['intent']['name']];
-        var fn = window.functionFromString(info['triggerFn']);
-        console.log(json);
-        
+        var confidence = json.intent.confidence
+        var info = functionIntentMap[json.intent.name];
+        var fn = window.functionFromString(info.triggerFn);
+
         if (typeof fn === 'function' && confidence > 0.70) {
-            var expectedArgs = Object.keys(info['parameters']); // NOTE: these are in correct order
-            var args = [];
-            expectedArgs.forEach(arg => {
-                var entity = json['entities'].find(e => e['entity'] === arg);
-                var value = entity['value'];
-                if (!isNaN(parseInt(value))) {
-                    value = parseInt(value);
-                }
-                args.append(value);
-            });
-            // if (args.length < expectedArgs.length) { // TODO: if arg missing, then execute backup query, repeat until args array is full
-                // genoRespond("I need more information");
-                // genoAsk(info['parameters'][expectedArgs[args.length - 1]])
-            // }
-            var result = fn.apply(null, args);
-            console.log(result);
+            currentTrigger = {
+                query: query,
+                info: info,
+                fn: fn,
+                entities: json.entities,
+                args: [],
+                expectedArgs: Object.keys(info.parameters) // NOTE: these are in correct order
+            };
+            retrieveArgs();
         } else {
             genoRespond("Sorry, I didn't understand.");
             changeBorderColor('error');
@@ -59,6 +54,56 @@ function triggerFunction(query) {
     };
 
     xhr.send();
+}
+
+/* A recursive/callback based function to retrieve all arguments and trigger function */
+function retrieveArgs(expectedArgs) {
+    var expectedArgs = currentTrigger.expectedArgs;
+
+    // All arguments retrieved already, trigger function
+    if (expectedArgs.length == currentTrigger.args.length) {
+        var result = currentTrigger.fn.apply(null, currentTrigger.args);
+        console.log(result);
+        currentTrigger = null;
+        return;
+    }
+
+    // Retrieve arguments
+    for (let index = currentTrigger.args.length; index < expectedArgs.length; index++) {
+        var arg = expectedArgs[index];
+        var entity = currentTrigger.entities.find(e => e.entity === arg);
+        var value = null;
+
+        if (entity === undefined) {
+            var backupQuestion = currentTrigger.info.parameters[arg];
+
+            // Default backup question in case developer hasn't provided
+            if (backupQuestion === "") {
+                backupQuestion = "What is " + arg + "?";
+            }
+
+            genoAsk(backupQuestion, true, (answer) => {
+                onFinalResult = null;
+                console.log("Received value for " + arg + ", " + answer);
+                smartAddArg(answer);
+                retrieveArgs();
+            });
+            return;
+        } else {
+            value = currentTrigger.query.slice(entity.start, entity.end);
+            // var value = entity['value']; // TODO: Use this instead of the slice below
+        }
+        smartAddArg(value);
+    }
+
+    retrieveArgs();
+}
+
+function smartAddArg(value) {
+    if (!isNaN(parseInt(value))) {
+        value = parseInt(value);
+    }
+    currentTrigger.args.push(value);
 }
 
 function functionFromString(string) {
@@ -94,6 +139,7 @@ var micButton = null;
 var bubble = null;
 
 var recognition;
+var onFinalResult;
 
 document.addEventListener("DOMContentLoaded", function () {
     box = document.getElementById('geno-ui');
@@ -167,21 +213,27 @@ function collapsePopover() {
 /* Start listening action with UI feedback */
 function enableGeno() {
     if (!isListening) {
-        changeBorderColor('listen');
-        startListening();
         listeningIndicator.style.visibility = "visible";
         micButton.style.color = GENO_THEME_COLOR;
+        changeBorderColor('listen');
+        startListening();
     }
 }
 
 /* Stop any listening action with UI feedback */
 function disableGeno() {
     if (isListening) {
-        stopListening();
         listeningIndicator.style.visibility = "hidden";
         micButton.style.color = "black";
         changeBorderColor();
+        stopListening();
     }
+}
+
+/* Get last message in chat history */
+function getLastMessage() {
+    var msg = chatHistory.slice(-1)[0];
+    return msg ? msg.message : null;
 }
 
 /* Adds current message to chat history */
@@ -221,7 +273,6 @@ function changeBorderColor(alert) {
 
 /* Start listening using SpeechRecognition */
 function startListening() {
-    currMsgElement.textContent = "...";
     isListening = true;
     micButton.disabled = true;
 
@@ -241,6 +292,7 @@ function startListening() {
         };
 
         recognition.onstart = function (s, e) {
+            currMsgElement.textContent = "...";
             micButton.disabled = false;
         };
 
@@ -257,15 +309,19 @@ function stopListening() {
     console.log("Stopped listening");
     isListening = false;
     if (recognition) {
-        recognition.stop();
+        recognition.abort();
         recognition = undefined;
 
         updateChatHistory(currMsgElement.textContent, "user");
 
         if (currMsgElement.textContent != "...") {
-            var msg = chatHistory.slice(-1)[0];
-            if (msg) {
-                triggerFunction(msg.message);
+            var message = getLastMessage();
+            if (message) {
+                if (onFinalResult) {
+                    onFinalResult(message);
+                } else {
+                    triggerFunction(message);
+                }
             }
         }
     }

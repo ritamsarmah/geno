@@ -102,15 +102,18 @@ class Database {
         xhr.open("POST", 'http://localhost:3001/query/update');
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-        var thisDb = this
         xhr.onreadystatechange = () => {
-            thisDb.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
-            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                // Only update if successful request
-                var json = JSON.parse(this.responseText);
-                updatedQuery.entities = json.entities
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                this.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
+                if (xhr.status === 200) {
+                    // Only update if successful request
+                    var json = JSON.parse(xhr.responseText);
+                    console.log("JSON", json);
+                    updatedQuery.entities = json.entities
+                    this.analyzeEntities(commandId, json.entities);
+                }
+                callback(this.getCommandForId(commandId), this.getQueryForId(commandId, updatedQuery.id));
             }
-            callback(thisDb.getCommandForId(commandId), thisDb.getQueryForId(commandId, updatedQuery.id));
         };
 
         xhr.send(JSON.stringify({
@@ -145,6 +148,59 @@ class Database {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
+    analyzeEntities(commandId, entities) {
+        console.log("LE", entities);
+        entities.forEach(ex => {
+            var entities = [];
+
+            if ('entities' in ex) {
+                var entityStartIndices = {}
+
+                ex.entities.forEach(entity => {
+                    entityStartIndices[entity.start] = entity;
+                });
+
+                var startIndex = 0;
+                var endIndex = 0;
+                // Create new "entity" objects for non-entities
+                loop1:
+                while (endIndex < ex.text.length) {
+                    // Skip pre-discovered entities
+                    while (startIndex in entityStartIndices) {
+                        entities.push(entityStartIndices[startIndex]);
+                        startIndex = entityStartIndices[startIndex].end + 1;
+                        endIndex = startIndex;
+
+                        // Reached end of string
+                        if (startIndex >= ex.text.length) {
+                            break loop1;
+                        }
+                    }
+
+                    // Reached non-entity, lengthen substring until next pre-discovered entity found
+                    // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
+                    while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
+                        endIndex++;
+                    }
+
+                    entities.push({
+                        start: startIndex,
+                        end: endIndex - 1,
+                        entity: null
+                    });
+
+                    startIndex = endIndex;
+                }
+            }
+
+            this.db
+                .get('commands').getById(commandId)
+                .get('queries').find({ query: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
+                .assign({ entities: entities })
+                .write()
+        });
+    }
+
     /*** Parameter Functions ***/
     
     updateParameters(commandId, params) {
@@ -169,69 +225,16 @@ class Database {
         xhr.open("POST", 'http://localhost:3001/intent/train');
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-        var databaseThis = this;
+        var thisDb = this;
 
         xhr.onreadystatechange = function () {
             if (this.readyState === XMLHttpRequest.DONE) {
                 if (this.status === 200) {
-                    databaseThis.updateCommand(commandId, { "isTrained": true });
+                    thisDb.updateCommand(commandId, { "isTrained": true });
                     // Add entity information for command
                     var json = JSON.parse(this.responseText);
-                    json['rasa_nlu_data']['common_examples'].forEach(ex => {
-                        if (ex.intent === command.name) {
-                            // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
-                            var entities = [];
-
-                            if ('entities' in ex) {
-                                var entityStartIndices = {}
-
-                                ex.entities.forEach(entity => {
-                                    entityStartIndices[entity.start] = entity;
-                                });
-
-                                console.log("ENTT", ex.entities);
-                                console.log(entityStartIndices);
-
-                                var startIndex = 0;
-                                var endIndex = 0;
-                                // Create new "entity" objects for non-entities
-                                loop1:
-                                while (endIndex < ex.text.length) {
-                                    // Skip pre-discovered entities
-                                    while (startIndex in entityStartIndices) {
-                                        entities.push(entityStartIndices[startIndex]);
-                                        startIndex = entityStartIndices[startIndex].end + 1;
-                                        endIndex = startIndex;
-                                        
-                                        // Reached end of string
-                                        if (startIndex >= ex.text.length) {
-                                            break loop1;
-                                        }
-                                    }
-
-                                    // Reached non-entity, lengthen substring until next pre-discovered entity found
-                                    // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
-                                    while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
-                                        endIndex++;
-                                    }
-
-                                    entities.push({
-                                        start: startIndex,
-                                        end: endIndex - 1,
-                                        entity: null
-                                    });
-
-                                    startIndex = endIndex;
-                                }
-                            }
-
-                            databaseThis.db
-                                .get('commands').getById(commandId)
-                                .get('queries').find({ query: ex.text })
-                                .assign({ entities: entities })
-                                .write()
-                        }
-                    });
+                    thisDb.analyzeEntities(commandId,
+                        json['rasa_nlu_data']['common_examples'].filter(ex => ex.intent === command.name))
                 }
                 callback(this.response, this.status);
             }

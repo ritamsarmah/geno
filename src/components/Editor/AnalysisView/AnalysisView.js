@@ -123,8 +123,6 @@ export default class AnalysisView extends Component {
         var content = document.getElementById("nlpQuery");
         content.innerHTML = "";
 
-        console.log(this.state.query);
-        console.log(this.state.query.entities);
         if (this.state.query.entities.length === 0) {
             content.innerHTML = this.state.query.query;
         } else {
