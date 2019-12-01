@@ -18,6 +18,7 @@ export class Geno {
 
     onfinalmessage: ((message: GenoMessage) => void) | null;
 
+    devId: number;
     currentTrigger: any; // Tracks current trigger function processing
     intentMap: { [id: string]: any }; 
     chatHistory: GenoMessage[];
@@ -32,10 +33,12 @@ export class Geno {
     micButton: HTMLInputElement | undefined;
 
     borderTimer: number | undefined;
+    listeningTimer: number | undefined;
 
     recognition: SpeechRecognition | undefined;
 
     constructor() {
+        this.devId = -1;
         this.onfinalmessage = null;
         this.intentMap = {};
         this.chatHistory = [];
@@ -81,6 +84,17 @@ export class Geno {
         return null;
     }
 
+    /** Configure developer ID */
+    setDevId(devId: number) {
+        this.devId = devId;
+    }
+
+    /** Convenient method to initialize Geno */
+    start(devId: number) {
+        this.addPopover();
+        this.setDevId(devId);
+    }
+
     /** Initialize recognition system */
     initRecognition() {
         try {
@@ -96,6 +110,12 @@ export class Geno {
                 // TODO: check for matches with queries and show suggestion
                 this.bubble.className = "geno-suggest";
                 this.bubble.style.visibility = "visible";
+
+                if (event.results[0].isFinal) {
+                    this.listeningTimer = window.setTimeout(() => this.stopListening.call(this), 1000);
+                } else if (this.listeningTimer) {
+                    clearTimeout(this.listeningTimer);
+                }
             };
 
             this.recognition.onstart = () => {
@@ -113,6 +133,7 @@ export class Geno {
     startListening() {
         if (this.isListening || !this.recognition) return;
 
+        speechSynthesis.cancel();
         this.listeningIndicator.style.visibility = "visible";
         this.micButton.style.color = GenoColor.Theme;
         this.setBorderColor(GenoState.Listening);
@@ -155,17 +176,26 @@ export class Geno {
     /** Execute appropriate function based on match to query */
     triggerFunction(query: string) {
         if (typeof query != "string") return;
+        if (this.devId == -1) {
+            console.warn("You need to set your developer ID using geno.configure(DEV_ID)");
+            return;
+        }
 
         var xhr = new XMLHttpRequest();
-        var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(1) + "&query=" + encodeURIComponent(query);
+        var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
 
         xhr.onload = () => {
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence
-            var info = this.intentMap[json.intent.name];
+            var info = this.intentMap[json.intent.name]
 
-            if (confidence > 0.70) {
+            if (this.intentMap.length == 1) {
+                info = Object.values(this.intentMap)[0]; // Only intent so get it
+            }
+
+            // If only intent or have good enough confidence, trigger function
+            if (info && (!json.intent_ranking.length || confidence > 0.50)) {
                 this.currentTrigger = {
                     query: query,
                     info: info,
@@ -175,6 +205,7 @@ export class Geno {
                 };
                 this.retrieveArgs();
             } else {
+                console.log(json);
                 this.respond("Sorry, I didn't understand.");
                 this.setBorderColor(GenoState.Error);
             }
@@ -191,8 +222,13 @@ export class Geno {
         if (expectedArgs.length == this.currentTrigger.args.length) {
             import("../" + this.currentTrigger.info.file)
                 .then((module) => {
-                    var result = module[this.currentTrigger.info.triggerFn].apply(null, this.currentTrigger.args);
-                    console.log(result);
+                    var fn = module[this.currentTrigger.info.triggerFn];
+                    if (fn) {
+                        var result = module[this.currentTrigger.info.triggerFn].apply(null, this.currentTrigger.args);
+                        console.log(result);
+                    } else {
+                        console.error("Error: Could not find function '" + this.currentTrigger.info.triggerFn + "' in module '" + this.currentTrigger.info.file) + "'";
+                    }
                     this.currentTrigger = null;
                 });
             return;

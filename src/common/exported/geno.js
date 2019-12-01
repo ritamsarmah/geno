@@ -14,6 +14,7 @@ export var GenoColor;
 })(GenoColor || (GenoColor = {}));
 var Geno = /** @class */ (function () {
     function Geno() {
+        this.devId = -1;
         this.onfinalmessage = null;
         this.intentMap = {};
         this.chatHistory = [];
@@ -56,6 +57,15 @@ var Geno = /** @class */ (function () {
         }
         return null;
     };
+    /** Configure developer ID */
+    Geno.prototype.setDevId = function (devId) {
+        this.devId = devId;
+    };
+    /** Convenient method to initialize Geno */
+    Geno.prototype.start = function (devId) {
+        this.addPopover();
+        this.setDevId(devId);
+    };
     /** Initialize recognition system */
     Geno.prototype.initRecognition = function () {
         var _this = this;
@@ -71,6 +81,12 @@ var Geno = /** @class */ (function () {
                 // TODO: check for matches with queries and show suggestion
                 _this.bubble.className = "geno-suggest";
                 _this.bubble.style.visibility = "visible";
+                if (event.results[0].isFinal) {
+                    _this.listeningTimer = window.setTimeout(function () { return _this.stopListening.call(_this); }, 1000);
+                }
+                else if (_this.listeningTimer) {
+                    clearTimeout(_this.listeningTimer);
+                }
             };
             this.recognition.onstart = function () {
                 _this.transcribe("...");
@@ -87,6 +103,7 @@ var Geno = /** @class */ (function () {
     Geno.prototype.startListening = function () {
         if (this.isListening || !this.recognition)
             return;
+        speechSynthesis.cancel();
         this.listeningIndicator.style.visibility = "visible";
         this.micButton.style.color = GenoColor.Theme;
         this.setBorderColor(GenoState.Listening);
@@ -124,14 +141,22 @@ var Geno = /** @class */ (function () {
         var _this = this;
         if (typeof query != "string")
             return;
+        if (this.devId == -1) {
+            console.warn("You need to set your developer ID using geno.configure(DEV_ID)");
+            return;
+        }
         var xhr = new XMLHttpRequest();
-        var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(1) + "&query=" + encodeURIComponent(query);
+        var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
         xhr.onload = function () {
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
             var info = _this.intentMap[json.intent.name];
-            if (confidence > 0.70) {
+            if (_this.intentMap.length == 1) {
+                info = Object.values(_this.intentMap)[0]; // Only intent so get it
+            }
+            // If only intent or have good enough confidence, trigger function
+            if (info && (!json.intent_ranking.length || confidence > 0.50)) {
                 _this.currentTrigger = {
                     query: query,
                     info: info,
@@ -142,6 +167,7 @@ var Geno = /** @class */ (function () {
                 _this.retrieveArgs();
             }
             else {
+                console.log(json);
                 _this.respond("Sorry, I didn't understand.");
                 _this.setBorderColor(GenoState.Error);
             }
@@ -156,8 +182,14 @@ var Geno = /** @class */ (function () {
         if (expectedArgs.length == this.currentTrigger.args.length) {
             import("../" + this.currentTrigger.info.file)
                 .then(function (module) {
-                var result = module[_this.currentTrigger.info.triggerFn].apply(null, _this.currentTrigger.args);
-                console.log(result);
+                var fn = module[_this.currentTrigger.info.triggerFn];
+                if (fn) {
+                    var result = module[_this.currentTrigger.info.triggerFn].apply(null, _this.currentTrigger.args);
+                    console.log(result);
+                }
+                else {
+                    console.error("Error: Could not find function '" + _this.currentTrigger.info.triggerFn + "' in module '" + _this.currentTrigger.info.file) + "'";
+                }
                 _this.currentTrigger = null;
             });
             return;
