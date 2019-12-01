@@ -18,22 +18,22 @@ export class Geno {
 
     onfinalmessage: ((message: GenoMessage) => void) | null;
 
-    private currentTrigger: any; // Tracks current trigger function processing
+    currentTrigger: any; // Tracks current trigger function processing
     intentMap: { [id: string]: any }; 
     chatHistory: GenoMessage[];
     isListening: boolean;
     isCollapsed: boolean;
 
     // HTML Elements
-    private box: HTMLDivElement;
-    private currentMessage: HTMLDivElement;
-    private bubble: HTMLDivElement;
-    private listeningIndicator: HTMLDivElement;
-    private micButton: HTMLButtonElement;
+    box: HTMLDivElement | undefined;
+    currentMessage: HTMLDivElement | undefined;
+    bubble: HTMLDivElement | undefined;
+    listeningIndicator: HTMLDivElement | undefined;
+    micButton: HTMLInputElement | undefined;
 
-    private borderTimer: NodeJS.Timeout | undefined;
+    borderTimer: number | undefined;
 
-    private recognition: SpeechRecognition | undefined;
+    recognition: SpeechRecognition | undefined;
 
     constructor() {
         this.onfinalmessage = null;
@@ -41,37 +41,6 @@ export class Geno {
         this.chatHistory = [];
         this.isListening = false;
         this.isCollapsed = true;
-
-        this.box = <HTMLDivElement>document.getElementById('geno-ui');
-        this.currentMessage = <HTMLDivElement>document.getElementById('geno-curr');
-        this.listeningIndicator = <HTMLDivElement>document.getElementById('geno-indicator');
-        this.micButton = <HTMLButtonElement>document.getElementById('geno-mic'); // TODO: Not sure if this correct cast
-        this.bubble = <HTMLDivElement>document.getElementById('geno-bubble');
-
-        try {
-            window.SpeechRecognition = (window as any).webkitSpeechRecognition || window.SpeechRecognition;
-            this.recognition = new window.SpeechRecognition();
-            this.recognition.continuous = true;
-            this.recognition.lang = 'en-US';
-            this.recognition.interimResults = true;
-            this.recognition.maxAlternatives = 1;
-
-            this.recognition.onresult = (event) => {
-                this.transcribe(event.results[0][0].transcript);
-                // TODO: check for matches with queries and show suggestion
-                this.bubble.className = "geno-suggest";
-                this.bubble.style.visibility = "visible";
-            };
-
-            this.recognition.onstart = () => {
-                this.transcribe("...");
-                this.micButton.disabled = false;
-            };
-        } catch (error) {
-            if (error) {
-                this.transcribe("Browser doesn't support SpeechRecognition");
-            }
-        }
     }
 
     /*** Speech Functions ***/
@@ -99,7 +68,7 @@ export class Geno {
     /*** Listening Functions ***/
 
     /** Adds a new message to the chat history */
-    private addChatMessage(text: string, who: string): GenoMessage | null {
+    addChatMessage(text: string, who: string): GenoMessage | null {
         if (text != "..." && text != "") {
             var message = { text: text, who: who };
             this.chatHistory.push(message);
@@ -112,8 +81,36 @@ export class Geno {
         return null;
     }
 
+    /** Initialize recognition system */
+    initRecognition() {
+        try {
+            window.SpeechRecognition = (window as any).webkitSpeechRecognition || window.SpeechRecognition;
+            this.recognition = new window.SpeechRecognition();
+            this.recognition.continuous = true;
+            this.recognition.lang = 'en-US';
+            this.recognition.interimResults = true;
+            this.recognition.maxAlternatives = 1;
+
+            this.recognition.onresult = (event) => {
+                this.transcribe(event.results[0][0].transcript);
+                // TODO: check for matches with queries and show suggestion
+                this.bubble.className = "geno-suggest";
+                this.bubble.style.visibility = "visible";
+            };
+
+            this.recognition.onstart = () => {
+                this.transcribe("...");
+                this.micButton.disabled = false;
+            };
+        } catch (error) {
+            if (error) {
+                this.transcribe("Browser doesn't support SpeechRecognition");
+            }
+        }
+    }
+
     /** Start listening action using SpeechRecognition */
-    private startListening() {
+    startListening() {
         if (this.isListening || !this.recognition) return;
 
         this.listeningIndicator.style.visibility = "visible";
@@ -126,11 +123,10 @@ export class Geno {
     }
 
     /** Stop any listening action */
-    private stopListening() {
+    stopListening() {
         if (!this.isListening || !this.recognition) return;
 
         this.recognition.abort();
-        this.recognition = undefined;
         this.isListening = false;
 
         this.listeningIndicator.style.visibility = "hidden";
@@ -168,13 +164,11 @@ export class Geno {
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence
             var info = this.intentMap[json.intent.name];
-            var fn = this.getFunction(info.triggerFn);
 
-            if (typeof fn === 'function' && confidence > 0.70) {
+            if (confidence > 0.70) {
                 this.currentTrigger = {
                     query: query,
                     info: info,
-                    fn: fn,
                     entities: json.entities,
                     args: [],
                     expectedArgs: Object.keys(info.parameters) // Always in correct call order
@@ -195,9 +189,12 @@ export class Geno {
 
         // All arguments retrieved already, trigger function
         if (expectedArgs.length == this.currentTrigger.args.length) {
-            var result = this.currentTrigger.fn.apply(null, this.currentTrigger.args);
-            console.log(result);
-            this.currentTrigger = null;
+            import("../" + this.currentTrigger.info.file)
+                .then((module) => {
+                    var result = module[this.currentTrigger.info.triggerFn].apply(null, this.currentTrigger.args);
+                    console.log(result);
+                    this.currentTrigger = null;
+                });
             return;
         }
 
@@ -231,6 +228,7 @@ export class Geno {
         this.retrieveArgs();
     }
     
+    /** Intelligently convert argument to type and add to arguments list */
     addArg(value: any) {
         if (!isNaN(parseInt(value))) {
             value = parseInt(value);
@@ -238,22 +236,10 @@ export class Geno {
         this.currentTrigger.args.push(value);
     }
 
-    getFunction(name: string) {
-        var scope: any = window;
-        var scopeSplit = name.split('.');
-        for (let i = 0; i < scopeSplit.length - 1; i++) {
-            scope = scope[scopeSplit[i]];
-
-            if (scope == undefined) return;
-        }
-
-        return scope[scopeSplit[scopeSplit.length - 1]];
-    }
-
     /*** UI Functions ***/
 
     /** Transcribe text to popover */
-    private transcribe(text: string) {
+    transcribe(text: string) {
         this.currentMessage.textContent = text;
     }
 
@@ -262,37 +248,62 @@ export class Geno {
         var popover = document.createElement("div");
         popover.id = "geno-ui";
         popover.classList.add("geno-slide-out");
-        popover.innerHTML = `
-        <div class="geno-chat">
-            <div id="geno-curr">
-                ...
-            </div>
-        </div>
-        <div class="geno-indicator-box">
-            <div class="geno-button-center">
-                <div id="geno-indicator" class="la-ball-scale-multiple la-2x">
-                    <!-- Empty divs needed for animation -->
-                    <div></div>
-                    <div></div>
-                </div>
-                <div id="geno-mic" style="height:30px; width: 20px;" onclick="togglePopover()">
-                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="microphone" class="svg-inline--fa fa-microphone fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M176 352c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96zm160-160h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16z"></path></svg>
-                </div>
-            </div>
-        </div>
-        <div id="geno-close" onclick="collapsePopover()">
-            <div style="height: 15px; width: 15px;">
-            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-right" class="svg-inline--fa fa-arrow-right fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"></path></svg>
-        </div>
-        `
+        
+        var genoChat = document.createElement("div");
+        genoChat.className = "geno-chat";
+        var genoCurr = document.createElement("div");
+        genoCurr.id = "geno-curr";
+        genoCurr.innerText = "...";
+        genoChat.appendChild(genoCurr);
+        popover.appendChild(genoChat);
+
+        var genoIndicatorBox = document.createElement("div");
+        genoIndicatorBox.className = "geno-indicator-box";
+
+        var genoButtonCenter = document.createElement("div");
+        genoButtonCenter.className = "geno-button-center";
+        
+        var genoIndicator = document.createElement("div");
+        genoIndicator.id = "geno-indicator";
+        genoIndicator.className = "la-ball-scale-multiple la-2x";
+        genoIndicator.appendChild(document.createElement("div"))
+        genoIndicator.appendChild(document.createElement("div"))
+
+        var genoMic = document.createElement("div");
+        genoMic.id = "geno-mic";
+        genoMic.style.height = "30px";
+        genoMic.style.width = "20px";
+        genoMic.onclick = () => this.togglePopover.call(this);
+        genoMic.innerHTML = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="microphone" class="svg-inline--fa fa-microphone fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M176 352c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96S80 42.98 80 96v160c0 53.02 42.98 96 96 96zm160-160h-16c-8.84 0-16 7.16-16 16v48c0 74.8-64.49 134.82-140.79 127.38C96.71 376.89 48 317.11 48 250.3V208c0-8.84-7.16-16-16-16H16c-8.84 0-16 7.16-16 16v40.16c0 89.64 63.97 169.55 152 181.69V464H96c-8.84 0-16 7.16-16 16v16c0 8.84 7.16 16 16 16h160c8.84 0 16-7.16 16-16v-16c0-8.84-7.16-16-16-16h-56v-33.77C285.71 418.47 352 344.9 352 256v-48c0-8.84-7.16-16-16-16z"></path></svg>`
+
+        genoButtonCenter.appendChild(genoIndicator);
+        genoButtonCenter.appendChild(genoMic);
+        genoIndicatorBox.appendChild(genoButtonCenter);
+        popover.appendChild(genoIndicatorBox);
+
+        var genoClose = document.createElement("div");
+        genoClose.id = "geno-close";
+        genoClose.onclick = () => this.collapsePopover.call(this);
+        genoClose.innerHTML = `<div style="height: 15px; width: 15px;">
+            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-right" class="svg-inline--fa fa-arrow-right fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"></path></svg>`;
+        popover.appendChild(genoClose);
+
         document.body.appendChild(popover);
 
         // Create bubble
         var bubble = document.createElement("div");
         bubble.id = "geno-bubble";
         bubble.style.visibility = "hidden";
-        // bubble.textContent = "What is the balance in my checking account?"
+        bubble.textContent = "Start speaking for suggestions";
         document.body.appendChild(bubble);
+
+        this.box = popover;
+        this.currentMessage = genoCurr;
+        this.listeningIndicator = genoIndicator;
+        this.micButton = <HTMLInputElement>genoMic;
+        this.bubble = bubble;
+
+        this.initRecognition();
     }
 
     /** Hide/show popover */
@@ -318,14 +329,14 @@ export class Geno {
     }
 
     /** Modify UI border color based on current state */
-    private setBorderColor(state: GenoState = GenoState.Ready) {
+    setBorderColor(state: GenoState = GenoState.Ready) {
         if (this.borderTimer) {
             clearTimeout(this.borderTimer);
         }
         switch (state) {
             case GenoState.Listening:
                 this.box.style.borderColor = GenoColor.Theme;
-                break;
+                return;
             case GenoState.Success:
                 this.box.style.borderColor = GenoColor.Success;
                 break;
@@ -334,12 +345,11 @@ export class Geno {
                 break;
             case GenoState.Ready:
                 this.box.style.borderColor = GenoColor.Default;
-                break;
+                return;
         }
-        this.borderTimer = global.setTimeout(this.setBorderColor, 3000);
+        this.borderTimer = window.setTimeout(() => this.setBorderColor.call(this), 3000);
     }
 
 }
 
 export var geno = new Geno();
-geno.addPopover();

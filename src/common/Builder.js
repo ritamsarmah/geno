@@ -33,7 +33,7 @@ class Builder {
         // TODO: check if this is the right file with the function name (function might not exist and could cause error)
 
         // Add function to output function for a provided query
-        var generatedCode = `\n\nvar functionIntentMap = ${JSON.stringify(commandMap)}`;
+        var generatedCode = `\n\ngeno.intentMap = ${JSON.stringify(commandMap)}`;
         var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
         var jsDest = this.dir + '/geno/geno.js';
 
