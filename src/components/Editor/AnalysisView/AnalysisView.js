@@ -54,7 +54,7 @@ export default class AnalysisView extends Component {
         var color = entity.entity != null ? utils.stringToColor(entity.entity) : "lightgray";
         var marginRight = finalSegment ? "0px" : "10px";
         return (
-            <span id={entity.entity} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
+            <span id={entity.start} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
                 {text}
             </span>
         )
@@ -79,13 +79,23 @@ export default class AnalysisView extends Component {
         // this.state.query = database.swapEntityNames(this.props.command.id, query.id, first, second);
     }
 
+    updateEntity(query, entity, event) {
+        var label = event.target.value === "-" ? null : event.target.value
+        database.updateEntity(this.props.command.id, query.id, entity, label);
+        this.colorEntities();
+    }
+
     /* Create dropdown for text segment */
     createDropdown(query, entity) {
-        var names = this.props.command.parameters.map(p => p.name);
         var color = utils.stringToColor(entity.entity);
 
+        var names = this.props.command.parameters.map(p => p.name);
+        names.push("-");
+
+        var selection = entity.entity != null ? entity.entity : "-";
+
         return (
-            <select className="entitySelect" id={`geno-select-${entity.entity}`} data-curr={entity.entity} defaultValue={entity.entity} style={{ color: color }} onChange={(event) => this.swapEntityNames(query, event)}>
+            <select className="entitySelect" id={entity.start} data-curr={selection} defaultValue={selection} style={{ color: color }} onChange={(event) => this.updateEntity(query, entity, event)}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         )
@@ -135,12 +145,10 @@ export default class AnalysisView extends Component {
                 var spaceNeeded = (i === numEntities - 1); // Add space between text segments
 
                 ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
-                    if (entity.entity != null) {
-                        var span = document.getElementById(entity.entity);
-                        const dropdownDummy = document.createElement("span"); // Create dummy div to render
-                        span.appendChild(dropdownDummy);
-                        ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
-                    }
+                    var span = document.getElementById(entity.start);
+                    const dropdownDummy = document.createElement("span"); // Create dummy div to render
+                    span.appendChild(dropdownDummy);
+                    ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
                 });
             });
         }

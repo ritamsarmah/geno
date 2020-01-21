@@ -83,7 +83,7 @@ class Database {
     }
 
     /*** Query Functions ***/
-    
+
     getQueryForId(commandId, queryId) {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
@@ -96,8 +96,8 @@ class Database {
         var index = 0;
         words.forEach(word => {
             entities[index] = {
-                label: null,
-                text: word, 
+                entity: null,
+                text: word,
                 start: index,
                 end: index + word.length
             };
@@ -165,75 +165,38 @@ class Database {
     //     return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     // }
 
-    updateEntity(commandId, queryId, entity) {
+    updateEntity(commandId, queryId, entity, label) {
         this.db.get('commands').getById(commandId)
             .get('queries').getById(queryId)
             .get('entities')
             .get(entity.start)
-            .assign(entity).write();
-       
+            .assign({ entity: label }).write();
+
         // NOTE: We don't inform backend until developer manually trains model
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
     // Parse data from model and convert it into representation for our database
     analyzeEntities(commandId, entities) {
-        // TODO: Rewrite this logic completely :(
-        
+        console.log("analyze")
+        entities.forEach(ex => {
+            // TODO: Split entities with multiple words
+            if ('entities' in ex) {
+                var query = this.db.get('commands').getById(commandId)
+                    .get('queries').find({ text: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
+                    .get('entities');
 
-        // entities.forEach(ex => {
-        //     var entities = [];
-
-        //     if ('entities' in ex) {
-        //         var entityStartIndices = {}
-
-        //         ex.entities.forEach(entity => {
-        //             entityStartIndices[entity.start] = entity;
-        //         });
-
-        //         var startIndex = 0;
-        //         var endIndex = 0;
-        //         // Create new "entity" objects for non-entities
-        //         loop1:
-        //         while (endIndex < ex.text.length) {
-        //             // Skip pre-discovered entities
-        //             while (startIndex in entityStartIndices) {
-        //                 entities.push(entityStartIndices[startIndex]);
-        //                 startIndex = entityStartIndices[startIndex].end + 1;
-        //                 endIndex = startIndex;
-
-        //                 // Reached end of string
-        //                 if (startIndex >= ex.text.length) {
-        //                     break loop1;
-        //                 }
-        //             }
-
-        //             // Reached non-entity, lengthen substring until next pre-discovered entity found
-        //             // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
-        //             while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
-        //                 endIndex++;
-        //             }
-
-        //             entities.push({
-        //                 start: startIndex,
-        //                 end: endIndex - 1,
-        //                 entity: null
-        //             });
-
-        //             startIndex = endIndex;
-        //         }
-        //     }
-
-        //     this.db
-        //         .get('commands').getById(commandId)
-        //         .get('queries').find({ query: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
-        //         .assign({ entities: entities })
-        //         .write()
-        // });
+                ex.entities.forEach(en => {
+                    query.get(en.start).assign({
+                        "entity": en.entity
+                    }).write();
+                });
+            }
+        });
     }
 
     /*** Parameter Functions ***/
-    
+
     updateParameters(commandId, params) {
         var command = this.db.get('commands').getById(commandId);
         var oldParams = command.get('parameters');
