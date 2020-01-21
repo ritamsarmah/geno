@@ -63,10 +63,12 @@ class Database {
         return cmd;
     }
 
+    /* Update a command */
     updateCommand(id, data) {
         return this.db.get('commands').getById(id).assign(data).write();
     }
 
+    /* Remove a command */
     removeCommand(id) {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", 'http://localhost:3001/intent/delete');
@@ -83,16 +85,30 @@ class Database {
     /*** Query Functions ***/
     
     getQueryForId(commandId, queryId) {
-        return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value()
+        return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
     addQuery(commandId, query) {
+        var words = query.split(" ");
+        var entities = {};
+
+        // Map start index to entity info
+        var index = 0;
+        words.forEach(word => {
+            entities[index] = {
+                label: null,
+                text: word, 
+                start: index,
+                end: index + word.length
+            };
+            index += word.length + 1;
+        });
+
         var data = {
             query: query,
-            entities: []
-        }
+            entities: entities
+        };
         this.db.get('commands').getById(commandId).get('queries').insert(data).write();
-        // TODO perform entity analysis and execute some callback...
         return this.getCommandForId(commandId);
     }
 
@@ -110,7 +126,7 @@ class Database {
                     var json = JSON.parse(xhr.responseText);
                     console.log("JSON", json);
                     updatedQuery.entities = json.entities
-                    this.analyzeEntities(commandId, json.entities);
+                    // this.analyzeEntities(commandId, json.entities); TODO: Remove?
                 }
                 callback(this.getCommandForId(commandId), this.getQueryForId(commandId, updatedQuery.id));
             }
@@ -139,66 +155,80 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
-    swapEntityNames(commandId, queryId, first, second) {
-        var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: first });
-        var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: second });
-        firstEntity.assign({ entity: second }).write();
-        secondEntity.assign({ entity: first }).write();
-        // TODO: network request to model to tell it about changes
+    // swapEntityNames(commandId, queryId, first, second) {
+    //     // TODO: We will not swap... we will add or remove!!!
+    //     var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: first });
+    //     var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: second });
+    //     firstEntity.assign({ entity: second }).write();
+    //     secondEntity.assign({ entity: first }).write();
+    //     // TODO: network request to model to tell it about changes
+    //     return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
+    // }
+
+    updateEntity(commandId, queryId, entity) {
+        this.db.get('commands').getById(commandId)
+            .get('queries').getById(queryId)
+            .get('entities')
+            .get(entity.start)
+            .assign(entity).write();
+       
+        // NOTE: We don't inform backend until developer manually trains model
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
     analyzeEntities(commandId, entities) {
-        console.log("LE", entities);
-        entities.forEach(ex => {
-            var entities = [];
+        // TODO: Rewrite this logic completely :(
+        
 
-            if ('entities' in ex) {
-                var entityStartIndices = {}
+        // entities.forEach(ex => {
+        //     var entities = [];
 
-                ex.entities.forEach(entity => {
-                    entityStartIndices[entity.start] = entity;
-                });
+        //     if ('entities' in ex) {
+        //         var entityStartIndices = {}
 
-                var startIndex = 0;
-                var endIndex = 0;
-                // Create new "entity" objects for non-entities
-                loop1:
-                while (endIndex < ex.text.length) {
-                    // Skip pre-discovered entities
-                    while (startIndex in entityStartIndices) {
-                        entities.push(entityStartIndices[startIndex]);
-                        startIndex = entityStartIndices[startIndex].end + 1;
-                        endIndex = startIndex;
+        //         ex.entities.forEach(entity => {
+        //             entityStartIndices[entity.start] = entity;
+        //         });
 
-                        // Reached end of string
-                        if (startIndex >= ex.text.length) {
-                            break loop1;
-                        }
-                    }
+        //         var startIndex = 0;
+        //         var endIndex = 0;
+        //         // Create new "entity" objects for non-entities
+        //         loop1:
+        //         while (endIndex < ex.text.length) {
+        //             // Skip pre-discovered entities
+        //             while (startIndex in entityStartIndices) {
+        //                 entities.push(entityStartIndices[startIndex]);
+        //                 startIndex = entityStartIndices[startIndex].end + 1;
+        //                 endIndex = startIndex;
 
-                    // Reached non-entity, lengthen substring until next pre-discovered entity found
-                    // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
-                    while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
-                        endIndex++;
-                    }
+        //                 // Reached end of string
+        //                 if (startIndex >= ex.text.length) {
+        //                     break loop1;
+        //                 }
+        //             }
 
-                    entities.push({
-                        start: startIndex,
-                        end: endIndex - 1,
-                        entity: null
-                    });
+        //             // Reached non-entity, lengthen substring until next pre-discovered entity found
+        //             // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
+        //             while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
+        //                 endIndex++;
+        //             }
 
-                    startIndex = endIndex;
-                }
-            }
+        //             entities.push({
+        //                 start: startIndex,
+        //                 end: endIndex - 1,
+        //                 entity: null
+        //             });
 
-            this.db
-                .get('commands').getById(commandId)
-                .get('queries').find({ query: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
-                .assign({ entities: entities })
-                .write()
-        });
+        //             startIndex = endIndex;
+        //         }
+        //     }
+
+        //     this.db
+        //         .get('commands').getById(commandId)
+        //         .get('queries').find({ query: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
+        //         .assign({ entities: entities })
+        //         .write()
+        // });
     }
 
     /*** Parameter Functions ***/

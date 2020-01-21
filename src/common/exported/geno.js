@@ -152,11 +152,10 @@ var Geno = /** @class */ (function () {
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
             var info = _this.intentMap[json.intent.name];
-            if (_this.intentMap.length == 1) {
+            if (Object.keys(_this.intentMap).length == 1) {
                 info = Object.values(_this.intentMap)[0]; // Only intent so get it
             }
-            // If only intent or have good enough confidence, trigger function
-            if (info && (!json.intent_ranking.length || confidence > 0.50)) {
+            if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 _this.currentTrigger = {
                     query: query,
                     info: info,

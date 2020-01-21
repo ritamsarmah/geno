@@ -62,21 +62,21 @@ export default class AnalysisView extends Component {
 
     /* Swap entity selection in dropdown */
     swapEntityNames(query, event) {
-        var firstSelect = event.target;
+        // var firstSelect = event.target;
 
-        var first = firstSelect.dataset.curr;
-        var second = firstSelect.value;
+        // var first = firstSelect.dataset.curr;
+        // var second = firstSelect.value;
 
-        var secondSelect = document.getElementById(`geno-select-${second}`);
-        secondSelect.value = first;
+        // var secondSelect = document.getElementById(`geno-select-${second}`);
+        // secondSelect.value = first;
 
-        secondSelect.dataset.curr = first;
-        firstSelect.dataset.curr = second;
+        // secondSelect.dataset.curr = first;
+        // firstSelect.dataset.curr = second;
 
-        secondSelect.id = `geno-select-${first}`;
-        firstSelect.id = `geno-select-${second}`
+        // secondSelect.id = `geno-select-${first}`;
+        // firstSelect.id = `geno-select-${second}`
 
-        this.state.query = database.swapEntityNames(this.props.command.id, query.id, first, second);
+        // this.state.query = database.swapEntityNames(this.props.command.id, query.id, first, second);
     }
 
     /* Create dropdown for text segment */
@@ -123,13 +123,16 @@ export default class AnalysisView extends Component {
         var content = document.getElementById("nlpQuery");
         content.innerHTML = "";
 
-        if (this.state.query.entities.length === 0) {
+        var numEntities = Object.keys(this.state.query.entities).length 
+
+        if (numEntities === 0) {
             content.innerHTML = this.state.query.query;
         } else {
-            this.state.query.entities.forEach((entity, i) => {
+            Object.keys(this.state.query.entities).forEach((index, i) => {
+                var entity = this.state.query.entities[index]; 
                 const dummy = document.createElement("span"); // Create dummy div to render
                 content.appendChild(dummy);
-                var spaceNeeded = (i === this.state.query.entities.length - 1); // Add space between text segments
+                var spaceNeeded = (i === numEntities - 1); // Add space between text segments
 
                 ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
                     if (entity.entity != null) {

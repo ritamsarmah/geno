@@ -187,15 +187,14 @@ export class Geno {
 
         xhr.onload = () => {
             var json = JSON.parse(xhr.responseText);
-            var confidence = json.intent.confidence
-            var info = this.intentMap[json.intent.name]
+            var confidence = json.intent.confidence;
+            var info = this.intentMap[json.intent.name];
 
-            if (this.intentMap.length == 1) {
+            if (Object.keys(this.intentMap).length == 1) {
                 info = Object.values(this.intentMap)[0]; // Only intent so get it
             }
 
-            // If only intent or have good enough confidence, trigger function
-            if (info && (!json.intent_ranking.length || confidence > 0.50)) {
+            if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 this.currentTrigger = {
                     query: query,
                     info: info,
