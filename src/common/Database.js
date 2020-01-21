@@ -88,8 +88,8 @@ class Database {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
-    addQuery(commandId, query) {
-        var words = query.split(" ");
+    addQuery(commandId, queryText) {
+        var words = queryText.split(" ");
         var entities = {};
 
         // Map start index to entity info
@@ -105,7 +105,7 @@ class Database {
         });
 
         var data = {
-            query: query,
+            text: queryText,
             entities: entities
         };
         this.db.get('commands').getById(commandId).get('queries').insert(data).write();
@@ -136,7 +136,7 @@ class Database {
             "dev_id": 1,
             "intent": this.getCommandForId(commandId).name,
             "old_query": oldText,
-            "new_query": updatedQuery.query
+            "new_query": updatedQuery.text
         }));
     }
 
@@ -148,7 +148,7 @@ class Database {
         xhr.send(JSON.stringify({
             "dev_id": 1,
             "intent": this.getCommandForId(commandId).name,
-            "query": this.getQueryForId(commandId, queryId).query
+            "query": this.getQueryForId(commandId, queryId).text
         }));
 
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
@@ -176,6 +176,7 @@ class Database {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
+    // Parse data from model and convert it into representation for our database
     analyzeEntities(commandId, entities) {
         // TODO: Rewrite this logic completely :(
         
@@ -273,7 +274,7 @@ class Database {
         var params = {
             "dev_id": 1,
             "intent": command.name,
-            "queries": command.queries.map(q => q.query),
+            "queries": command.queries.map(q => q.text),
             "parameters": command.parameters.map(q => q.name)
         }
 

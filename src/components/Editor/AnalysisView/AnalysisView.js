@@ -50,7 +50,7 @@ export default class AnalysisView extends Component {
 
     /* Create text segment for NLP information */
     createEntitySegment(entity, finalSegment) {
-        var text = this.state.query.query.substring(entity.start, entity.end);
+        var text = this.state.query.text.substring(entity.start, entity.end);
         var color = entity.entity != null ? utils.stringToColor(entity.entity) : "lightgray";
         var marginRight = finalSegment ? "0px" : "10px";
         return (
@@ -105,11 +105,11 @@ export default class AnalysisView extends Component {
     /* Updates entity coloring based on new analysis */
     updateNLPInfo(newText) {
         this.spinRefresh(true);
-        var oldText = this.state.query.query;
+        var oldText = this.state.query.text;
         var thisAnalysis = this;
 
         var newQuery = this.state.query;
-        newQuery.query = newText;
+        newQuery.text = newText;
         this.props.updateQuery(oldText, newQuery, (updatedQuery) => {
             thisAnalysis.state.query = updatedQuery;
             thisAnalysis.setState({ editMode: false });
@@ -126,7 +126,7 @@ export default class AnalysisView extends Component {
         var numEntities = Object.keys(this.state.query.entities).length 
 
         if (numEntities === 0) {
-            content.innerHTML = this.state.query.query;
+            content.innerHTML = this.state.query.text;
         } else {
             Object.keys(this.state.query.entities).forEach((index, i) => {
                 var entity = this.state.query.entities[index]; 
@@ -171,7 +171,7 @@ export default class AnalysisView extends Component {
                     <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
                 </div>
                 {this.state.editMode ?
-                    <span id="editableQuery" contentEditable={true} suppressContentEditableWarning={true}>{this.state.query.query}</span> :
+                    <span id="editableQuery" contentEditable={true} suppressContentEditableWarning={true}>{this.state.query.text}</span> :
                     <span id="nlpQuery"></span>
                 }
             </div>

@@ -184,7 +184,7 @@ export default class Popover extends Component {
                                     height: this.state.queriesExpanded ? "140px" : "70px",
                                     resize: this.state.queriesExpanded ? "vertical" : "none"
                                 }}>
-                                    {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.query}</div>)}
+                                    {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
                                 </div>
 
                                 <div id="queryToggle" onClick={this.toggleQueries}>
