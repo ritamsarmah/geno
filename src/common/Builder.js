@@ -1,7 +1,7 @@
-import { Paths } from "./constants";
-
 import database from './Database';
 
+const electron = window.require('electron');
+const app = electron.remote.app;
 const fs = window.require('fs');
 
 class Builder {
@@ -14,36 +14,42 @@ class Builder {
     }
 
     build() {
-        var queryMap = {}
+        var commandMap = {}
+        // TODO: ONLY COPY OVER COMMANDS THAT HAVE BEEN TRAINED!!
         database.getCommands().forEach(cmd => {
-            cmd.queries.forEach(q => {
-                queryMap[q.query] = { file: cmd.file, triggerFn: cmd.triggerFn }
+            var parameterMap = {}
+
+            cmd.parameters.forEach(p => {
+                parameterMap[p.name] = p.backupQuery
             });
+            commandMap[cmd.name] = {
+                file: cmd.file,
+                triggerFn: cmd.triggerFn,
+                parameters: parameterMap // TODO: later include info on what to convert data type to
+            };
         });
 
         // TODO: Optional code that shows the popover
-        // TODO: Remove ...args since triggerFunction will parse arguments from speech
         // TODO: check if this is the right file with the function name (function might not exist and could cause error)
 
         // Add function to output function for a provided query
-        var generatedCode = `
-var funcForQuery = ${JSON.stringify(queryMap)}
+        var generatedCode = `\n\ngeno.intentMap = ${JSON.stringify(commandMap)}`;
+        var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
+        var jsDest = this.dir + '/geno/geno.js';
 
-function triggerFunction(query, ...args) {
-    if (query in funcForQuery) {
-        var f = funcForQuery[query];
-        var func = window[f.triggerFn];
-        var res = func(...args)
-        console.log(res);
-    }
-}
+        var cssSource = `${app.getAppPath()}/src/common/exported/geno.css`;
+        var cssDest = this.dir + '/geno/geno.css';
 
-function showGeno() {
-    
-}
-        `
+        // Copy over backup sample queries
 
-        fs.writeFileSync(this.dir + '/geno.js', generatedCode, 'utf8');
+        fs.mkdir(this.dir + '/geno', (err) => {
+            fs.copyFile(jsSource, jsDest, (err) => {
+                fs.appendFileSync(jsDest, generatedCode);
+            });
+            fs.copyFile(jsSource, jsDest, (err) => {});
+            fs.copyFile(cssSource, cssDest, (err) => {});
+        });
+        
     }
 }
 

@@ -26,7 +26,7 @@
     padding: 0;
     overflow: auto;
 
-    font-size: 14px;
+    font-size: 20px;
     line-height: 48px;
 }
 
@@ -55,9 +55,9 @@
     cursor: pointer;
 }
 
-select {
+.entitySelect {
     position: absolute;
-    top: 20px;
+    top: 24px;
     left: 0;
     width: 100%;
     padding: 0px 3px;
@@ -68,11 +68,11 @@ select {
     -webkit-appearance: button-bevel;
 }
 
-select:focus {
+.entitySelect:focus {
     outline: none;
 }
 
-select:hover {
+.entitySelect:hover {
     background-color: rgb(230, 230, 230);
     cursor: pointer;
 }

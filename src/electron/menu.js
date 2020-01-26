@@ -2,35 +2,6 @@ const { app, dialog, Menu } = require('electron');
 
 const template = [
     {
-        label: 'File',
-        submenu: [
-            // {
-            //     label: 'New File',
-            //     accelerator: 'CmdOrCtrl+N',
-            //     click() {}
-            // },
-            // { type: 'separator' },
-            // {
-            //     label: 'Open Project...',
-            //     accelerator: 'CmdOrCtrl+O',
-            //     click: () => {
-            //         dialog.showOpenDialog({ properties: ['openDirectory'] }, configureProject);
-            //     }
-            // },
-            // { type: 'separator' },
-            // {
-            //     label: 'Save',
-            //     accelerator: 'CmdOrCtrl+S',
-            //     click: () => { console.log("Save File") } // TODO: Save changes
-            // }
-            // {
-            //     label: 'Save As...',
-            //     accelerator: 'CmdOrCtrl+Shift+S',
-            //     click: () => { dialog.showSaveDialog() }
-            // }
-        ]
-    },
-    {
         label: 'Edit',
         submenu: [
             { role: 'undo' },
@@ -102,7 +73,7 @@ if (process.platform === 'darwin') {
     })
 
     // Edit menu
-    template[2].submenu.push(
+    template.find((m) => m.label = 'Edit').submenu.push(
         { type: 'separator' },
         {
             label: 'Speech',
@@ -114,7 +85,7 @@ if (process.platform === 'darwin') {
     )
 
     // Window menu
-    template[4].submenu = [
+    template.find((m) => m.role = 'window').submenu = [
         { role: 'close' },
         { role: 'minimize' },
         { role: 'zoom' },

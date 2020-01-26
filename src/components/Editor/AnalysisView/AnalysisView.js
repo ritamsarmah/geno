@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faTrash, faSyncAlt, faPen } from '@fortawesome/free-solid-svg-icons';
 
+import database from '../../../common/Database';
 import utils from '../../../common/utils';
 
 import "./AnalysisView.css"
@@ -17,14 +18,14 @@ export default class AnalysisView extends Component {
         }
         this.dismiss = this.dismiss.bind(this);
         this.delete = this.delete.bind(this);
-        this.onQueryChange = this.onQueryChange.bind(this);
         this.updateNLPInfo = this.updateNLPInfo.bind(this);
+        this.colorEntities = this.colorEntities.bind(this);
         this.toggleEdit = this.toggleEdit.bind(this);
         this.spinRefresh = this.spinRefresh.bind(this);
     }
 
     componentDidMount() {
-        this.updateNLPInfo();
+        this.colorEntities();
     }
 
     componentWillReceiveProps(newProps) {
@@ -32,19 +33,13 @@ export default class AnalysisView extends Component {
             query: newProps.query,
             editMode: false
         }, () => {
-            this.updateNLPInfo();
+            this.colorEntities();
         });
-    }
-
-    /* Event listener for editing query text */
-    onQueryChange() {
-        var content = document.getElementById("editableQuery");
-        this.state.query.query = content.innerHTML;
     }
 
     /* Dismisses this component, passing back any updates to query */
     dismiss() {
-        this.props.unmountMe(this.state.query);
+        this.props.unmountMe();
     }
 
     /* Deletes query and dismisses this component */
@@ -56,30 +51,41 @@ export default class AnalysisView extends Component {
     /* Create text segment for NLP information */
     createEntitySegment(entity, finalSegment) {
         var text = this.state.query.query.substring(entity.start, entity.end);
-        var color = entity.name != null ? utils.stringToColor(entity.name) : "lightgray";
+        var color = entity.entity != null ? utils.stringToColor(entity.entity) : "lightgray";
         var marginRight = finalSegment ? "0px" : "10px";
         return (
-            <span id={entity.name} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
+            <span id={entity.entity} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
                 {text}
             </span>
         )
     }
 
-    changeEntityName(query, entity) {
-        console.log(entity.name);
-        // TODO: Swap entity selections in database
+    /* Swap entity selection in dropdown */
+    swapEntityNames(query, event) {
+        var firstSelect = event.target;
+
+        var first = firstSelect.dataset.curr;
+        var second = firstSelect.value;
+
+        var secondSelect = document.getElementById(`geno-select-${second}`);
+        secondSelect.value = first;
+
+        secondSelect.dataset.curr = first;
+        firstSelect.dataset.curr = second;
+
+        secondSelect.id = `geno-select-${first}`;
+        firstSelect.id = `geno-select-${second}`
+
+        this.state.query = database.swapEntityNames(this.props.command.id, query.id, first, second);
     }
 
     /* Create dropdown for text segment */
     createDropdown(query, entity) {
-        var names = this.props.parameters.map(p => p.name);
-        names.push("intent");
-
-        var text = this.state.query.query.substring(entity.start, entity.end);
-        var color = entity.name != null ? utils.stringToColor(entity.name) : "lightgray";
+        var names = this.props.command.parameters.map(p => p.name);
+        var color = utils.stringToColor(entity.entity);
 
         return (
-            <select defaultValue={entity.name} style={{ color: color }} onChange={() => this.changeEntityName(query, entity)}>
+            <select className="entitySelect" id={`geno-select-${entity.entity}`} data-curr={entity.entity} defaultValue={entity.entity} style={{ color: color }} onChange={(event) => this.swapEntityNames(query, event)}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         )
@@ -87,44 +93,54 @@ export default class AnalysisView extends Component {
 
     /* Toggles edit mode */
     toggleEdit() {
-        this.setState({ editMode: !this.state.editMode },
-            () => {
-                if (!this.state.editMode) {
-                    this.updateNLPInfo();
-                }
-            }
-        );
+        // Update NLP info and complete before changing icon
+        if (this.state.editMode) {
+            var content = document.getElementById("editableQuery");
+            this.updateNLPInfo(content.innerHTML);
+        } else {
+            this.setState({ editMode: !this.state.editMode });
+        }
+    }
+
+    /* Updates entity coloring based on new analysis */
+    updateNLPInfo(newText) {
+        this.spinRefresh(true);
+        var oldText = this.state.query.query;
+        var thisAnalysis = this;
+
+        var newQuery = this.state.query;
+        newQuery.query = newText;
+        this.props.updateQuery(oldText, newQuery, (updatedQuery) => {
+            thisAnalysis.state.query = updatedQuery;
+            thisAnalysis.setState({ editMode: false });
+            thisAnalysis.colorEntities();
+            thisAnalysis.spinRefresh(false);
+        });
     }
 
     /* Sets colored underlines under query representing NLP entity */
-    updateNLPInfo() {
-        this.spinRefresh(true);
-
+    colorEntities() {
         var content = document.getElementById("nlpQuery");
         content.innerHTML = "";
 
-        var newQuery = this.state.query; //  TODO: Retrieve new analysis of query from server
-
-        if (newQuery.entities.length == 0) {
-            content.innerHTML = newQuery.query;
+        if (this.state.query.entities.length === 0) {
+            content.innerHTML = this.state.query.query;
         } else {
-            newQuery.entities.forEach((entity, i) => {
+            this.state.query.entities.forEach((entity, i) => {
                 const dummy = document.createElement("span"); // Create dummy div to render
                 content.appendChild(dummy);
-                var spaceNeeded = (i == newQuery.entities.length - 1); // Add space between text segments
+                var spaceNeeded = (i === this.state.query.entities.length - 1); // Add space between text segments
 
                 ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
-                    if (entity.name != null) {
-                        var span = document.getElementById(entity.name);
+                    if (entity.entity != null) {
+                        var span = document.getElementById(entity.entity);
                         const dropdownDummy = document.createElement("span"); // Create dummy div to render
                         span.appendChild(dropdownDummy);
-                        ReactDOM.render(this.createDropdown(newQuery, entity), dropdownDummy);
+                        ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
                     }
                 });
             });
         }
-
-        this.spinRefresh(false);
     }
 
     /* Toggle refresh spinning */
@@ -152,7 +168,7 @@ export default class AnalysisView extends Component {
                     <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
                 </div>
                 {this.state.editMode ?
-                    <span id="editableQuery" contentEditable={true} onInput={this.onQueryChange}>{this.state.query.query}</span> :
+                    <span id="editableQuery" contentEditable={true} suppressContentEditableWarning={true}>{this.state.query.query}</span> :
                     <span id="nlpQuery"></span>
                 }
             </div>
