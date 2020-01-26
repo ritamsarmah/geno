@@ -1,16 +1,24 @@
 import React, { Component } from 'react';
+import Tippy from '@tippy.js/react';
+import builder from '../../common/Builder';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCode, faStop } from '@fortawesome/free-solid-svg-icons';
+import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCode, faStop, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 import { Colors } from '../../common/constants';
 import './Preview.css'
-import builder from '../../common/Builder';
+import 'tippy.js/themes/light-border.css';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
 
 export default class Preview extends Component {
+
+    // States for programming by demo
+    STOPPED = 0;
+    RECORDING = 1;
+    POPOVER = 2;
+
     constructor(props) {
         super(props)
         this.state = {
@@ -18,7 +26,7 @@ export default class Preview extends Component {
             // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`
             address: "http://127.0.0.1:3301",
             src: "http://127.0.0.1:3301",
-            isRecordingEvents: false
+            recordState: this.STOPPED
         }
 
         this.syncAddress = this.syncAddress.bind(this);
@@ -104,38 +112,73 @@ export default class Preview extends Component {
 
     /* Tell webview to start recording mouse events */
     recordMouseEvents() {
-        this.setState({ isRecordingEvents: true });
+        this.setState({ recordState: this.RECORDING });
         this.preview.send('recordMouseEvents');
     }
 
     /* Tell webview to stop recording mouse events */
     stopRecordMouseEvents() {
-        this.setState({ isRecordingEvents: false });
         this.preview.send('stopRecordingMouseEvents');
     }
 
     /* Listener triggered after receiving ipc message from preview webview */
     receivedMouseEvent(event) {
-        // TODO: show element command popover
+        var elements = event.elements;
+        if (elements.length == 0) {
+            // No elements clicked so don't create any voice command
+            this.setState({ recordState: this.STOPPED });
+        } else {
+            this.setState({ recordState: this.POPOVER });
+            // TODO: show element command popover
+        }
+    }
+
+    getRecordOnClick() {
+        switch (this.state.recordState) {
+            case this.STOPPED:
+                return this.recordMouseEvents;
+            case this.RECORDING:
+                return this.stopRecordMouseEvents;
+            case this.POPOVER:
+                return () => this.setState({ recordState: this.STOPPED });
+                break;
+            default:
+                break;
+        }
+    }
+
+    getRecordIcon() {
+        switch (this.state.recordState) {
+            case this.STOPPED:
+                return <FontAwesomeIcon icon={faMousePointer} size="lg" ></FontAwesomeIcon>
+            case this.RECORDING:
+                return <FontAwesomeIcon icon={faStop} size="lg" ></FontAwesomeIcon>
+            case this.POPOVER:
+                return (
+                    <FontAwesomeIcon icon={faTimesCircle} size="lg" >
+                    </FontAwesomeIcon>
+                );
+            default:
+                break;
+        }
     }
 
     render() {
-        var addressBar;
-        if (!this.state.isRecordingEvents) {
-            addressBar = (
+        var addressBar = !this.state.isRecordingEvents
+            ? addressBar = (
                 <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
-                if (event.key === 'Enter') {
-                    this.navigate();
-                    event.target.blur();
-                }
+                    if (event.key === 'Enter') {
+                        this.navigate();
+                        event.target.blur();
+                    }
                 }}></input>
-            );
-        } else {
-            addressBar = (
-                <p id="recordTutorial">Record mouse clicks to create a voice command. Press stop button when done. </p>
             )
-        }
-        
+            : addressBar = (
+                <p id="recordTutorial">Record mouse clicks to create a voice command. Press stop button when done. </p>
+            );
+
+        // var content = (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
+
         return (
             <div>
                 <div className="buttons">
@@ -145,9 +188,11 @@ export default class Preview extends Component {
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
                     {addressBar}
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
-                    <button title="Create Command for Button" className="previewBtn" onClick={this.state.isRecordingEvents ? this.stopRecordMouseEvents : this.recordMouseEvents}>
-                        <FontAwesomeIcon icon={this.state.isRecordingEvents ? faStop : faMousePointer} size="lg"></FontAwesomeIcon>
-                    </button>
+                    <Tippy content={<p>"Hello"</p>} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState == this.POPOVER}>
+                        <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
+                            {this.getRecordIcon()}
+                        </button>
+                    </Tippy>
                 </div>
                 <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
             </div>

@@ -10,10 +10,8 @@ ipcRenderer.on('recordMouseEvents', () => {
 ipcRenderer.on('stopRecordingMouseEvents', () => {
     document.onclick = null;
     console.log("Geno: Stopped recording mouse events");
-    if (clickedElements.length != 0) {
-        console.log("Geno: Detected " + clickedElements.length + " clicks");
-        ipcRenderer.sendToHost("mouseEvent", { elements: clickedElements });
-    }
+    console.log("Geno: Detected " + clickedElements.length + " clicks");
+    ipcRenderer.sendToHost("mouseEvent", { elements: clickedElements });
 });
 
 function recordMouseEvents(e) {
