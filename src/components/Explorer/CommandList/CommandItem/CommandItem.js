@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { Marker } from "../../../Editor/Marker/Marker";
+import Marker from "../../../Editor/Marker/Marker";
 
 import './CommandItem.css';
 

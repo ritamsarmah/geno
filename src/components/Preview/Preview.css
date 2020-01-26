@@ -7,6 +7,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 #preview {
@@ -61,9 +62,21 @@
     border-radius: 4px;
     border: none;
     box-sizing: border-box;
+    font-size: 14px;
 }
 
 /* #addressBar:focus {
     outline: none;
     border: 1px solid var(--theme-color);
 } */
+
+#recordTutorial {
+    flex: 1;
+    font-size: 14px;
+    text-align: center;
+    color: whitesmoke;
+    max-lines: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+}

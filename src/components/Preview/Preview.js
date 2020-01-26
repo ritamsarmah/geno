@@ -120,6 +120,22 @@ export default class Preview extends Component {
     }
 
     render() {
+        var addressBar;
+        if (!this.state.isRecordingEvents) {
+            addressBar = (
+                <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
+                if (event.key === 'Enter') {
+                    this.navigate();
+                    event.target.blur();
+                }
+                }}></input>
+            );
+        } else {
+            addressBar = (
+                <p id="recordTutorial">Record mouse clicks to create a voice command. Press stop button when done. </p>
+            )
+        }
+        
         return (
             <div>
                 <div className="buttons">
@@ -127,12 +143,7 @@ export default class Preview extends Component {
                     <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
                     <button title="Go Forward" className="previewBtn" onClick={this.goForward}><FontAwesomeIcon icon={faChevronRight} size="lg" disabled></FontAwesomeIcon></button>
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
-                    <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
-                        if (event.key === 'Enter') {
-                            this.navigate();
-                            event.target.blur();
-                        }
-                    }}></input>
+                    {addressBar}
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
                     <button title="Create Command for Button" className="previewBtn" onClick={this.state.isRecordingEvents ? this.stopRecordMouseEvents : this.recordMouseEvents}>
                         <FontAwesomeIcon icon={this.state.isRecordingEvents ? faStop : faMousePointer} size="lg"></FontAwesomeIcon>
