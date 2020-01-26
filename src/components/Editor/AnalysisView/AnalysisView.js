@@ -60,25 +60,7 @@ export default class AnalysisView extends Component {
         )
     }
 
-    /* Swap entity selection in dropdown */
-    swapEntityNames(query, event) {
-        // var firstSelect = event.target;
-
-        // var first = firstSelect.dataset.curr;
-        // var second = firstSelect.value;
-
-        // var secondSelect = document.getElementById(`geno-select-${second}`);
-        // secondSelect.value = first;
-
-        // secondSelect.dataset.curr = first;
-        // firstSelect.dataset.curr = second;
-
-        // secondSelect.id = `geno-select-${first}`;
-        // firstSelect.id = `geno-select-${second}`
-
-        // this.state.query = database.swapEntityNames(this.props.command.id, query.id, first, second);
-    }
-
+    /* Update entity label */
     updateEntity(query, entity, event) {
         var label = event.target.value === "-" ? null : event.target.value
         database.updateEntity(this.props.command.id, query.id, entity, label);

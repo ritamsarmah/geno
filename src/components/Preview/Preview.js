@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCode } from '@fortawesome/free-solid-svg-icons';
+import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCode, faStop } from '@fortawesome/free-solid-svg-icons';
 
 import { Colors } from '../../common/constants';
 import './Preview.css'
@@ -14,8 +14,11 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`
+            // address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`
+            address: "http://127.0.0.1:3301",
+            src: "http://127.0.0.1:3301",
+            isRecordingEvents: false
         }
 
         this.syncAddress = this.syncAddress.bind(this);
@@ -27,6 +30,7 @@ export default class Preview extends Component {
         this.openDevTools = this.openDevTools.bind(this);
         this.buildApp = this.buildApp.bind(this);
         this.recordMouseEvents = this.recordMouseEvents.bind(this);
+        this.stopRecordMouseEvents = this.stopRecordMouseEvents.bind(this);
     }
 
     componentDidMount() {
@@ -100,13 +104,19 @@ export default class Preview extends Component {
 
     /* Tell webview to start recording mouse events */
     recordMouseEvents() {
+        this.setState({ isRecordingEvents: true });
         this.preview.send('recordMouseEvents');
+    }
+
+    /* Tell webview to stop recording mouse events */
+    stopRecordMouseEvents() {
+        this.setState({ isRecordingEvents: false });
+        this.preview.send('stopRecordingMouseEvents');
     }
 
     /* Listener triggered after receiving ipc message from preview webview */
     receivedMouseEvent(event) {
-        //TODO
-        console.log(event);
+        // TODO: show element command popover
     }
 
     render() {
@@ -124,7 +134,9 @@ export default class Preview extends Component {
                         }
                     }}></input>
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
-                    <button title="Record Command by Demo" className="previewBtn" onClick={this.recordMouseEvents}><FontAwesomeIcon icon={faMousePointer} size="lg"></FontAwesomeIcon></button>
+                    <button title="Create Command for Button" className="previewBtn" onClick={this.state.isRecordingEvents ? this.stopRecordMouseEvents : this.recordMouseEvents}>
+                        <FontAwesomeIcon icon={this.state.isRecordingEvents ? faStop : faMousePointer} size="lg"></FontAwesomeIcon>
+                    </button>
                 </div>
                 <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
             </div>

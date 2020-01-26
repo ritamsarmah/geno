@@ -195,14 +195,20 @@ export class Geno {
             }
 
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
-                this.currentTrigger = {
-                    query: query,
-                    info: info,
-                    entities: json.entities,
-                    args: [],
-                    expectedArgs: Object.keys(info.parameters) // Always in correct call order
-                };
-                this.retrieveArgs();
+                if (info.type == "element") {
+                    info.elements.forEach((el: { tag: any; index: number; }) => {
+                        document.getElementsByTagName(el.tag)[el.index].click();
+                    });
+                } else if (info.type == "function") {
+                    this.currentTrigger = {
+                        query: query,
+                        info: info,
+                        entities: json.entities,
+                        args: [],
+                        expectedArgs: Object.keys(info.parameters) // Always in correct call order
+                    };
+                    this.retrieveArgs();
+                }
             } else {
                 console.log(json);
                 this.respond("Sorry, I didn't understand.");

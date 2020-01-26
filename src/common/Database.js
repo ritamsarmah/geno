@@ -56,7 +56,22 @@ class Database {
             triggerFn: triggerFn,
             parameters: parameters,
             queries: [],
-            isTrained: false
+            isTrained: false,
+            type: "function"
+        };
+
+        this.db.get('commands').insert(cmd).write()
+        return cmd;
+    }
+
+    /* Add a command for programming by demo */
+    addElementCommand(elements) {
+        var cmd = {
+            name: "untitled_command",
+            elements: elements,
+            queries: [],
+            isTrained: false,
+            type: "element"
         };
 
         this.db.get('commands').insert(cmd).write()
@@ -155,16 +170,7 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
-    // swapEntityNames(commandId, queryId, first, second) {
-    //     // TODO: We will not swap... we will add or remove!!!
-    //     var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: first });
-    //     var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: second });
-    //     firstEntity.assign({ entity: second }).write();
-    //     secondEntity.assign({ entity: first }).write();
-    //     // TODO: network request to model to tell it about changes
-    //     return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
-    // }
-
+    /* Update label for entity */
     updateEntity(commandId, queryId, entity, label) {
         this.db.get('commands').getById(commandId)
             .get('queries').getById(queryId)
@@ -176,20 +182,24 @@ class Database {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
-    // Parse data from model and convert it into representation for our database
+    // Parse data from backend and convert it into representation for our database
+    // TODO: Do we even need this since we are only manually labelling entities based on dev input
     analyzeEntities(commandId, entities) {
-        console.log("analyze")
         entities.forEach(ex => {
-            // TODO: Split entities with multiple words
             if ('entities' in ex) {
                 var query = this.db.get('commands').getById(commandId)
                     .get('queries').find({ text: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
                     .get('entities');
 
                 ex.entities.forEach(en => {
-                    query.get(en.start).assign({
-                        "entity": en.entity
-                    }).write();
+                    var index = en.start;
+                    // Split multi-word entities for our database
+                    en.text.split(" ").forEach(word => {
+                        query.get(index).assign({
+                            "entity": en.entity
+                        }).write();
+                        index += word.length + 1;
+                    });
                 });
             }
         });

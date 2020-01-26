@@ -1,12 +1,32 @@
 const { ipcRenderer } = require('electron')
 
-ipcRenderer.on('recordMouseEvents', () => {
-    document.body.onclick = recordMouseEvents;
-})
+var clickedElements = [];
 
-function recordMouseEvents(event) {
-    var list = getEventListeners(event.target);
-    console.log(list["click"][0]["listener"].toString())
-    ipcRenderer.sendToHost("mouseEvent", event);
-    document.body.onmousedown = null;
+ipcRenderer.on('recordMouseEvents', () => {
+    document.onclick = recordMouseEvents;
+    console.log("Geno: Recording mouse events");
+});
+
+ipcRenderer.on('stopRecordingMouseEvents', () => {
+    document.onclick = null;
+    console.log("Geno: Stopped recording mouse events");
+    if (clickedElements.length != 0) {
+        console.log("Geno: Detected " + clickedElements.length + " clicks");
+        ipcRenderer.sendToHost("mouseEvent", { elements: clickedElements });
+    }
+});
+
+function recordMouseEvents(e) {
+    isRecordingMouseEvents = true;
+
+    var clickedElement = (window.event)
+        ? window.event.srcElement
+        : e.target;
+    var tags = document.getElementsByTagName(clickedElement.tagName);
+
+    for (var i = 0; i < tags.length; ++i) {
+        if (tags[i] == clickedElement) { 
+            clickedElements.push({ tag: clickedElement.tagName, index: i });
+        }
+    }
 }
