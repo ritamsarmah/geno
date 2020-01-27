@@ -156,14 +156,20 @@ var Geno = /** @class */ (function () {
                 info = Object.values(_this.intentMap)[0]; // Only intent so get it
             }
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
-                _this.currentTrigger = {
-                    query: query,
-                    info: info,
-                    entities: json.entities,
-                    args: [],
-                    expectedArgs: Object.keys(info.parameters) // Always in correct call order
-                };
-                _this.retrieveArgs();
+                if (info.type === "demo") {
+                    console.log("demo");
+                    _this.clickElements(info.elements, info.delay * 1000);
+                }
+                else if (info.type === "function") {
+                    _this.currentTrigger = {
+                        query: query,
+                        info: info,
+                        entities: json.entities,
+                        args: [],
+                        expectedArgs: Object.keys(info.parameters) // Always in correct call order
+                    };
+                    _this.retrieveArgs();
+                }
             }
             else {
                 console.log(json);
@@ -179,8 +185,7 @@ var Geno = /** @class */ (function () {
         var expectedArgs = this.currentTrigger.expectedArgs;
         // All arguments retrieved already, trigger function
         if (expectedArgs.length == this.currentTrigger.args.length) {
-            import("../" + this.currentTrigger.info.file)
-                .then(function (module) {
+            Promise.resolve().then(function () { return require("../" + _this.currentTrigger.info.file); }).then(function (module) {
                 var fn = module[_this.currentTrigger.info.triggerFn];
                 if (fn) {
                     var result = module[_this.currentTrigger.info.triggerFn].apply(null, _this.currentTrigger.args);
@@ -219,6 +224,20 @@ var Geno = /** @class */ (function () {
             this.addArg(value);
         }
         this.retrieveArgs();
+    };
+    /** Recursive function to simulate clicks for demo command */
+    Geno.prototype.clickElements = function (elements, delay, i) {
+        console.log("clicking elements");
+        var _this = this;
+        if (i === void 0) { i = 0; }
+        if (i >= elements.length) {
+            return;
+        }
+        var el = elements[i];
+        document.getElementsByTagName(el.tag)[el.index].click();
+        setTimeout(function () {
+            _this.clickElements(elements, delay, i + 1);
+        }, delay);
     };
     /** Intelligently convert argument to type and add to arguments list */
     Geno.prototype.addArg = function (value) {

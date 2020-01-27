@@ -195,11 +195,9 @@ export class Geno {
             }
 
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
-                if (info.type == "element") {
-                    info.elements.forEach((el: { tag: any; index: number; }) => {
-                        document.getElementsByTagName(el.tag)[el.index].click();
-                    });
-                } else if (info.type == "function") {
+                if (info.type === "demo") {
+                    this.clickElements(info.elements, info.delay * 1000);
+                } else if (info.type === "function") {
                     this.currentTrigger = {
                         query: query,
                         info: info,
@@ -267,6 +265,19 @@ export class Geno {
             this.addArg(value);
         }
         this.retrieveArgs();
+    }
+
+    /** Recursive function to simulate clicks for demo command */
+    clickElements(elements: any[], delay: number, i: number = 0) {
+        console.log("click elements");
+        if (i >= elements.length) { return; }
+
+        var el = elements[i];
+        document.getElementsByTagName(el.tag)[el.index].click();
+
+        setTimeout(() => {
+            this.clickElements(elements, delay, i + 1);
+        }, delay);
     }
     
     /** Intelligently convert argument to type and add to arguments list */

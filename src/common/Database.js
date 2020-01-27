@@ -51,7 +51,7 @@ class Database {
             return { name: p, backupQuery: "" }
         });
         var cmd = {
-            name: "untitled_command",
+            name: "untitled_command" + (this.getCommands().length + 1),
             file: file,
             triggerFn: triggerFn,
             parameters: parameters,
@@ -65,13 +65,14 @@ class Database {
     }
 
     /* Add a command for programming by demo */
-    addElementCommand(elements) {
+    addDemoCommand(elements) {
         var cmd = {
-            name: "untitled_command",
+            name: "untitled_command" + (this.getCommands().length + 1),
             elements: elements,
+            delay: 0.01,
             queries: [],
             isTrained: false,
-            type: "element"
+            type: "demo"
         };
 
         this.db.get('commands').insert(cmd).write()
@@ -222,6 +223,15 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
+    /*** Demo Command Functions ***/
+    
+    updateDelay(commandId, delay) {
+        this.db.get('commands').getById(commandId).assign({ delay: delay }).write();
+        return this.getCommandForId(commandId);
+    } 
+
+    /*** Training ***/
+    
     trainModel(commandId, callback) {
         var command = this.getCommandForId(commandId)
 
@@ -244,11 +254,21 @@ class Database {
             }
         }
 
-        var params = {
-            "dev_id": 1,
-            "intent": command.name,
-            "queries": command.queries.map(q => q.text),
-            "parameters": command.parameters.map(q => q.name)
+        var params;
+        if (command.type === "demo") {
+            params = {
+                "dev_id": 1,
+                "intent": command.name,
+                "queries": command.queries.map(q => q.text),
+                "parameters": []
+            }
+        } else if (command.type === "function") {
+            params = {
+                "dev_id": 1,
+                "intent": command.name,
+                "queries": command.queries.map(q => q.text),
+                "parameters": command.parameters.map(q => q.name)
+            }
         }
 
         xhr.send(JSON.stringify(params));

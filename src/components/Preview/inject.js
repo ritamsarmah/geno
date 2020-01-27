@@ -11,7 +11,7 @@ ipcRenderer.on('stopRecordingMouseEvents', () => {
     document.onclick = null;
     console.log("Geno: Stopped recording mouse events");
     console.log("Geno: Detected " + clickedElements.length + " clicks");
-    ipcRenderer.sendToHost("mouseEvent", { elements: clickedElements });
+    ipcRenderer.sendToHost("recordingDone", { elements: clickedElements });
 });
 
 function recordMouseEvents(e) {
@@ -25,6 +25,8 @@ function recordMouseEvents(e) {
     for (var i = 0; i < tags.length; ++i) {
         if (tags[i] == clickedElement) { 
             clickedElements.push({ tag: clickedElement.tagName, index: i });
+            var message = "Clicked " + clickedElement.tagName + " (" + clickedElements.length + " clicks)"; 
+            ipcRenderer.sendToHost("mouseEvent", { message: message });
         }
     }
 }

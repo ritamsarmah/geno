@@ -15,18 +15,29 @@ class Builder {
 
     build() {
         var commandMap = {}
-        // TODO: ONLY COPY OVER COMMANDS THAT HAVE BEEN TRAINED!!
         database.getCommands().forEach(cmd => {
-            var parameterMap = {}
+            // Only copy over commands that have been trained
+            if (cmd.isTrained) {
+                if (cmd.type === "demo") {
+                    commandMap[cmd.name] = {
+                        type: cmd.type,
+                        elements: cmd.elements,
+                        delay: cmd.delay
+                    };
+                } else if (cmd.type === "function") {
+                    var parameterMap = {}
 
-            cmd.parameters.forEach(p => {
-                parameterMap[p.name] = p.backupQuery
-            });
-            commandMap[cmd.name] = {
-                file: cmd.file,
-                triggerFn: cmd.triggerFn,
-                parameters: parameterMap // TODO: later include info on what to convert data type to
-            };
+                    cmd.parameters.forEach(p => {
+                        parameterMap[p.name] = p.backupQuery
+                    });
+                    commandMap[cmd.name] = {
+                        type: cmd.type,
+                        file: cmd.file,
+                        triggerFn: cmd.triggerFn,
+                        parameters: parameterMap // TODO: later include info on what to convert data type to
+                    };
+                }
+            }
         });
 
         // TODO: Optional code that shows the popover

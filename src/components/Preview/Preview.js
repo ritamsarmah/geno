@@ -8,6 +8,9 @@ import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCod
 import { Colors } from '../../common/constants';
 import './Preview.css'
 import 'tippy.js/themes/light-border.css';
+import DemoPopover from '../Editor/Popover/DemoPopover';
+
+import database from '../../common/Database';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
@@ -26,7 +29,8 @@ export default class Preview extends Component {
             // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`
             address: "http://127.0.0.1:3301",
             src: "http://127.0.0.1:3301",
-            recordState: this.STOPPED
+            recordState: this.STOPPED,
+            demoCommand: null
         }
 
         this.syncAddress = this.syncAddress.bind(this);
@@ -38,7 +42,9 @@ export default class Preview extends Component {
         this.openDevTools = this.openDevTools.bind(this);
         this.buildApp = this.buildApp.bind(this);
         this.recordMouseEvents = this.recordMouseEvents.bind(this);
+        this.createDemoCommand = this.createDemoCommand.bind(this);
         this.stopRecordMouseEvents = this.stopRecordMouseEvents.bind(this);
+        this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
     }
 
     componentDidMount() {
@@ -54,6 +60,8 @@ export default class Preview extends Component {
         this.preview.addEventListener('ipc-message', (event) => {
             if (event.channel === "mouseEvent") {
                 this.receivedMouseEvent(event.args[0]);
+            } else if (event.channel === "recordingDone") {
+                this.createDemoCommand(event.args[0]);
             }
         })
 
@@ -79,23 +87,27 @@ export default class Preview extends Component {
 
     /* Navigate back in webview*/
     goBack() {
+        this.stopRecordMouseEvents();
         this.preview.goBack();
         this.setState({ address: this.preview.src })
     }
 
     /* Navigate forward in webview */
     goForward() {
+        this.stopRecordMouseEvents();
         this.preview.goForward();
         this.setState({ address: this.preview.src })
     }
 
     /* Navigate to new page in webview */
     navigate() {
+        this.stopRecordMouseEvents();
         this.setState({ src: this.state.address });
     }
 
     /* Reload webview */
     reloadPreview() {
+        this.stopRecordMouseEvents();
         this.preview.reload();
     }
 
@@ -118,18 +130,28 @@ export default class Preview extends Component {
 
     /* Tell webview to stop recording mouse events */
     stopRecordMouseEvents() {
-        this.preview.send('stopRecordingMouseEvents');
+        if (this.state.recordState != this.STOPPED) {
+            this.preview.send('stopRecordingMouseEvents');
+            this.setState({ demoMessage: null });
+        }
     }
 
-    /* Listener triggered after receiving ipc message from preview webview */
+    /* Listener triggered after receiving mouseEvent ipc message from preview webview */
     receivedMouseEvent(event) {
+        this.setState({ demoMessage: event.message });
+    }
+    
+    /* Listener triggered after receiving recordingDone ipc message from preview webview */
+    createDemoCommand(event) {
         var elements = event.elements;
         if (elements.length == 0) {
             // No elements clicked so don't create any voice command
             this.setState({ recordState: this.STOPPED });
         } else {
-            this.setState({ recordState: this.POPOVER });
-            // TODO: show element command popover
+            this.setState({
+                demoCommand: database.addDemoCommand(elements),
+                recordState: this.POPOVER
+            });
         }
     }
 
@@ -141,7 +163,6 @@ export default class Preview extends Component {
                 return this.stopRecordMouseEvents;
             case this.POPOVER:
                 return () => this.setState({ recordState: this.STOPPED });
-                break;
             default:
                 break;
         }
@@ -163,8 +184,15 @@ export default class Preview extends Component {
         }
     }
 
+    handlePopoverUnmount() {
+        this.setState({
+            demoCommand: null,
+            recordState: this.STOPPED
+        });
+    }
+
     render() {
-        var addressBar = !this.state.isRecordingEvents
+        var addressBar = !(this.state.recordState == this.RECORDING)
             ? addressBar = (
                 <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
                     if (event.key === 'Enter') {
@@ -174,10 +202,10 @@ export default class Preview extends Component {
                 }}></input>
             )
             : addressBar = (
-                <p id="recordTutorial">Record mouse clicks to create a voice command. Press stop button when done. </p>
+                <p id="recordTutorial">{this.state.demoMessage != null ? this.state.demoMessage : "Click a UI element to start recording command"}</p>
             );
 
-        // var content = (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
+        var content = (this.state.demoCommand != null) ? (<DemoPopover command={this.state.demoCommand} unmountMe={this.handlePopoverUnmount}/>) : (<span></span>);
 
         return (
             <div>
@@ -188,7 +216,7 @@ export default class Preview extends Component {
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
                     {addressBar}
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
-                    <Tippy content={<p>"Hello"</p>} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState == this.POPOVER}>
+                    <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState == this.POPOVER}>
                         <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
                             {this.getRecordIcon()}
                         </button>

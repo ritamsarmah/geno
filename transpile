@@ -1,0 +1,3 @@
+#!/bin/bash
+
+node_modules/typescript/bin/tsc src/common/exported/geno.ts
