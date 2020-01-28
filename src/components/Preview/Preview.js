@@ -145,7 +145,7 @@ export default class Preview extends Component {
     /* Listener triggered after receiving clickEvent ipc message from preview webview */
     receivedMouseEvent(event) {
         var message = "Clicked " + event.tagName.toLowerCase();
-        if (event.className) {
+        if (event.className !== null || event.className !== "") {
             message += "." + event.className.replace(' ', '.');
         }
         this.setState({ 

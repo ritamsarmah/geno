@@ -184,7 +184,8 @@ var Geno = /** @class */ (function () {
         var expectedArgs = this.currentTrigger.expectedArgs;
         // All arguments retrieved already, trigger function
         if (expectedArgs.length == this.currentTrigger.args.length) {
-            Promise.resolve().then(function () { return require("../" + _this.currentTrigger.info.file); }).then(function (module) {
+            import("../" + this.currentTrigger.info.file)
+                .then(function (module) {
                 var fn = module[_this.currentTrigger.info.triggerFn];
                 if (fn) {
                     var result = module[_this.currentTrigger.info.triggerFn].apply(null, _this.currentTrigger.args);
