@@ -70,7 +70,7 @@ class Database {
             name: "untitled_command" + (this.getCommands().length + 1),
             elements: elements,
             file: file,
-            delay: 0.01,
+            delay: 0,
             queries: [],
             isTrained: false,
             type: "demo"

@@ -123,7 +123,9 @@ export default class App extends Component {
           <h1>Welcome to Geno</h1>
           <p>Version {pjson.version}</p>
           <br></br>
-          <div className="openBtn" onClick={this.openFileBrowser}>Open Project</div>
+          <span>
+            <span className="openBtn" onClick={this.openFileBrowser}>Open Project</span>
+          </span>
         </div>
       );
     }

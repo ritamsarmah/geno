@@ -19,11 +19,20 @@
             color: lightgray;
         }
 
+        h3 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: normal;
+            font-size: 20px;
+            text-align: center;
+            color: lightgray;
+        }
+
         code {
             font-family: 'Courier New', Courier, monospace;
         }
 
-        ol {
+        ol,
+        ul {
             font-family: Arial, Helvetica, sans-serif;
             color: lightgray;
         }
@@ -36,30 +45,61 @@
 
 <body>
     <div class="center-text">
-        <h2>Testing with Geno</h2>
+        <h2>Getting Started</h2>
         <ol>
-            <li>Navigate to project's local directory or server using the address bar</li>
+            <li>Navigate to your project directory or server via the address bar.</li>
             <li>Add the following lines to your HTML file:
                 <br><br>
                 <code>&lt;link rel="stylesheet" type="text/css" href="./geno/geno.css" /&gt;</code>
                 <br><br>
                 <code>
                     &lt;script&gt; <br>
-                        import geno from "/path/to/geno/geno.js"; <br>
+                        import geno from "/PATH/TO/geno/geno.js"; <br>
                         geno.start(YOUR_DEV_ID); <br>
                     &lt;/script&gt; <br>
                 </code>
             </li>
+            <li>Build and integrate using the blue play button.</li>
+        </ol>
+        <br><br>
+        <h2>Creating Voice Commands</h2>
+        <h3>Function Commands</h3>
+        <ol>
+            <li>Click the blue circle next to any function.</li>
+            <li>Add sample user queries that could trigger the command. You must have at least 2, though adding more will improve accuracy.</li>
+            <li>For any function parameters, click each sample query and map words to the correct parameters</li>
+            <li>Click "Train Model" and wait for the model to finish training.</li>
             <li>Export functions mapped to voice commands:
                 <br><br>
                 <code>export { myVoiceFunction, myOtherFunction }</code>
             </li>
-            <li>Import <code>geno</code> in JavaScript files that call Geno functions:
+            <li>Build and integrate using the blue play button.</li>
+        </ol>
+        <br>
+        <h3>UI Demo Commands</h3>
+        <ol>
+            <li>Navigate to a webpage in your application.</li>
+            <li>Click the mouse cursor button in the menu bar of the preview pane.</li>
+            <li>Record a sequence of clicks on clickable webpage elements.</li>
+            <li>Click the stop button in the menu bar of the preview pane.</li>
+            <li>Add sample user queries and train the model.</li>
+            <li>Build and integrate using the blue play button</li>
+        </ol>
+        <br><br>
+        <h2>Adding Voice Responses</h2>
+        <ol>
+            <li>Import <code>geno</code> at the top of the file:
                 <br><br>
                 <code>import { geno } from "/path/to/geno/geno.js";</code>
             </li>
-            <li>Build project using blue play button</li>
+            <li>
+                Use <code>geno.respond()</code> to speak to the user.
+            </li>
+            <li>
+                Use <code>geno.ask()</code> to ask the user a question and execute a callback on the response.
+            </li>
         </ol>
+
     </div>
 </body>
 
