@@ -58,8 +58,10 @@ export default class Preview extends Component {
         });
 
         this.preview.addEventListener('ipc-message', (event) => {
-            if (event.channel === "mouseEvent") {
+            if (event.channel === "clickEvent") {
                 this.receivedMouseEvent(event.args[0]);
+            } else if (event.channel === "hoverEvent") {
+                this.receivedHoverEvent(event.args[0]);
             } else if (event.channel === "recordingDone") {
                 this.createDemoCommand(event.args[0]);
             }
@@ -124,7 +126,11 @@ export default class Preview extends Component {
 
     /* Tell webview to start recording mouse events */
     recordMouseEvents() {
-        this.setState({ recordState: this.RECORDING });
+        this.setState({
+            numClicks: 0,
+            currentTag: "None",
+            recordState: this.RECORDING
+        });
         this.preview.send('recordMouseEvents');
     }
 
@@ -136,9 +142,23 @@ export default class Preview extends Component {
         }
     }
 
-    /* Listener triggered after receiving mouseEvent ipc message from preview webview */
+    /* Listener triggered after receiving clickEvent ipc message from preview webview */
     receivedMouseEvent(event) {
-        this.setState({ demoMessage: event.message });
+        var message = "Clicked " + event.tagName.toLowerCase();
+        if (event.className) {
+            message += "." + event.className.replace(' ', '.');
+        }
+        this.setState({ 
+            demoMessage: message,
+            numClicks: event.numClicks
+         });
+    }
+
+    /* Listener triggered after receiving hoverEvent ipc message from preview webview */
+    receivedHoverEvent(event) {
+        this.setState({ 
+            currentTag: event.tag.toLowerCase()
+         });
     }
     
     /* Listener triggered after receiving recordingDone ipc message from preview webview */
@@ -194,7 +214,7 @@ export default class Preview extends Component {
     render() {
         var addressBar = !(this.state.recordState === this.RECORDING)
             ? (
-                <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
+                <input id="addressBar" class="pill" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
                     if (event.key === 'Enter') {
                         this.navigate();
                         event.target.blur();
@@ -207,8 +227,21 @@ export default class Preview extends Component {
 
         var content = (this.state.demoCommand != null) ? (<DemoPopover command={this.state.demoCommand} unmountMe={this.handlePopoverUnmount}/>) : (<span></span>);
 
-        return (
-            <div>
+        var buttons = (this.state.recordState === this.RECORDING)
+            ? (
+                <div className="buttons">
+                    {addressBar}
+                    <div class="pill">{this.state.currentTag}</div>
+                    <div class="pill">{this.state.numClicks + (this.state.numClicks === 1 ? " click" : " clicks")}</div>
+                    <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
+                    <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState === this.POPOVER}>
+                        <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
+                            {this.getRecordIcon()}
+                        </button>
+                    </Tippy>
+                </div>
+            )
+            : (
                 <div className="buttons">
                     <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faPlay} size="lg" color={Colors.Theme}></FontAwesomeIcon></button>
                     <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
@@ -222,6 +255,10 @@ export default class Preview extends Component {
                         </button>
                     </Tippy>
                 </div>
+            );
+        return (
+            <div>
+                {buttons}
                 <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
             </div>
         );
