@@ -137,7 +137,7 @@ export default class DemoPopover extends Component {
 
     getElementCount() {
         var message = this.state.command.elements.length
-        if (this.state.command.elements.length == 1) {
+        if (this.state.command.elements.length === 1) {
             message += " click";
         } else {
             message += " clicks";

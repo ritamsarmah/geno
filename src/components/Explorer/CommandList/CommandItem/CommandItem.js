@@ -12,7 +12,7 @@ export default class CommandItem extends Component {
 
     getElementCount() {
         var message = this.props.command.elements.length
-        if (this.props.command.elements.length == 1) {
+        if (this.props.command.elements.length === 1) {
             message += " click";
         } else {
             message += " clicks";

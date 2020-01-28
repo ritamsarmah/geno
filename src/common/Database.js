@@ -18,8 +18,8 @@ class Database {
     /* Config method to set user's project directory */
     configureProject(dir) {
         this.dir = dir;
-        const commandsPath = this.dir + Paths.Commands;
-        this.adapter = new FileSync(commandsPath);
+        this.commandsPath = this.dir + Paths.Commands;
+        this.adapter = new FileSync(this.commandsPath);
         this.db = low(this.adapter);
         this.db._.mixin(lodashId)
     }

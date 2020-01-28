@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import DemoPopover from '../Popover/DemoPopover';
 import Tippy from '@tippy.js/react';
 
-import database from '../../../common/Database';
-
 import './Marker.css'
 import 'tippy.js/themes/light-border.css';
 

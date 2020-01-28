@@ -12,9 +12,11 @@ import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
+import database from '../../common/Database';
 
 const fs = window.require('fs');
 const path = require('path');
+const chokidar = window.require('chokidar');
 
 var acorn = require("acorn-loose/dist/acorn-loose.js");
 
@@ -100,6 +102,10 @@ export default class Editor extends Component {
     editorDidMount(editor) {
         this.addGutterCircles(editor);
         this.codeMirror = editor;
+
+        chokidar.watch(database.commandsPath).on('all', (event, path) => {
+            this.addGutterCircles(editor);
+        });
     }
 
     componentDidUpdate(prevProps) {

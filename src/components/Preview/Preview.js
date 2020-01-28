@@ -130,7 +130,7 @@ export default class Preview extends Component {
 
     /* Tell webview to stop recording mouse events */
     stopRecordMouseEvents() {
-        if (this.state.recordState != this.STOPPED) {
+        if (this.state.recordState !== this.STOPPED) {
             this.preview.send('stopRecordingMouseEvents');
             this.setState({ demoMessage: null });
         }
@@ -144,7 +144,7 @@ export default class Preview extends Component {
     /* Listener triggered after receiving recordingDone ipc message from preview webview */
     createDemoCommand(event) {
         var elements = event.elements;
-        if (elements.length == 0) {
+        if (elements.length === 0) {
             // No elements clicked so don't create any voice command
             this.setState({ recordState: this.STOPPED });
         } else {
@@ -192,8 +192,8 @@ export default class Preview extends Component {
     }
 
     render() {
-        var addressBar = !(this.state.recordState == this.RECORDING)
-            ? addressBar = (
+        var addressBar = !(this.state.recordState === this.RECORDING)
+            ? (
                 <input id="addressBar" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
                     if (event.key === 'Enter') {
                         this.navigate();
@@ -201,7 +201,7 @@ export default class Preview extends Component {
                     }
                 }}></input>
             )
-            : addressBar = (
+            : (
                 <p id="recordTutorial">{this.state.demoMessage != null ? this.state.demoMessage : "Click a UI element to start recording command"}</p>
             );
 
@@ -216,7 +216,7 @@ export default class Preview extends Component {
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
                     {addressBar}
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
-                    <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState == this.POPOVER}>
+                    <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState === this.POPOVER}>
                         <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
                             {this.getRecordIcon()}
                         </button>
