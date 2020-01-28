@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import Marker from "../../../Editor/Marker/Marker";
+import ListMarker from "../../../Editor/Marker/ListMarker";
 import DemoMarker from "../../../Editor/Marker/DemoMarker";
 
 import './CommandItem.css';
@@ -40,7 +40,7 @@ export default class CommandItem extends Component {
                 <div className="cmdItem">
                     <p className="cmdName">{this.props.command.name}</p>
                     <span className="cmdMarker">
-                        <Marker file={this.props.command.file} triggerFn={this.props.command.triggerFn} params={this.props.command.parameters} />
+                        <ListMarker file={this.props.command.file} triggerFn={this.props.command.triggerFn} params={this.props.command.parameters} />
                     </span>
                     <p className="cmdPath"> {path.basename(this.props.command.file)}</p>
                     <span className="fn">{this.props.command.triggerFn}</span>

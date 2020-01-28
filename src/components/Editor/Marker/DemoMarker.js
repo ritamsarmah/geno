@@ -12,29 +12,22 @@ export default class DemoMarker extends Component {
         this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
         this.state = {
             isVisible: false
-        }
+        };
     }
 
     onClick() {
-        // Case to enable popover visibility after deleting
-        if (!this.state.isVisible) {
-            this.setState({ isVisible: null });
-        }
+        this.setState({ isVisible: !this.state.isVisible });
     }
 
     handlePopoverUnmount() {
-        this.setState({
-            command: null,
-            isVisible: false,
-        });
+        this.setState({ isVisible: false });
     }
 
     render() {
-        var content = (this.props.command != null) ? (<DemoPopover command={this.props.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
-        var fillClass = (this.props.command != null) ? "filledMarker" : "emptyMarker";
+        var content = (<DemoPopover command={this.props.command} unmountMe={this.handlePopoverUnmount} />);
         return (
-            <Tippy content={content} arrow={true} trigger="click" placement="right-end" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible}>
-                <div className={fillClass} onClick={this.onClick}></div>
+            <Tippy content={content} arrow={true} trigger="click" placement="top-end" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible} onHidden={this.handlePopoverUnmount}>
+                <div className="filledMarker" onClick={this.onClick}></div>
             </Tippy>
         );
     }
