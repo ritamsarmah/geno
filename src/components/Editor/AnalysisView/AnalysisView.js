@@ -130,7 +130,9 @@ export default class AnalysisView extends Component {
                     var span = document.getElementById(entity.start);
                     const dropdownDummy = document.createElement("span"); // Create dummy div to render
                     span.appendChild(dropdownDummy);
-                    ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
+                    if (this.props.command.type == "function") {
+                        ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
+                    }
                 });
             });
         }

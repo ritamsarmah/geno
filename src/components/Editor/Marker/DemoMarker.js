@@ -18,9 +18,10 @@ export default class DemoMarker extends Component {
     }
 
     onClick() {
-        this.setState({
-            isVisible: !this.state.isVisible
-        });
+        // Case to enable popover visibility after deleting
+        if (!this.state.isVisible) {
+            this.setState({ isVisible: null });
+        }
     }
 
     handlePopoverUnmount() {

@@ -157,7 +157,6 @@ var Geno = /** @class */ (function () {
             }
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 if (info.type === "demo") {
-                    console.log("demo");
                     _this.clickElements(info.elements, info.delay * 1000);
                 }
                 else if (info.type === "function") {
@@ -227,7 +226,6 @@ var Geno = /** @class */ (function () {
     };
     /** Recursive function to simulate clicks for demo command */
     Geno.prototype.clickElements = function (elements, delay, i) {
-        console.log("clicking elements");
         var _this = this;
         if (i === void 0) { i = 0; }
         if (i >= elements.length) {

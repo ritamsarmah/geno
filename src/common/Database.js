@@ -65,10 +65,11 @@ class Database {
     }
 
     /* Add a command for programming by demo */
-    addDemoCommand(elements) {
+    addDemoCommand(elements, file) {
         var cmd = {
             name: "untitled_command" + (this.getCommands().length + 1),
             elements: elements,
+            file: file,
             delay: 0.01,
             queries: [],
             isTrained: false,

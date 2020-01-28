@@ -70,7 +70,6 @@ export default class Popover extends Component {
 
     /* Handles unmount of AnalysisView */
     handleAnalysisUnmount() {
-        // TODO: Check if need updateQuery again
         this.setState({
             renderAnalysis: false,
         });

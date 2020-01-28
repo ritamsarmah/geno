@@ -149,7 +149,7 @@ export default class Preview extends Component {
             this.setState({ recordState: this.STOPPED });
         } else {
             this.setState({
-                demoCommand: database.addDemoCommand(elements),
+                demoCommand: database.addDemoCommand(elements, this.state.address.split('/').pop()),
                 recordState: this.POPOVER
             });
         }
@@ -162,7 +162,7 @@ export default class Preview extends Component {
             case this.RECORDING:
                 return this.stopRecordMouseEvents;
             case this.POPOVER:
-                return () => this.setState({ recordState: this.STOPPED });
+                return this.handlePopoverUnmount;
             default:
                 break;
         }
