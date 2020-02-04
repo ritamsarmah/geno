@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import FileTree from './FileTree/FileTree';
 import CommandList from './CommandList/CommandList';
+import PreferencesTab from './PreferencesTab/PreferencesTab';
 
-import { faMicrophone, faFolder } from "@fortawesome/free-solid-svg-icons";
+import { faMicrophone, faFolder, faCog } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { Colors } from '../../common/constants';
@@ -15,10 +16,11 @@ const path = require('path');
 export default class Explorer extends Component {
     constructor(props) {
         super(props);
-        this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands
+        this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands, 2 - Settings
 
         this.showFileTree = this.showFileTree.bind(this);
         this.showVoiceCommands = this.showVoiceCommands.bind(this);
+        this.showSettings = this.showSettings.bind(this);
         this.walkDone = this.walkDone.bind(this);
 
         this.walk(this.props.dir, this.walkDone);
@@ -84,6 +86,10 @@ export default class Explorer extends Component {
         this.setState({ tab: 1 });
     }
 
+    showSettings() {
+        this.setState({ tab: 2 });
+    }
+
     render() {
         var content;
         switch (this.state.tab) {
@@ -95,7 +101,10 @@ export default class Explorer extends Component {
                 }
                 break;
             case 1:
-                content = (<CommandList />); // TODO: pass in prop for project path
+                content = (<CommandList />);
+                break;
+            case 2:
+                content = (<PreferencesTab />);
                 break;
             default:
                 break;
@@ -109,6 +118,9 @@ export default class Explorer extends Component {
                     </div>
                     <div className="tabButton" onClick={this.showVoiceCommands}>
                         <FontAwesomeIcon icon={faMicrophone} color={this.isTabEnabled(1)} />
+                    </div>
+                    <div className="tabButton" onClick={this.showSettings}>
+                        <FontAwesomeIcon icon={faCog} color={this.isTabEnabled(2)} />
                     </div>
                 </div>
                 {content}

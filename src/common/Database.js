@@ -1,12 +1,9 @@
 import { Paths } from "./constants";
+import preferences from './Preferences';
 
 const lodashId = require('lodash-id')
 const low = require('lowdb');
 const FileSync = window.require('lowdb/adapters/FileSync');
-
-const MODAL_VOICE = "voice";
-const MODAL_MOUSE = "mouse";
-const MODAL_KEY = "keyboard";
 
 class Database {
 
@@ -14,10 +11,8 @@ class Database {
         this.dir = null;
         this.adapter = null;
         this.db = null;
-        this.modalities = [MODAL_VOICE, MODAL_MOUSE];
 
         this.configureProject = this.configureProject.bind(this);
-        this.addQuery = this.addQuery.bind(this);
     }
 
     /* Config method to set user's project directory */
@@ -53,7 +48,7 @@ class Database {
     /* Add a command */
     addCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {
-            return { name: p, modality: MODAL_VOICE, backupQuery: "" }
+            return { name: p, backupQuery: "" }
         });
         var cmd = {
             name: "untitled_command" + (this.getCommands().length + 1),
@@ -62,6 +57,7 @@ class Database {
             parameters: parameters,
             queries: [],
             isTrained: false,
+            mouseParameter: null,
             type: "function"
         };
 
@@ -97,7 +93,7 @@ class Database {
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
         xhr.send(JSON.stringify({
-            "dev_id": 1,
+            "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(id).name,
         }));
 
@@ -155,7 +151,7 @@ class Database {
         };
 
         xhr.send(JSON.stringify({
-            "dev_id": 1,
+            "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(commandId).name,
             "old_query": oldText,
             "new_query": updatedQuery.text
@@ -168,7 +164,7 @@ class Database {
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
         xhr.send(JSON.stringify({
-            "dev_id": 1,
+            "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(commandId).name,
             "query": this.getQueryForId(commandId, queryId).text
         }));
@@ -219,7 +215,7 @@ class Database {
         var oldParams = command.get('parameters');
         var newParams = params.map(p => {
             var oldParam = oldParams.find({ name: p }).value()
-            return oldParam ? oldParam : { name: p, modality: MODAL_VOICE, backupQuery: "" }
+            return oldParam ? oldParam : { name: p, backupQuery: "" }
         });
         command.assign({ parameters: newParams }).write();
     }
@@ -229,8 +225,8 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
-    updateModality(commandId, parameter, modality) {
-        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ modality: modality }).write();
+    updateMouseParameter(commandId, parameter) {
+        this.db.get('commands').getById(commandId).assign({ mouseParameter: parameter }).write();
         return this.getCommandForId(commandId);
     }
 
@@ -268,14 +264,14 @@ class Database {
         var params;
         if (command.type === "demo") {
             params = {
-                "dev_id": 1,
+                "dev_id": preferences.getDevId(),
                 "intent": command.name,
                 "queries": command.queries.map(q => q.text),
                 "parameters": []
             }
         } else if (command.type === "function") {
             params = {
-                "dev_id": 1,
+                "dev_id": preferences.getDevId(),
                 "intent": command.name,
                 "queries": command.queries.map(q => q.text),
                 "parameters": command.parameters.map(q => q.name)

@@ -32,7 +32,7 @@ export default class Popover extends Component {
         this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
-        this.changeModality = this.changeModality.bind(this);
+        this.changeMouseParameter = this.changeMouseParameter.bind(this);
         this.trainModel = this.trainModel.bind(this);
     }
 
@@ -122,12 +122,14 @@ export default class Popover extends Component {
         });
     }
 
-    /* Change value for modality */
-    changeModality(event, paramName) {
+    /* Change value for backup query */
+    changeMouseParameter(event) {
+        var param = event.target.value === '-' ? null : event.target.value;
         this.setState({
-            command: database.updateModality(this.state.command.id, paramName, event.target.value)
+            command: database.updateMouseParameter(this.state.command.id, param)
         });
     }
+
 
     trainModel(e) {
         var button = e.target
@@ -143,6 +145,9 @@ export default class Popover extends Component {
     }
 
     render() {
+        var params = this.state.command.parameters.map(p => p.name);
+        params.push('-');
+
         if (this.state.showingOptions) {
             return (
                 <div>
@@ -155,16 +160,18 @@ export default class Popover extends Component {
                                     <div key={p.name}>
                                         <p className="paramTitle">{p.name}</p>
                                         <input type="text" defaultValue={p.backupQuery} onChange={(event) => this.changeBackupQuery(event, p.name)}></input>
-                                        <label className="popoverLabel">
-                                            Retrieve using
-                                            <select className="popoverDropdown" defaultValue={p.modality} onChange={(event) => this.changeModality(event, p.name)}>
-                                                {database.modalities.map(m => <option key={m} value={m}>{m}</option>)}
-                                            </select>
-                                            modality
-                                        </label>
                                     </div>
                                 )
                             })}
+                            <p className="popoverTitle">Multimodal</p>
+                            <p className="popoverSubtitle">
+                                Allow
+                                <select className="popoverDropdown"
+                                    defaultValue={(!this.state.command.mouseParameter) ? "-" : this.state.command.mouseParameter}
+                                    onChange={(event) => this.changeMouseParameter(event)}>
+                                    {params.map(p => <option key={p} value={p}>{p}</option>)}
+                                </select>
+                                to be retrieved based on mouse selection.</p>
                             <br></br>
                             <input type="button" value="Done" onClick={this.hideOptions}></input>
                         </form>

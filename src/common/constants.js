@@ -11,7 +11,8 @@ const Colors = {
 
 const Paths = {
     Geno: '/geno',
-    Commands: '/geno/commands.json'
+    Commands: '/geno/commands.json',
+    Preferences: '/geno/preferences.json'
 }
 
 module.exports = { Colors, Paths }

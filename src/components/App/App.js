@@ -6,6 +6,7 @@ import Preview from '../Preview/Preview';
 
 import database from '../../common/Database';
 import builder from '../../common/Builder';
+import preferences from '../../common/Preferences';
 
 import './App.css';
 import { Paths } from '../../common/constants'
@@ -44,12 +45,16 @@ export default class App extends Component {
 
     const genoPath = path[0] + Paths.Geno;
     const commandsPath = path[0] + Paths.Commands;
+    const preferencesPath = path[0] + Paths.Preferences;
 
     fs.mkdir(genoPath, (err) => {
       fs.writeFile(commandsPath, "{\"commands\":[]}", { flag: 'wx' }, (err) => {
-        this.setState({ dir: path[0] });
-        database.configureProject(path[0]);
-        builder.configureProject(path[0]);
+        fs.writeFile(preferencesPath, "{\"dev_id\":null, \"continuous\": false, \"api\":\"WebSpeech\"}", { flag: 'wx' }, (err) => {
+          this.setState({ dir: path[0] });
+          database.configureProject(path[0]);
+          builder.configureProject(path[0]);
+          preferences.configureProject(path[0]);
+        });
       });
     });
   }
