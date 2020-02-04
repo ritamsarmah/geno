@@ -155,6 +155,18 @@ button:hover {
     color: gray;
 }
 
+.popoverLabel {
+    padding: 0px;
+    text-align: left;
+    user-select: none;
+    font-size: 12px;
+    color: gray;
+}
+
+.popoverDropdown {
+    margin: 0 6px;
+}
+
 .paramType {
     all: none;
     margin-top: 2px;

@@ -4,12 +4,17 @@ const lodashId = require('lodash-id')
 const low = require('lowdb');
 const FileSync = window.require('lowdb/adapters/FileSync');
 
+const MODAL_VOICE = "voice";
+const MODAL_MOUSE = "mouse";
+const MODAL_KEY = "keyboard";
+
 class Database {
 
     constructor() {
         this.dir = null;
         this.adapter = null;
         this.db = null;
+        this.modalities = [MODAL_VOICE, MODAL_MOUSE];
 
         this.configureProject = this.configureProject.bind(this);
         this.addQuery = this.addQuery.bind(this);
@@ -48,7 +53,7 @@ class Database {
     /* Add a command */
     addCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {
-            return { name: p, backupQuery: "" }
+            return { name: p, modality: MODAL_VOICE, backupQuery: "" }
         });
         var cmd = {
             name: "untitled_command" + (this.getCommands().length + 1),
@@ -214,13 +219,18 @@ class Database {
         var oldParams = command.get('parameters');
         var newParams = params.map(p => {
             var oldParam = oldParams.find({ name: p }).value()
-            return oldParam ? oldParam : { name: p, backupQuery: "" }
+            return oldParam ? oldParam : { name: p, modality: MODAL_VOICE, backupQuery: "" }
         });
         command.assign({ parameters: newParams }).write();
     }
 
     updateBackupQuery(commandId, parameter, backupQuery) {
         this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
+        return this.getCommandForId(commandId);
+    }
+
+    updateModality(commandId, parameter, modality) {
+        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ modality: modality }).write();
         return this.getCommandForId(commandId);
     }
 

@@ -212,7 +212,7 @@ export default class Preview extends Component {
     render() {
         var addressBar = !(this.state.recordState === this.RECORDING)
             ? (
-                <input id="addressBar" class="pill" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
+                <input id="addressBar" className="pill" value={this.state.address} placeholder={"Enter URL here"} onFocus={(event) => event.target.select()} onChange={(event) => this.changeAddressBar(event.target.value)} onKeyPress={event => {
                     if (event.key === 'Enter') {
                         this.navigate();
                         event.target.blur();

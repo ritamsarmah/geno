@@ -32,6 +32,7 @@ export default class Popover extends Component {
         this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
+        this.changeModality = this.changeModality.bind(this);
         this.trainModel = this.trainModel.bind(this);
     }
 
@@ -121,6 +122,13 @@ export default class Popover extends Component {
         });
     }
 
+    /* Change value for modality */
+    changeModality(event, paramName) {
+        this.setState({
+            command: database.updateModality(this.state.command.id, paramName, event.target.value)
+        });
+    }
+
     trainModel(e) {
         var button = e.target
         button.value = "Training..."
@@ -144,9 +152,16 @@ export default class Popover extends Component {
                             <p className="popoverSubtitle">Add follow up questions to ask when a parameter is not provided by user.</p>
                             {this.state.command.parameters.map(p => {
                                 return (
-                                    <div key ={p.name}>
+                                    <div key={p.name}>
                                         <p className="paramTitle">{p.name}</p>
                                         <input type="text" defaultValue={p.backupQuery} onChange={(event) => this.changeBackupQuery(event, p.name)}></input>
+                                        <label className="popoverLabel">
+                                            Retrieve using
+                                            <select className="popoverDropdown" defaultValue={p.modality} onChange={(event) => this.changeModality(event, p.name)}>
+                                                {database.modalities.map(m => <option key={m} value={m}>{m}</option>)}
+                                            </select>
+                                            modality
+                                        </label>
                                     </div>
                                 )
                             })}
