@@ -12,11 +12,11 @@
     align-items: center;
 }
 
-label {
+.prefsLabel {
     margin-right: 4px;
 }
 
-.pill {
+.prefsInput {
     background-color: var(--very-light-bg-color);
     color: whitesmoke;
     overflow: hidden;

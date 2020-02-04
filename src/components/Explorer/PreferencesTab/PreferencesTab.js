@@ -17,13 +17,13 @@ export default class PreferencesTab extends Component {
     render() {
         return (
             <div className="prefsList">
-                <form id="prefsForm">
-                    <label>Developer ID</label>
-                    <input className="pill" defaultValue={preferences.getDevId()} onChange={(event) => preferences.setDevId(event.target.value)}></input>
-                </form>
-                {/* <p>dev_id: {preferences.getDevId()}</p>
+                <div id="prefsForm">
+                    <label className="prefsLabel">Developer ID</label>
+                    <input className="prefsInput" defaultValue={preferences.getDevId()} onChange={(event) => preferences.setDevId(event.target.value)}></input>
+                    {/* <p>dev_id: {preferences.getDevId()}</p>
                 <p>API KEY</p>
                 <p>Continuous listening vs. manual</p> */}
+                </div>
             </div>
         );
     }
