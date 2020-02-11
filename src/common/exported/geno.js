@@ -149,6 +149,7 @@ var Geno = /** @class */ (function () {
         var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
         xhr.onload = function () {
+            console.log(json);
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
             var info = _this.intentMap[json.intent.name];
@@ -157,7 +158,7 @@ var Geno = /** @class */ (function () {
             }
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 if (info.type === "demo") {
-                    _this.clickElements(info.elements, info.delay * 1000);
+                    _this.clickElements(info.elements, json.entities, info.parameters, info.delay * 1000);
                 }
                 else if (info.type === "function") {
                     _this.currentTrigger = {
@@ -177,6 +178,14 @@ var Geno = /** @class */ (function () {
             }
         };
         xhr.send();
+    };
+    Geno.prototype.getSelectionText = function () {
+        var text = null;
+        // TODO: set to null if nothing selected
+        if (window.getSelection) {
+            text = window.getSelection().toString();
+        }
+        return text;
     };
     /** A recursive/callback based function to retrieve all arguments and trigger function */
     Geno.prototype.retrieveArgs = function () {
@@ -226,16 +235,39 @@ var Geno = /** @class */ (function () {
         this.retrieveArgs();
     };
     /** Recursive function to simulate clicks for demo command */
-    Geno.prototype.clickElements = function (elements, delay, i) {
+    Geno.prototype.clickElements = function (elements, entities, parameters, delay, i) {
+        // if (i >= elements.length) { return; }
         var _this = this;
         if (i === void 0) { i = 0; }
-        if (i >= elements.length) {
-            return;
-        }
-        var el = elements[i];
-        document.getElementsByTagName(el.tag)[el.index].click();
+        // var el = document.getElementsByTagName(elements[i].tag)[elements[i].index]
+        // el.click();
+        // // TODO: WE NEED TO TEST THIS!!!
+        // // Handling for if this step in sequence is associated with a parameter input
+        // var arg = parameters.find((p: any) => p.index === i);
+        // if (arg) {
+        //     var entity = entities.find((e: any) => e.entity === arg.name);
+        //     if (entity === undefined) {
+        //         var backupQuestion = arg.backupQuery;
+        //         // Default backup question in case developer hasn't provided
+        //         if (backupQuestion === "") {
+        //             backupQuestion = "What is " + arg + "?";
+        //         }
+        //         this.ask(backupQuestion, true, (answer) => {
+        //             this.onfinalmessage = null;
+        //             console.log("Received value for " + arg.name + ", " + answer.text);
+        //             el.value = entity.value
+        //             setTimeout(() => {
+        //                 this.clickElements(elements, entities, parameters, delay, i + 1);
+        //             }, delay);
+        //         });
+        //         return;
+        //     } else {
+        //         //TODO: Don't know if entity.value is actually a thing :/
+        //         el.value = entity.value
+        //     }
+        // }
         setTimeout(function () {
-            _this.clickElements(elements, delay, i + 1);
+            _this.clickElements(elements, entities, parameters, delay, i + 1);
         }, delay);
     };
     /** Intelligently convert argument to type and add to arguments list */
