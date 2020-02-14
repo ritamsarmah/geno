@@ -6,7 +6,20 @@
     "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
   },
   "include": [
     "src/common/exported/geno.ts"
