@@ -51,13 +51,13 @@ export default class AnalysisView extends Component {
     /* Create text segment for NLP information */
     createEntitySegment(entity, finalSegment) {
         var text = this.state.query.text.substring(entity.start, entity.end);
-        var color = entity.entity != null ? utils.stringToColor(entity.entity) : "lightgray";
+        var color = entity.label != null ? utils.stringToColor(entity.label) : "lightgray";
         var marginRight = finalSegment ? "0px" : "10px";
         return (
             <span id={entity.start} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
                 {text}
             </span>
-        )
+        );
     }
 
     /* Update entity label */
@@ -69,12 +69,12 @@ export default class AnalysisView extends Component {
 
     /* Create dropdown for text segment */
     createDropdown(query, entity) {
-        var color = utils.stringToColor(entity.entity);
+        var color = utils.stringToColor(entity.label);
 
         var names = this.props.command.parameters.map(p => p.name);
         names.push("-");
 
-        var selection = entity.entity != null ? entity.entity : "-";
+        var selection = entity.label != null ? entity.label : "-";
 
         return (
             <select className="entitySelect" id={entity.start} data-curr={selection} defaultValue={selection} style={{ color: color }} onChange={(event) => this.updateEntity(query, entity, event)}>
@@ -130,9 +130,7 @@ export default class AnalysisView extends Component {
                     var span = document.getElementById(entity.start);
                     const dropdownDummy = document.createElement("span"); // Create dummy div to render
                     span.appendChild(dropdownDummy);
-                    if (this.props.command.type === "function") {
                         ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
-                    }
                 });
             });
         }

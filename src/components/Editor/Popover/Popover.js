@@ -33,6 +33,7 @@ export default class Popover extends Component {
         this.deleteQuery = this.deleteQuery.bind(this);
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
         this.changeMouseParameter = this.changeMouseParameter.bind(this);
+        this.changeMouseAttribute = this.changeMouseAttribute.bind(this);
         this.trainModel = this.trainModel.bind(this);
     }
 
@@ -96,7 +97,6 @@ export default class Popover extends Component {
             this.setState({
                 command: database.addQuery(this.state.command.id, queryInput.value)
             }, () => queryInput.value = "");
-            // TODO propagate update to parent marker??
         }
     }
 
@@ -122,11 +122,19 @@ export default class Popover extends Component {
         });
     }
 
-    /* Change value for backup query */
+    /* Change value for which parameter inferred from element under mouse */
     changeMouseParameter(event) {
         var param = event.target.value === '-' ? null : event.target.value;
         this.setState({
             command: database.updateMouseParameter(this.state.command.id, param)
+        });
+    }
+
+    /* Change attribute to use when passing data for parameter from element under mouse */
+    changeMouseAttribute(event) {
+        var attr = event.target.value === '-' ? null : event.target.value;
+        this.setState({
+            command: database.updateMouseAttribute(this.state.command.id, attr)
         });
     }
 
@@ -171,7 +179,8 @@ export default class Popover extends Component {
                                     onChange={(event) => this.changeMouseParameter(event)}>
                                     {params.map(p => <option key={p} value={p}>{p}</option>)}
                                 </select>
-                                to be retrieved based on mouse selection.</p>
+                                to be retrieved using HTML element under cursor or its data attribute,</p>
+                                <input id="mouseDataAttribute" type="text" placeholder="(leave empty to return element)" defaultValue={this.state.command.mouseAttribute} onChange={this.changeMouseAttribute}></input>
                             <br></br>
                             <input type="button" value="Done" onClick={this.hideOptions}></input>
                         </form>

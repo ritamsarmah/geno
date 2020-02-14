@@ -108,8 +108,8 @@ export class Geno {
             this.recognition.onresult = (event) => {
                 this.transcribe(event.results[0][0].transcript);
                 // TODO: check for matches with queries and show suggestion
-                this.bubble.className = "geno-suggest";
-                this.bubble.style.visibility = "visible";
+                // this.bubble.className = "geno-suggest";
+                // this.bubble.style.visibility = "visible";
 
                 if (event.results[0].isFinal) {
                     this.listeningTimer = window.setTimeout(() => this.stopListening.call(this), 1000);
@@ -186,10 +186,11 @@ export class Geno {
         xhr.open('GET', url);
 
         xhr.onload = () => {
-            console.log(json);
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
             var info = this.intentMap[json.intent.name];
+            
+            console.log(json);
 
             if (Object.keys(this.intentMap).length == 1) {
                 info = Object.values(this.intentMap)[0]; // Only intent so get it
@@ -219,8 +220,7 @@ export class Geno {
     }
 
     getSelectionText() {
-        var text = null;
-        // TODO: set to null if nothing selected
+        var text: string | null = null;
         if (window.getSelection) {
             text = window.getSelection().toString();
         }
@@ -269,8 +269,11 @@ export class Geno {
                 });
                 return;
             } else {
+                // if (entity.isMultiModal) {
+
+                // } else 
                 value = this.currentTrigger.query.slice(entity.start, entity.end);
-                // var value = entity['value']; // TODO: Use this instead of the slice below
+                // var value = entity.text // TODO: Use actual value in return instead of extracting
             }
             this.addArg(value);
         }
@@ -284,8 +287,7 @@ export class Geno {
         var el = document.getElementsByTagName(elements[i].tag)[elements[i].index]
         el.click();
 
-        // TODO: WE NEED TO TEST THIS!!!
-        // Handling for if this step in sequence is associated with a parameter input
+        // Handles if this step in demonstration needs a parameter input
         var arg = parameters.find((p: any) => p.index === i);
         if (arg) {
             var entity = entities.find((e: any) => e.entity === arg.name);
@@ -300,15 +302,14 @@ export class Geno {
                 this.ask(backupQuestion, true, (answer) => {
                     this.onfinalmessage = null;
                     console.log("Received value for " + arg.name + ", " + answer.text);
-                    el.value = entity.value
+                    el.value = answer
                     setTimeout(() => {
                         this.clickElements(elements, entities, parameters, delay, i + 1);
                     }, delay);
                 });
                 return;
             } else {
-                //TODO: Don't know if entity.value is actually a thing :/
-                el.value = entity.value
+                el.value = this.currentTrigger.query.slice(entity.start, entity.end);
             }
         }
 

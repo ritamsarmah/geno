@@ -103,9 +103,13 @@ export default class Editor extends Component {
         this.addGutterCircles(editor);
         this.codeMirror = editor;
 
-        chokidar.watch(database.commandsPath).on('all', (event, path) => {
+        this.watcher = chokidar.watch(database.commandsPath).on('all', (event, path) => {
             this.addGutterCircles(editor);
         });
+    }
+
+    editorDidUnmount() {
+        this.watcher.close();
     }
 
     componentDidUpdate(prevProps) {

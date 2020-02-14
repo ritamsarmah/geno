@@ -7,11 +7,14 @@ import './PreferencesTab.css';
 const chokidar = window.require('chokidar');
 
 export default class PreferencesTab extends Component {
-    constructor(props) {
-        super(props);
-        chokidar.watch(preferences.prefsPath).on('all', (event, path) => {
+    componentWillMount() {
+        this.watcher = chokidar.watch(preferences.prefsPath).on('all', (event, path) => {
             this.forceUpdate()
         });
+    }
+
+    componentWillUnmount() {
+        this.watcher.close();
     }
 
     render() {

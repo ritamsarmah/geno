@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+import Popover from './Popover'
 import AnalysisView from '../AnalysisView/AnalysisView';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,110 +9,11 @@ import './Popover.css'
 
 import database from '../../../common/Database';
 
-export default class DemoPopover extends Component {
+export default class DemoPopover extends Popover {
 
     constructor(props) {
         super(props);
-        this.state = {
-            queriesExpanded: false,
-            renderAnalysis: false,
-            selectedQuery: null,
-            command: this.props.command,
-            showingOptions: false
-        };
-        this.dismiss = this.dismiss.bind(this);
-        this.toggleQueries = this.toggleQueries.bind(this);
-        this.showOptions = this.showOptions.bind(this);
-        this.hideOptions = this.hideOptions.bind(this);
-        this.showAnalysis = this.showAnalysis.bind(this);
-        this.handleAnalysisUnmount = this.handleAnalysisUnmount.bind(this);
-
-        this.deleteCommand = this.deleteCommand.bind(this);
-        this.changeCommandName = this.changeCommandName.bind(this);
-        this.addQuery = this.addQuery.bind(this);
-        this.updateQuery = this.updateQuery.bind(this);
-        this.deleteQuery = this.deleteQuery.bind(this);
         this.changeDelay = this.changeDelay.bind(this);
-        this.trainModel = this.trainModel.bind(this);
-    }
-
-    /* Dismisses this component */
-    dismiss() {
-        this.props.unmountMe();
-    }
-
-    /* Toggle resizing of sample queries list */
-    toggleQueries() {
-        this.setState({ queriesExpanded: !this.state.queriesExpanded });
-    }
-
-    /* Switch to advanced options */
-    showOptions() {
-        this.setState({
-            renderAnalysis: false,
-            showingOptions: true
-        })
-    }
-
-    /* Switch to first form */
-    hideOptions() {
-        this.setState({
-            showingOptions: false
-        });
-    }
-
-    /* Shows AnalysisView for editing a selected query */
-    showAnalysis(query) {
-        this.setState({
-            renderAnalysis: true,
-            selectedQuery: query
-        });
-    }
-
-    /* Handles unmount of AnalysisView */
-    handleAnalysisUnmount() {
-        this.setState({
-            renderAnalysis: false,
-        });
-    }
-
-    /* Updates command name in database */
-    changeCommandName(event) {
-        database.updateCommand(this.state.command.id, {
-            name: event.target.value.replace(/ /g, "_")
-        });
-    }
-
-    /* Deletes command from database */
-    deleteCommand() {
-        database.removeCommand(this.state.command.id);
-        this.dismiss();
-    }
-
-    /* Adds query for command to database */
-    addQuery() {
-        var queryInput = document.getElementById('addQueryInput');
-        if (queryInput.value !== "") {
-            this.setState({
-                command: database.addQuery(this.state.command.id, queryInput.value)
-            }, () => queryInput.value = "");
-            // TODO propagate update to parent marker??
-        }
-    }
-
-    /* Update query for command in database */
-    updateQuery(oldText, query, callback) {
-        database.updateQuery(this.state.command.id, oldText, query, (command, updatedQuery) => {
-            this.state.command = command; // Don't want to trigger setState updates
-            callback(updatedQuery);
-        })
-    }
-
-    /* Deletes query for command from database */
-    deleteQuery(query) {
-        this.setState({
-            command: database.removeQuery(this.state.command.id, query.id)
-        });
     }
 
     /* Change delay for demo command */

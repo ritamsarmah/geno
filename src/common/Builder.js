@@ -9,10 +9,12 @@ class Builder {
         this.dir = null;
     }
 
+    /* Config method to set user's project directory */
     configureProject(dir) {
         this.dir = dir;
     }
 
+    /* Copies over files and database info into developer's project */ 
     build() {
         var commandMap = {}
         database.getCommands().forEach(cmd => {
@@ -22,6 +24,7 @@ class Builder {
                     commandMap[cmd.name] = {
                         type: cmd.type,
                         elements: cmd.elements,
+                        parameters: cmd.parameters,
                         delay: cmd.delay
                     };
                 } else if (cmd.type === "function") {
@@ -34,14 +37,11 @@ class Builder {
                         type: cmd.type,
                         file: cmd.file,
                         triggerFn: cmd.triggerFn,
-                        parameters: parameterMap // TODO: later include info on what to convert data type to
+                        parameters: parameterMap
                     };
                 }
             }
         });
-
-        // TODO: Optional code that shows the popover
-        // TODO: check if this is the right file with the function name (function might not exist and could cause error)
 
         // Add function to output function for a provided query
         var generatedCode = `\n\ngeno.intentMap = ${JSON.stringify(commandMap)}`;

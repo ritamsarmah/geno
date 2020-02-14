@@ -11,10 +11,16 @@ export default class CommandList extends Component {
     constructor(props) {
         super(props);
         this.delete = this.delete.bind(this);
+    }
 
-        chokidar.watch(database.commandsPath).on('all', (event, path) => {
+    componentWillMount() {
+        this.watcher = chokidar.watch(database.commandsPath).on('all', (event, path) => {
             this.forceUpdate()
         });
+    }
+
+    componentWillUnmount() {
+        this.watcher.close();
     }
 
     delete(commandId) {

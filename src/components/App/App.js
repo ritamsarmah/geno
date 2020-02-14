@@ -32,6 +32,7 @@ export default class App extends Component {
     this.setSelectFile = this.setSelectFile.bind(this);
   }
 
+  /* Opens file browser for developer to select project */
   openFileBrowser() {
     dialog.showOpenDialog({ properties: ['openDirectory'] }, this.configureProject);
   }
@@ -59,7 +60,7 @@ export default class App extends Component {
     });
   }
 
-  // Callback for FileTree in Explorer to set Editor file
+  /* Callback for FileTree in Explorer to set Editor file */
   selectFile(filePath, toggleCallback) {
     if (this.state.canSelectFile) {
       this.setState({ currentFile: filePath });
@@ -103,7 +104,7 @@ export default class App extends Component {
     }
   }
 
-  // Callback for Editor to cancel new file selection if current file has unsaved changes
+  /* Callback for Editor to cancel new file selection if current file has unsaved changes */
   setSelectFile(flag) {
     this.setState({
       canSelectFile: flag,
