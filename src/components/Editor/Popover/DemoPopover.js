@@ -103,7 +103,7 @@ export default class DemoPopover extends Popover {
                             </div>
                         </form>
                     </div>
-                    {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} /> : null}
+                    {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} flipSide={this.props.flipSide} unmountMe={this.handleAnalysisUnmount} /> : null}
                 </div>
             );
         }

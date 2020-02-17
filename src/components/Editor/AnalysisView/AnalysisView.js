@@ -22,6 +22,12 @@ export default class AnalysisView extends Component {
         this.colorEntities = this.colorEntities.bind(this);
         this.toggleEdit = this.toggleEdit.bind(this);
         this.spinRefresh = this.spinRefresh.bind(this);
+
+        if (this.props.flipSide) {
+            this.sideName = "analysis-left";
+        } else {
+            this.sideName = "analysis-right";
+        }
     }
 
     componentDidMount() {
@@ -113,6 +119,9 @@ export default class AnalysisView extends Component {
     /* Sets colored underlines under query representing NLP entity */
     colorEntities() {
         var content = document.getElementById("nlpQuery");
+        if (!content) {
+            return;
+        }
         content.innerHTML = "";
 
         var numEntities = Object.keys(this.state.query.entities).length 
@@ -150,7 +159,7 @@ export default class AnalysisView extends Component {
 
     render() {
         return (
-            <div id="analysisView">
+            <div id="analysisView" className={this.sideName}>
                 <div id="close" onClick={this.dismiss}>
                     <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>
                 </div>

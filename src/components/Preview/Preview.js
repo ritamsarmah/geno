@@ -223,7 +223,7 @@ export default class Preview extends Component {
                 <p id="recordTutorial">{this.state.demoMessage != null ? this.state.demoMessage : "Click a UI element to start recording a command"}</p>
             );
 
-        var content = (this.state.demoCommand != null) ? (<DemoPopover command={this.state.demoCommand} unmountMe={this.handlePopoverUnmount}/>) : (<span></span>);
+        var content = (this.state.demoCommand != null) ? (<DemoPopover command={this.state.demoCommand} flipSide={true} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
 
         var buttons = (this.state.recordState === this.RECORDING)
             ? (

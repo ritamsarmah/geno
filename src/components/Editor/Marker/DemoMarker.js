@@ -24,7 +24,7 @@ export default class DemoMarker extends Component {
     }
 
     render() {
-        var content = (<DemoPopover command={this.props.command} unmountMe={this.handlePopoverUnmount} />);
+        var content = (<DemoPopover command={this.props.command} flipSide={false} unmountMe={this.handlePopoverUnmount} />);
         return (
             <Tippy content={content} arrow={true} trigger="click" placement="top-end" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible} onHidden={this.handlePopoverUnmount}>
                 <div className="filledMarker" onClick={this.onClick}></div>

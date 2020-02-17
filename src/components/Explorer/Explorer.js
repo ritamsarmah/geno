@@ -66,7 +66,6 @@ export default class Explorer extends Component {
     };
 
     walkDone(err, results) {
-        console.log(results);
         results.sort((a, b) => {
             if (a.type == "dir" && b.type != "dir") {
                 return -1
