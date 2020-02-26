@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ES5",
     "allowJs": false,
-    "noImplicitUseStrict": true,
     "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
@@ -16,10 +15,10 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "strictNullChecks": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
   },
   "include": [
     "src/common/exported/geno.ts"
