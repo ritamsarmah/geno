@@ -11,34 +11,46 @@ export default class Marker extends Component {
     constructor(props) {
         super(props);
 
-        // Fill marker if voice command for the function already exists
-        var command = database.findCommand(this.props.file, this.props.triggerFn);
+        var command = null;
+        if (this.props.command) {
+            // Use command passed in directly as prop
+            command = this.props.command;
+        } else { // Generate command information from editor info
+            // Fill marker if voice command for the function already exists
+            command = database.findCommand(this.props.file, this.props.triggerFn);
 
-        // Check for changes to parameters list
-        if (command != null &&
-            JSON.stringify(this.props.params.sort()) !== JSON.stringify(command.parameters.map(p => p.name).sort())) {
-            database.updateParameters(command.id, this.props.params);
+            // Check for changes to parameters list
+            if (command != null &&
+                JSON.stringify(this.props.params.sort()) !== JSON.stringify(command.parameters.map(p => p.name).sort())) {
+                database.updateParameters(command.id, this.props.params);
+            }
         }
-
+        
         this.state = {
-            command: command
+            command: command,
         };
+
+        this.placement = "right-end";
+
         this.onClick = this.onClick.bind(this);
+        this.onHide = this.onHide.bind(this);
         this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
     }
 
     onClick() {
+        // Used for creation of new commands in editor
         if (this.state.command == null) {
             var command = database.addCommand(this.props.file, this.props.triggerFn, this.props.params);
             this.setState({ command: command });
         }
-        
-        // Case to enable popover visibility after deleting
-        if (!this.state.isVisible) {
-            this.setState({ isVisible: null });
-        }
 
-        this.setState({ isVisible: !this.state.isVisible })
+        // Set state directly to prevent re-render
+        this.state.isVisible = !this.state.isVisible;
+    }
+
+    onHide() {
+        this.state.isVisible = false;
+        return true;
     }
 
     handlePopoverUnmount() {
@@ -48,11 +60,14 @@ export default class Marker extends Component {
         });
     }
 
+    renderTippyContent() {
+        return (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
+    }
+
     render() {
-        var content = (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
         var fillClass = (this.state.command != null) ? "filledMarker" : "emptyMarker";
         return (
-            <Tippy content={content} arrow={true} trigger="click" placement="right-end" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible}>
+            <Tippy content={this.renderTippyContent()} arrow={true} trigger="click" placement={this.placement} theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible} onHide={this.onHide}>
                 <div className={fillClass} onClick={this.onClick}></div>
             </Tippy>
         );

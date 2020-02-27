@@ -1,46 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Popover from '../Popover/Popover';
-import Tippy from '@tippy.js/react';
-
-import database from '../../../common/Database';
+import Marker from './Marker';
 
 import './Marker.css'
 import 'tippy.js/themes/light-border.css';
 
-export default class ListMarker extends Component {
+export default class ListMarker extends Marker {
     constructor(props) {
         super(props);
-        // Fill marker if voice command for the function already exists
-        var command = database.findCommand(this.props.file, this.props.triggerFn);
-
-        this.state = { command: command };
-        this.onClick = this.onClick.bind(this);
-        this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
+        this.placement = "top-end";
     }
 
-    onClick() {
-        if (!this.state.isVisible) {
-            this.setState({ isVisible: null });
-        }
-        this.setState({ isVisible: !this.state.isVisible });
-    }
-
-    handlePopoverUnmount() {
-        this.setState({
-            command: null,
-            isVisible: false,
-        });
-    }
-
-    render() {
-        var content = (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
-        var fillClass = (this.state.command != null) ? "filledMarker" : "emptyMarker";
-        return (
-            <Tippy content={content} arrow={true} trigger="click" placement="top-end" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible}>
-                <div className={fillClass} onClick={this.onClick}></div>
-            </Tippy>
-        );
+    renderTippyContent() {
+        return (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
     }
 }
-
-

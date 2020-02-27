@@ -1,9 +1,5 @@
 import React from 'react';
 import Popover from './Popover'
-import AnalysisView from '../AnalysisView/AnalysisView';
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 import './Popover.css'
 
