@@ -12,7 +12,7 @@ export default class Marker extends Component {
         super(props);
 
         var command = null;
-        if (this.props.command) {
+        if (this.props.command != null) {
             // Use command passed in directly as prop
             command = this.props.command;
         } else { // Generate command information from editor info

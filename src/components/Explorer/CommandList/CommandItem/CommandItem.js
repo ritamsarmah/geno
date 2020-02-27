@@ -32,7 +32,7 @@ export default class CommandItem extends Component {
                 <div className="cmdItem">
                     <p className="cmdName">{this.props.command.name}</p>
                     <span className="cmdMarker">
-                        <ListMarker file={this.props.command.file} triggerFn={this.props.command.triggerFn} params={this.props.command.parameters} />
+                        <ListMarker file={this.props.command.file} triggerFn={this.props.command.triggerFn} params={this.props.command.parameters.map(p => p.name)} />
                     </span>
                     <p className="cmdPath"> {path.basename(this.props.command.file)}</p>
                     <span className="fn">{this.props.command.triggerFn}</span>
