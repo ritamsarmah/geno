@@ -30,7 +30,6 @@ export default class Marker extends Component {
     onClick() {
         if (this.state.command == null) {
             var command = database.addCommand(this.props.file, this.props.triggerFn, this.props.params);
-
             this.setState({ command: command });
         }
         
@@ -38,6 +37,8 @@ export default class Marker extends Component {
         if (!this.state.isVisible) {
             this.setState({ isVisible: null });
         }
+
+        this.setState({ isVisible: !this.state.isVisible })
     }
 
     handlePopoverUnmount() {

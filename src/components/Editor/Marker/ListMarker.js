@@ -22,6 +22,7 @@ export default class ListMarker extends Component {
         if (!this.state.isVisible) {
             this.setState({ isVisible: null });
         }
+        this.setState({ isVisible: !this.state.isVisible });
     }
 
     handlePopoverUnmount() {
