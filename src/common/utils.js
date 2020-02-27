@@ -17,4 +17,14 @@ export function stringToColor(str) {
     return color;
 }
 
-export default { stringToColor }
+export function createCountMessage(length, units) {
+    var message = length;
+    if (length === 1) {
+        message += " " + units;
+    } else {
+        message += " " + units + "s";
+    }
+    return message;
+}
+
+export default { stringToColor, createCountMessage }

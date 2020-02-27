@@ -5,20 +5,11 @@ import ListMarker from "../../../Editor/Marker/ListMarker";
 import DemoMarker from "../../../Editor/Marker/DemoMarker";
 
 import './CommandItem.css';
+import { createCountMessage } from '../../../../common/utils';
 
 const path = require('path');
 
 export default class CommandItem extends Component {
-
-    getElementCount() {
-        var message = this.props.command.elements.length
-        if (this.props.command.elements.length === 1) {
-            message += " click";
-        } else {
-            message += " clicks";
-        }
-        return message;
-    }
 
     render() {
         if (this.props.command.type === "demo") {
@@ -29,7 +20,8 @@ export default class CommandItem extends Component {
                         <DemoMarker command={this.props.command} />
                     </span>
                     <p className="cmdPath"> {path.basename(this.props.command.file)} </p>
-                    <span className="fn">{this.getElementCount()}</span>
+                    <span className="fn">{createCountMessage(this.props.command.elements.length, "action")}</span>
+                    <span className="fn">{createCountMessage(this.props.command.parameters.length, "parameter")}</span>
                     <div className="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
                         <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
                     </div>

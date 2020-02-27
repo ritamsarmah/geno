@@ -13,7 +13,7 @@ export default class CommandList extends Component {
         this.delete = this.delete.bind(this);
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.watcher = chokidar.watch(database.commandsPath).on('all', (event, path) => {
             this.forceUpdate()
         });

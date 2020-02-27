@@ -209,7 +209,7 @@ class Database {
                     // Split multi-word entities for our database
                     en.text.split(" ").forEach(word => {
                         query.get(index).assign({
-                            "label": en.label
+                            "label": en.entity
                         }).write();
                         index += word.length + 1;
                     });
@@ -228,6 +228,12 @@ class Database {
             return oldParam ? oldParam : { name: p, backupQuery: "" }
         });
         command.assign({ parameters: newParams }).write();
+    }
+
+    /* Change name for a parameter */
+    updateParameterName(commandId, oldName, newName) {
+        this.db.get('commands').getById(commandId).get('parameters').find({ name: oldName }).assign({ name: newName }).write();
+        return this.getCommandForId(commandId);
     }
 
     /* Change backup query to ask if a parameter entity is not detected in user's voice input */
@@ -280,20 +286,11 @@ class Database {
         }
 
         var params;
-        if (command.type === "demo") {
-            params = {
-                "dev_id": preferences.getDevId(),
-                "intent": command.name,
-                "queries": command.queries.map(q => q.text),
-                "parameters": command.parameters.map(p => p.name)
-            }
-        } else if (command.type === "function") {
-            params = {
-                "dev_id": preferences.getDevId(),
-                "intent": command.name,
-                "queries": command.queries.map(q => q.text),
-                "parameters": command.parameters.map(p => p.name)
-            }
+        params = {
+            "dev_id": preferences.getDevId(),
+            "intent": command.name,
+            "queries": command.queries,
+            "parameters": command.parameters.map(p => p.name)
         }
 
         xhr.send(JSON.stringify(params));

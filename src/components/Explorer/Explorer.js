@@ -67,9 +67,9 @@ export default class Explorer extends Component {
 
     walkDone(err, results) {
         results.sort((a, b) => {
-            if (a.type == "dir" && b.type != "dir") {
+            if (a.type === "dir" && b.type !== "dir") {
                 return -1
-            } else if (b.type == "dir" && a.type != "dir") {
+            } else if (b.type === "dir" && a.type !== "dir") {
                 return 1
             } else if (a.name < b.name) {
                 return -1;

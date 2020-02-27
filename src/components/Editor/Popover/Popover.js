@@ -10,6 +10,10 @@ import database from '../../../common/Database';
 
 export default class Popover extends Component {
 
+    POPOVER_MAIN = 0;
+    POPOVER_OPTIONS = 1;
+    POPOVER_CONTEXT = 2;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -17,12 +21,14 @@ export default class Popover extends Component {
             renderAnalysis: false,
             selectedQuery: null,
             command: this.props.command,
-            showingOptions: false
+            popoverState: this.POPOVER_MAIN,
+            flipSide: false
         };
         this.dismiss = this.dismiss.bind(this);
         this.toggleQueries = this.toggleQueries.bind(this);
+        this.showMain = this.showMain.bind(this);
         this.showOptions = this.showOptions.bind(this);
-        this.hideOptions = this.hideOptions.bind(this);
+        this.showContext = this.showContext.bind(this);
         this.showAnalysis = this.showAnalysis.bind(this);
         this.handleAnalysisUnmount = this.handleAnalysisUnmount.bind(this);
 
@@ -47,19 +53,27 @@ export default class Popover extends Component {
         this.setState({ queriesExpanded: !this.state.queriesExpanded });
     }
 
+    /* Switch to main form */
+    showMain() {
+        this.setState({
+            popoverState: this.POPOVER_MAIN
+        });
+    }
+
     /* Switch to advanced options */
     showOptions() {
         this.setState({
             renderAnalysis: false,
-            showingOptions: true
+            popoverState: this.POPOVER_OPTIONS
         })
     }
 
-    /* Switch to first form */
-    hideOptions() {
+    /* Switch to context options */
+    showContext() {
         this.setState({
-            showingOptions: false
-        });
+            renderAnalysis: false,
+            popoverState: this.POPOVER_CONTEXT
+        })
     }
 
     /* Shows AnalysisView for editing a selected query */
@@ -152,86 +166,122 @@ export default class Popover extends Component {
         });
     }
 
-    render() {
+    /* UI Rendering Functions */
+
+    renderSummary() {
+        return (
+            <div>
+                <p className="popoverTitle">Triggered Function</p>
+                <div className="popoverFn">{this.state.command.triggerFn}</div>
+            </div>
+        );
+    }
+
+    renderMultimodal() {
         var params = this.state.command.parameters.map(p => p.name);
         params.push('-');
 
-        if (this.state.showingOptions) {
-            return (
-                <div>
-                    <div className="popover">
-                        <form className="popoverForm">
-                            <p className="popoverTitle">Function Parameters</p>
-                            <p className="popoverSubtitle">Add follow up questions to ask when a parameter is not provided by user.</p>
-                            {this.state.command.parameters.map(p => {
-                                return (
-                                    <div key={p.name}>
-                                        <p className="paramTitle">{p.name}</p>
-                                        <input type="text" defaultValue={p.backupQuery} onChange={(event) => this.changeBackupQuery(event, p.name)}></input>
-                                    </div>
-                                )
-                            })}
-                            <p className="popoverTitle">Multimodal</p>
-                            <p className="popoverSubtitle">
-                                Allow
+        return (
+            <div className="popover">
+                <form className="popoverForm">
+                    <p className="popoverTitle">Multimodal Context</p>
+                    <p className="popoverSubtitle">
+                        Allow
                                 <select className="popoverDropdown"
-                                    defaultValue={(!this.state.command.mouseParameter) ? "-" : this.state.command.mouseParameter}
-                                    onChange={(event) => this.changeMouseParameter(event)}>
-                                    {params.map(p => <option key={p} value={p}>{p}</option>)}
-                                </select>
-                                to be retrieved using HTML element under cursor or its data attribute,</p>
+                            defaultValue={(!this.state.command.mouseParameter) ? "-" : this.state.command.mouseParameter}
+                            onChange={(event) => this.changeMouseParameter(event)}>
+                            {params.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                        to be retrieved using mouse context.
+                            </p>
+                    <input type="radio" id="contextElement" className="popoverLabel" name="contextType" value="element"></input>
+                    <label for="contextElement">Element(s)</label><br></br>
+                    <input type="radio" id="contextAttribute" className="popoverLabel" name="contextType" value="attribute"></input>
+                    <label for="contextAttribute">
+                        Element attribute
                                 <input id="mouseDataAttribute" type="text" placeholder="(leave empty to return element)" defaultValue={this.state.command.mouseAttribute} onChange={this.changeMouseAttribute}></input>
-                            <br></br>
-                            <input type="button" value="Done" onClick={this.hideOptions}></input>
-                        </form>
-                    </div>
-                </div>
-            );
-        } else {
-            return (
-                <div>
-                    <div className="popover">
-                        <form className="popoverForm">
-                            <p className="popoverTitle">Command Name</p>
-                            <input id="commandNameInput" type="text" defaultValue={this.state.command.name} onChange={this.changeCommandName}></input>
+                    </label>
+                    <br></br>
+                    <input type="radio" id="contextText" className="popoverLabel" name="contextType" value="text"></input>
+                    <label for="contextText">Highlighted Text Selection</label><br></br>
+                    <br></br>
+                    <input type="button" value="Done" onClick={this.showMain}></input>
+                </form>
+            </div>
+        );
+    }
 
-                            <p className="popoverTitle">Triggered Function</p>
-                            <div className="popoverFn">{this.state.command.triggerFn}</div>
-                            <br></br>
-                            <br></br>
+    render() {
+        switch (this.state.popoverState) {
+            case this.POPOVER_MAIN:
+                return (
+                    <div>
+                        <div className="popover">
+                            <form className="popoverForm">
+                                <p className="popoverTitle">Command Name</p>
+                                <input id="commandNameInput" type="text" defaultValue={this.state.command.name} onChange={this.changeCommandName}></input>
 
-                            <p className="popoverTitle">Sample Queries</p>
+                                {this.renderSummary()}
+                                <br></br>
+                                <br></br>
 
-                            <div>
+                                <p className="popoverTitle">Sample Queries</p>
+
                                 <div>
-                                    <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
-                                    <span className="iconButton" onClick={this.addQuery}>
-                                        <FontAwesomeIcon icon={faPlus} />
-                                    </span>
-                                </div>
+                                    <div>
+                                        <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
+                                        <span className="iconButton" onClick={this.addQuery}>
+                                            <FontAwesomeIcon icon={faPlus} />
+                                        </span>
+                                    </div>
 
-                                <div id="queriesView" style={{
-                                    height: this.state.queriesExpanded ? "140px" : "70px",
-                                    resize: this.state.queriesExpanded ? "vertical" : "none"
-                                }}>
-                                    {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
-                                </div>
+                                    <div id="queriesView" style={{
+                                        height: this.state.queriesExpanded ? "140px" : "70px",
+                                        resize: this.state.queriesExpanded ? "vertical" : "none"
+                                    }}>
+                                        {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
+                                    </div>
 
-                                <div id="queryToggle" onClick={this.toggleQueries}>
-                                    <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
+                                    <div id="queryToggle" onClick={this.toggleQueries}>
+                                        <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
+                                    </div>
                                 </div>
-                            </div>
-                            <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
-                            <br></br>
-                            <div id="bottomButtons">
-                                <input type="button" value="Options" onClick={this.showOptions}></input>
-                                <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
-                            </div>
-                        </form>
+                                <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
+                                <br></br>
+                                <div id="bottomButtons">
+                                    <input type="button" value="Options" onClick={this.showOptions}></input>
+                                    <input type="button" style={{ marginLeft: "8px" }} value="Context" onClick={this.showContext}></input>
+                                    <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
+                                </div>
+                            </form>
+                        </div>
+                        {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} flipSide={this.state.flipSide} /> : null}
                     </div>
-                    {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} flipSide={false}/> : null}
-                </div>
-            );
+                );
+            case this.POPOVER_OPTIONS:
+                return (
+                    <div>
+                        <div className="popover">
+                            <form className="popoverForm">
+                                <p className="popoverTitle">Parameters</p>
+                                <p className="popoverSubtitle">Add follow up questions to ask when a parameter is not provided by user.</p>
+                                {this.state.command.parameters.map(p => {
+                                    return (
+                                        <div key={p.name}>
+                                            <p className="paramTitle">{p.name}</p>
+                                            <input type="text" defaultValue={p.backupQuery} placeholder="Follow up question" onChange={(event) => this.changeBackupQuery(event, p.name)}></input>
+                                        </div>
+                                    )
+                                })}
+                                <input type="button" value="Done" onClick={this.showMain}></input>
+                            </form>
+                        </div>
+                    </div>
+                );
+            case this.POPOVER_CONTEXT:
+                return this.renderMultimodal();
+            default:
+                break;
         }
     }
 }
