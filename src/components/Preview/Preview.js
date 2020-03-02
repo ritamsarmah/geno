@@ -3,7 +3,7 @@ import Tippy from '@tippy.js/react';
 import builder from '../../common/Builder';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRedoAlt, faChevronLeft, faChevronRight, faPlay, faMousePointer, faCode, faStop, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { faRedoAlt, faChevronLeft, faChevronRight, faMousePointer, faCode, faStop, faTimesCircle, faHammer } from '@fortawesome/free-solid-svg-icons';
 
 import { Colors } from '../../common/constants';
 import './Preview.css'
@@ -39,9 +39,9 @@ export default class Preview extends Component {
         this.reloadPreview = this.reloadPreview.bind(this);
         this.openDevTools = this.openDevTools.bind(this);
         this.buildApp = this.buildApp.bind(this);
-        this.recordMouseEvents = this.recordMouseEvents.bind(this);
+        this.recordEvents = this.recordEvents.bind(this);
         this.createDemoCommand = this.createDemoCommand.bind(this);
-        this.stopRecordMouseEvents = this.stopRecordMouseEvents.bind(this);
+        this.stopRecordEvents = this.stopRecordEvents.bind(this);
         this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
     }
 
@@ -65,7 +65,7 @@ export default class Preview extends Component {
             }
         })
 
-        // TODO: might use event listener for "console-message"
+        // TODO: Could use event listener for "console-message" to display some info
     }
 
     /* Sync address bar and state when webview load */
@@ -87,27 +87,27 @@ export default class Preview extends Component {
 
     /* Navigate back in webview*/
     goBack() {
-        this.stopRecordMouseEvents();
+        this.stopRecordEvents();
         this.preview.goBack();
         this.setState({ address: this.preview.src })
     }
 
     /* Navigate forward in webview */
     goForward() {
-        this.stopRecordMouseEvents();
+        this.stopRecordEvents();
         this.preview.goForward();
         this.setState({ address: this.preview.src })
     }
 
     /* Navigate to new page in webview */
     navigate() {
-        this.stopRecordMouseEvents();
+        this.stopRecordEvents();
         this.setState({ src: this.state.address });
     }
 
     /* Reload webview */
     reloadPreview() {
-        this.stopRecordMouseEvents();
+        this.stopRecordEvents();
         this.preview.reload();
     }
 
@@ -123,19 +123,19 @@ export default class Preview extends Component {
     }
 
     /* Tell webview to start recording mouse events */
-    recordMouseEvents() {
+    recordEvents() {
         this.setState({
             numClicks: 0,
             currentTag: "None",
             recordState: this.RECORDING
         });
-        this.preview.send('recordMouseEvents');
+        this.preview.send('recordEvents');
     }
 
     /* Tell webview to stop recording mouse events */
-    stopRecordMouseEvents() {
+    stopRecordEvents() {
         if (this.state.recordState !== this.STOPPED) {
-            this.preview.send('stopRecordingMouseEvents');
+            this.preview.send('stopRecordingEvents');
             this.setState({ demoMessage: null });
         }
     }
@@ -162,12 +162,13 @@ export default class Preview extends Component {
     /* Listener triggered after receiving recordingDone ipc message from preview webview */
     createDemoCommand(event) {
         var elements = event.elements;
+        var parameters = event.parameters;
         if (elements.length === 0) {
             // No elements clicked so don't create any voice command
             this.setState({ recordState: this.STOPPED });
         } else {
             this.setState({
-                demoCommand: database.addDemoCommand(elements, this.state.address.split('/').pop()),
+                demoCommand: database.addDemoCommand(elements, parameters, this.state.address.split('/').pop()),
                 recordState: this.POPOVER
             });
         }
@@ -176,9 +177,9 @@ export default class Preview extends Component {
     getRecordOnClick() {
         switch (this.state.recordState) {
             case this.STOPPED:
-                return this.recordMouseEvents;
+                return this.recordEvents;
             case this.RECORDING:
-                return this.stopRecordMouseEvents;
+                return this.stopRecordEvents;
             case this.POPOVER:
                 return this.handlePopoverUnmount;
             default:
@@ -229,8 +230,8 @@ export default class Preview extends Component {
             ? (
                 <div className="buttons">
                     {addressBar}
-                    <div class="pill">{this.state.currentTag}</div>
-                    <div class="pill">{this.state.numClicks + (this.state.numClicks === 1 ? " click" : " clicks")}</div>
+                    <div className="pill">{this.state.currentTag}</div>
+                    <div className="pill">{this.state.numClicks + (this.state.numClicks === 1 ? " click" : " clicks")}</div>
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
                     <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState === this.POPOVER}>
                         <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
@@ -241,7 +242,7 @@ export default class Preview extends Component {
             )
             : (
                 <div className="buttons">
-                    <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faPlay} size="lg" color={Colors.Theme}></FontAwesomeIcon></button>
+                    <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faHammer} size="lg" color={Colors.Theme}></FontAwesomeIcon></button>
                     <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
                     <button title="Go Forward" className="previewBtn" onClick={this.goForward}><FontAwesomeIcon icon={faChevronRight} size="lg" disabled></FontAwesomeIcon></button>
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>

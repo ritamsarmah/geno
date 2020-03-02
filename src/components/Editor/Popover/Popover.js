@@ -7,6 +7,7 @@ import { faChevronDown, faChevronUp, faPlus } from '@fortawesome/free-solid-svg-
 import './Popover.css'
 
 import database from '../../../common/Database';
+import { ContextType } from '../../../common/constants'
 
 export default class Popover extends Component {
 
@@ -38,8 +39,9 @@ export default class Popover extends Component {
         this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
-        this.changeMouseParameter = this.changeMouseParameter.bind(this);
-        this.changeMouseAttribute = this.changeMouseAttribute.bind(this);
+        this.changeContextType = this.changeContextType.bind(this);
+        this.changeContextParameter = this.changeContextParameter.bind(this);
+        this.changeReturnAttribute = this.changeReturnAttribute.bind(this);
         this.trainModel = this.trainModel.bind(this);
     }
 
@@ -136,22 +138,41 @@ export default class Popover extends Component {
         });
     }
 
-    /* Change value for which parameter inferred from element under mouse */
-    changeMouseParameter(event) {
+    /* Change value for selector to use for context */
+    changeContextSelector(event) {
+        // TODO
         var param = event.target.value === '-' ? null : event.target.value;
         this.setState({
-            command: database.updateMouseParameter(this.state.command.id, param)
+            command: database.updateContextParameter(this.state.command.id, param)
         });
     }
 
-    /* Change attribute to use when passing data for parameter from element under mouse */
-    changeMouseAttribute(event) {
+    /* Change value for which parameter inferred from element under mouse */
+    changeContextParameter(event) {
+        // TODO
+        var param = event.target.value === '-' ? null : event.target.value;
+        this.setState({
+            command: database.updateContextParameter(this.state.command.id, param)
+        });
+    }
+
+    /* Change element attribute(s) to return as a parameter for multimodal input */
+    changeReturnAttribute(event) {
+        // TODO
         var attr = event.target.value === '-' ? null : event.target.value;
         this.setState({
-            command: database.updateMouseAttribute(this.state.command.id, attr)
+            command: database.updateContextReturnAttributes(this.state.command.id, attr.split(' '))
         });
     }
 
+    /* Change type of return value for context */
+    changeContextType(event) {
+        // TODO
+        var type = event.target.value;
+        this.setState({
+            command: database.updateContextType(this.state.command.id, type)
+        });
+    }
 
     trainModel(e) {
         var button = e.target
@@ -173,40 +194,6 @@ export default class Popover extends Component {
             <div>
                 <p className="popoverTitle">Triggered Function</p>
                 <div className="popoverFn">{this.state.command.triggerFn}</div>
-            </div>
-        );
-    }
-
-    renderMultimodal() {
-        var params = this.state.command.parameters.map(p => p.name);
-        params.push('-');
-
-        return (
-            <div className="popover">
-                <form className="popoverForm">
-                    <p className="popoverTitle">Multimodal Context</p>
-                    <p className="popoverSubtitle">
-                        Allow
-                                <select className="popoverDropdown"
-                            defaultValue={(!this.state.command.mouseParameter) ? "-" : this.state.command.mouseParameter}
-                            onChange={(event) => this.changeMouseParameter(event)}>
-                            {params.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
-                        to be retrieved using mouse context.
-                            </p>
-                    <input type="radio" id="contextElement" className="popoverLabel" name="contextType" value="element"></input>
-                    <label for="contextElement">Element(s)</label><br></br>
-                    <input type="radio" id="contextAttribute" className="popoverLabel" name="contextType" value="attribute"></input>
-                    <label for="contextAttribute">
-                        Element attribute
-                                <input id="mouseDataAttribute" type="text" placeholder="(leave empty to return element)" defaultValue={this.state.command.mouseAttribute} onChange={this.changeMouseAttribute}></input>
-                    </label>
-                    <br></br>
-                    <input type="radio" id="contextText" className="popoverLabel" name="contextType" value="text"></input>
-                    <label for="contextText">Highlighted Text Selection</label><br></br>
-                    <br></br>
-                    <input type="button" value="Done" onClick={this.showMain}></input>
-                </form>
             </div>
         );
     }
@@ -250,12 +237,11 @@ export default class Popover extends Component {
                                 <br></br>
                                 <div id="bottomButtons">
                                     <input type="button" value="Options" onClick={this.showOptions}></input>
-                                    <input type="button" style={{ marginLeft: "8px" }} value="Context" onClick={this.showContext}></input>
                                     <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
                                 </div>
                             </form>
                         </div>
-                        {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} unmountMe={this.handleAnalysisUnmount} flipSide={this.state.flipSide} /> : null}
+                        {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} flipSide={this.state.flipSide} unmountMe={this.handleAnalysisUnmount} /> : null}
                     </div>
                 );
             case this.POPOVER_OPTIONS:
@@ -278,8 +264,6 @@ export default class Popover extends Component {
                         </div>
                     </div>
                 );
-            case this.POPOVER_CONTEXT:
-                return this.renderMultimodal();
             default:
                 break;
         }

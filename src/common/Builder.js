@@ -25,7 +25,8 @@ class Builder {
                         type: cmd.type,
                         elements: cmd.elements,
                         parameters: cmd.parameters,
-                        delay: cmd.delay
+                        delay: cmd.delay,
+                        contextInfo: cmd.contextInfo
                     };
                 } else if (cmd.type === "function") {
                     var parameterMap = {}
@@ -37,14 +38,15 @@ class Builder {
                         type: cmd.type,
                         file: cmd.file,
                         triggerFn: cmd.triggerFn,
-                        parameters: parameterMap
+                        parameters: parameterMap,
+                        contextInfo: cmd.contextInfo
                     };
                 }
             }
         });
 
         // Add function to output function for a provided query
-        var generatedCode = `\n\ngeno.intentMap = ${JSON.stringify(commandMap)}`;
+        var generatedCode = `\n\ngeno.commands = ${JSON.stringify(commandMap)}`;
         var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
         var jsDest = this.dir + '/geno/geno.js';
 

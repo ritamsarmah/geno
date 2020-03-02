@@ -44,8 +44,7 @@ export default class Marker extends Component {
             this.setState({ command: command });
         }
 
-        // Set state directly to prevent re-render
-        this.state.isVisible = !this.state.isVisible;
+        this.setState({ isVisible: !this.state.isVisible });
     }
 
     onHide() {

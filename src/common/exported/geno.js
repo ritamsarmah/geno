@@ -12,15 +12,101 @@ export var GenoColor;
     GenoColor["Error"] = "#EB503A";
     GenoColor["Theme"] = "#4A90E2";
 })(GenoColor || (GenoColor = {}));
+export var GenoContextType;
+(function (GenoContextType) {
+    GenoContextType["Element"] = "element";
+    GenoContextType["Attribute"] = "attribute";
+    GenoContextType["Text"] = "text"; // Return selected/highlighted text
+})(GenoContextType || (GenoContextType = {}));
+var GenoContextInfo = /** @class */ (function () {
+    function GenoContextInfo(command) {
+        var contextInfo = command.info.contextInfo;
+        this.parameter = contextInfo.parameter;
+        this.type = contextInfo.type;
+        this.selector = contextInfo.selector;
+        this.attributes = contextInfo.attributes;
+    }
+    return GenoContextInfo;
+}());
+export { GenoContextInfo };
+var GenoCommand = /** @class */ (function () {
+    function GenoCommand(query, entities, info, context) {
+        this.query = query;
+        this.entities = entities;
+        this.info = info;
+        this.extractedParams = [];
+        this.expectedParams = Object.keys(info.parameters); // Can always assume in correct call order
+        this.contextInfo = new GenoContextInfo(this);
+        this.context = context;
+    }
+    GenoCommand.prototype.didExtractAllParams = function () {
+        return this.extractedParams.length == this.expectedParams.length;
+    };
+    GenoCommand.prototype.entityForParameter = function (parameter) {
+        return this.entities.find(function (e) { return e.entity === parameter; });
+    };
+    GenoCommand.prototype.backupQuestion = function (parameter) {
+        var backupQuestion = this.info.parameters[parameter];
+        if (backupQuestion === "") {
+            backupQuestion = "What is " + parameter + "?";
+        }
+        return backupQuestion;
+    };
+    /** Intelligently convert parameter to an appropriate type and add to extractedParams */
+    GenoCommand.prototype.addParameter = function (value) {
+        if (!isNaN(parseInt(value))) {
+            value = parseInt(value);
+        }
+        this.extractedParams.push(value);
+    };
+    GenoCommand.prototype.canUseContextForParameter = function (parameter) {
+        if (this.context.hasOwnProperty("length") && this.context["length"] === 0) {
+            return false;
+        }
+        return this.contextInfo.parameter === parameter && this.context != null;
+    };
+    return GenoCommand;
+}());
+export { GenoCommand };
 var Geno = /** @class */ (function () {
     function Geno() {
+        this.mouseState = {
+            isMouseDown: false,
+            isDragging: false,
+            isTrackingHover: false,
+            selection: {
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+            }
+        };
         this.devId = -1;
         this.onfinalmessage = null;
-        this.intentMap = {};
+        this.commands = {};
         this.chatHistory = [];
         this.isListening = false;
         this.isCollapsed = true;
+        this.onMouseDownListener = this.onMouseDown.bind(this);
+        this.onMouseMoveListener = this.onMouseMove.bind(this);
+        this.onMouseUpListener = this.onMouseUp.bind(this);
     }
+    /** Configure developer ID */
+    Geno.prototype.setDevId = function (devId) {
+        this.devId = devId;
+    };
+    /** Convenient method to initialize Geno */
+    Geno.prototype.start = function (devId) {
+        var _this = this;
+        this.addPopover();
+        this.setDevId(devId);
+        // Enable Geno using ` key
+        document.addEventListener("keyup", function (e) {
+            if (e.key === '\`' && !_this.activeElementHasEditableText()) {
+                _this.togglePopover();
+            }
+        });
+    };
     /*** Speech Functions ***/
     /** Display/speak phrase to user */
     Geno.prototype.respond = function (phrase, speak, callback) {
@@ -43,6 +129,104 @@ var Geno = /** @class */ (function () {
             _this.startListening();
         });
     };
+    /*** Multimodal Context Functions ***/
+    /** Checks if current active element uses keyboard for input */
+    Geno.prototype.activeElementHasEditableText = function () {
+        var activeDiv = document.activeElement;
+        return document.activeElement.nodeName === 'INPUT'
+            || document.activeElement.nodeName === 'TEXTAREA'
+            || activeDiv.isContentEditable;
+    };
+    /** Event listener for mousedown events */
+    Geno.prototype.onMouseDown = function (event) {
+        this.mouseState.isMouseDown = true;
+        this.mouseState.isDragging = false;
+        this.mouseState.selection.left = event.clientX;
+        this.mouseState.selection.top = event.clientY;
+    };
+    /** Event listener for mousemove events */
+    Geno.prototype.onMouseMove = function (event) {
+        if (!this.mouseState.isMouseDown && this.mouseState.isTrackingHover) {
+            this.contextElements = this.selectPointContext({ x: event.clientX, y: event.clientY });
+        }
+        else if (this.mouseState.isMouseDown) {
+            this.mouseState.isDragging = true;
+            this.mouseState.isTrackingHover = false;
+            this.mouseState.selection.right = event.clientX;
+            this.mouseState.selection.bottom = event.clientY;
+            this.drawSelectionRectangle();
+            // TODO: Fix, requires dragging right and down
+        }
+    };
+    /** Event listener for mouseup events */
+    Geno.prototype.onMouseUp = function (event) {
+        if (this.mouseState.isDragging) {
+            this.contextElements = this.selectDragContext();
+        }
+        this.mouseState.isMouseDown = false;
+        this.mouseState.isDragging = false;
+        this.mouseState.isTrackingHover = false;
+        this.hideSelectionRectangle();
+    };
+    Geno.prototype.selectPointContext = function (mousePosition) {
+        return [document.elementFromPoint(mousePosition.x, mousePosition.y)];
+    };
+    Geno.prototype.selectDragContext = function () {
+        var _this = this;
+        // Find elements inside our selection rectangle
+        return Array.from(document.querySelectorAll("*")).filter(function (el) {
+            return _this.mouseState.selection.left <= el.getBoundingClientRect().left &&
+                _this.mouseState.selection.top <= el.getBoundingClientRect().top &&
+                _this.mouseState.selection.right >= el.getBoundingClientRect().right &&
+                _this.mouseState.selection.bottom >= el.getBoundingClientRect().bottom;
+        });
+    };
+    Geno.prototype.extractContext = function (contextInfo) {
+        if (this.contextElements == null)
+            return null;
+        // Helper function to extract context for an element
+        var extractElementContext = function (element) {
+            switch (contextInfo.type) {
+                case GenoContextType.Element:
+                    return element;
+                case GenoContextType.Attribute:
+                    var attributes = contextInfo.attributes.map(function (attr) { return element.getAttribute(attr); });
+                    return attributes.length === 1 ? attributes[0] : attributes;
+            }
+        };
+        // Return highlighted text if context type is text
+        if (contextInfo.type === GenoContextType.Text && window.getSelection) {
+            return window.getSelection().toString();
+        }
+        else {
+            var query = contextInfo.selector;
+            query += contextInfo.attributes.map(function (attr) { return "[" + attr + "]"; });
+            var elements = this.contextElements
+                .filter(function (el) { return el.matches(query); })
+                .map(function (el) { return extractElementContext(el); });
+            return elements.length === 1 ? elements[0] : elements;
+        }
+    };
+    Geno.prototype.drawSelectionRectangle = function () {
+        if (this.selectionRect === undefined)
+            return;
+        this.selectionRect.style.left = this.mouseState.selection.left + "px";
+        this.selectionRect.style.top = this.mouseState.selection.top + window.scrollY + "px";
+        this.selectionRect.style.width = this.mouseState.selection.right - this.mouseState.selection.left + "px";
+        this.selectionRect.style.height = this.mouseState.selection.bottom - this.mouseState.selection.top + "px";
+        this.selectionRect.style.opacity = '0.5';
+    };
+    Geno.prototype.hideSelectionRectangle = function () {
+        if (this.selectionRect === undefined)
+            return;
+        this.selectionRect.style.opacity = '0';
+        this.mouseState.selection = {
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+        };
+    };
     /*** Listening Functions ***/
     /** Adds a new message to the chat history */
     Geno.prototype.addChatMessage = function (text, who) {
@@ -51,20 +235,12 @@ var Geno = /** @class */ (function () {
             this.chatHistory.push(message);
             if (who === "user") {
                 this.bubble.textContent = text;
+                this.bubble.style.visibility = 'visible';
                 this.bubble.className = "geno-last-phrase";
             }
             return message;
         }
         return null;
-    };
-    /** Configure developer ID */
-    Geno.prototype.setDevId = function (devId) {
-        this.devId = devId;
-    };
-    /** Convenient method to initialize Geno */
-    Geno.prototype.start = function (devId) {
-        this.addPopover();
-        this.setDevId(devId);
     };
     /** Initialize recognition system */
     Geno.prototype.initRecognition = function () {
@@ -78,9 +254,6 @@ var Geno = /** @class */ (function () {
             this.recognition.maxAlternatives = 1;
             this.recognition.onresult = function (event) {
                 _this.transcribe(event.results[0][0].transcript);
-                // TODO: check for matches with queries and show suggestion
-                _this.bubble.className = "geno-suggest";
-                _this.bubble.style.visibility = "visible";
                 if (event.results[0].isFinal) {
                     _this.listeningTimer = window.setTimeout(function () { return _this.stopListening.call(_this); }, 1000);
                 }
@@ -110,6 +283,12 @@ var Geno = /** @class */ (function () {
         this.micButton.disabled = true;
         this.isListening = true;
         this.recognition.start();
+        // Start tracking context
+        this.mouseState.isTrackingHover = true;
+        document.body.appendChild(this.selectionRect);
+        document.addEventListener("mousedown", this.onMouseDownListener);
+        document.addEventListener("mousemove", this.onMouseMoveListener);
+        document.addEventListener("mouseup", this.onMouseUpListener);
     };
     /** Stop any listening action */
     Geno.prototype.stopListening = function () {
@@ -129,15 +308,22 @@ var Geno = /** @class */ (function () {
                     this.onfinalmessage(message);
                 }
                 else {
-                    this.triggerFunction(message.text);
+                    this.executeCommand(message.text);
                 }
             }
         }
         this.micButton.disabled = false;
+        // Stop tracking context
+        this.mouseState.isTrackingHover = false;
+        this.mouseState.isDragging = false;
+        document.body.removeChild(this.selectionRect);
+        document.removeEventListener("mousedown", this.onMouseDownListener);
+        document.removeEventListener("mousemove", this.onMouseMoveListener);
+        document.removeEventListener("mouseup", this.onMouseUpListener);
     };
     /*** Control Functions ***/
     /** Execute appropriate function based on match to query */
-    Geno.prototype.triggerFunction = function (query) {
+    Geno.prototype.executeCommand = function (query) {
         var _this = this;
         if (typeof query != "string")
             return;
@@ -149,133 +335,119 @@ var Geno = /** @class */ (function () {
         var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
         xhr.onload = function () {
-            console.log(json);
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
-            var info = _this.intentMap[json.intent.name];
-            if (Object.keys(_this.intentMap).length == 1) {
-                info = Object.values(_this.intentMap)[0]; // Only intent so get it
+            var info = _this.commands[json.intent.name];
+            // Only 1 command so always use it (since backend does not create classifer for 1 command)
+            if (Object.keys(_this.commands).length == 1) {
+                info = Object.values(_this.commands)[0];
             }
+            console.log(json);
+            var context = _this.extractContext(info.contextInfo);
+            _this.currentCommand = new GenoCommand(query, json.entities, info, context);
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 if (info.type === "demo") {
-                    _this.clickElements(info.elements, json.entities, info.parameters, info.delay * 1000);
+                    // TODO: include context or capture all this info in a new GenoDemoCommand
+                    _this.clickElements();
                 }
                 else if (info.type === "function") {
-                    _this.currentTrigger = {
-                        query: query,
-                        info: info,
-                        entities: json.entities,
-                        args: [],
-                        expectedArgs: Object.keys(info.parameters) // Always in correct call order
-                    };
-                    _this.retrieveArgs();
+                    _this.extractParameters();
                 }
             }
             else {
-                console.log(json);
                 _this.respond("Sorry, I didn't understand.");
                 _this.setBorderColor(GenoState.Error);
             }
         };
         xhr.send();
     };
-    Geno.prototype.getSelectionText = function () {
-        var text = null;
-        // TODO: set to null if nothing selected
-        if (window.getSelection) {
-            text = window.getSelection().toString();
-        }
-        return text;
-    };
     /** A recursive/callback based function to retrieve all arguments and trigger function */
-    Geno.prototype.retrieveArgs = function () {
+    Geno.prototype.extractParameters = function () {
         var _this = this;
-        var expectedArgs = this.currentTrigger.expectedArgs;
-        // All arguments retrieved already, trigger function
-        if (expectedArgs.length == this.currentTrigger.args.length) {
-            import("../" + this.currentTrigger.info.file)
+        // All arguments retrieved, so trigger function
+        if (this.currentCommand.didExtractAllParams()) {
+            import("../" + this.currentCommand.info.file)
                 .then(function (module) {
-                var fn = module[_this.currentTrigger.info.triggerFn];
+                var fn = module[_this.currentCommand.info.triggerFn];
                 if (fn) {
-                    var result = module[_this.currentTrigger.info.triggerFn].apply(null, _this.currentTrigger.args);
+                    var result = module[_this.currentCommand.info.triggerFn].apply(null, _this.currentCommand.extractedParams);
                     console.log(result);
                 }
                 else {
-                    console.error("Error: Could not find function '" + _this.currentTrigger.info.triggerFn + "' in module '" + _this.currentTrigger.info.file) + "'";
+                    console.error("Error: Could not find function '" + _this.currentCommand.info.triggerFn + "' in module '" + _this.currentCommand.info.file) + "'";
                 }
-                _this.currentTrigger = null;
+                _this.currentCommand = null;
             });
             return;
         }
         // Retrieve arguments
-        for (var index = this.currentTrigger.args.length; index < expectedArgs.length; index++) {
-            var arg = expectedArgs[index];
-            var entity = this.currentTrigger.entities.find(function (e) { return e.entity === arg; });
-            var value = null;
-            if (entity === undefined) {
-                var backupQuestion = this.currentTrigger.info.parameters[arg];
-                // Default backup question in case developer hasn't provided
-                if (backupQuestion === "") {
-                    backupQuestion = "What is " + arg + "?";
+        for (var index = this.currentCommand.extractedParams.length; index < this.currentCommand.expectedParams.length; index++) {
+            var expectedParam = this.currentCommand.expectedParams[index];
+            var entity = this.currentCommand.entityForParameter(expectedParam);
+            if (entity == null) {
+                if (this.currentCommand.canUseContextForParameter(expectedParam)) {
+                    this.currentCommand.addParameter(this.currentCommand.context);
                 }
-                this.ask(backupQuestion, true, function (answer) {
-                    _this.onfinalmessage = null;
-                    console.log("Received value for " + arg + ", " + answer.text);
-                    _this.addArg(answer.text);
-                    _this.retrieveArgs();
-                });
-                return;
+                else {
+                    this.ask(this.currentCommand.backupQuestion(expectedParam), true, function (answer) {
+                        _this.onfinalmessage = null;
+                        _this.currentCommand.addParameter(answer.text);
+                        _this.extractParameters();
+                    });
+                    return;
+                }
             }
             else {
-                value = this.currentTrigger.query.slice(entity.start, entity.end);
-                // var value = entity['value']; // TODO: Use this instead of the slice below
+                // FIXME: remove check for entity.value and just use entity.value once it is fixed
+                this.currentCommand.addParameter(entity.value !== "None" ? entity.value : this.currentCommand.query.slice(entity.start, entity.end));
             }
-            this.addArg(value);
         }
-        this.retrieveArgs();
+        this.extractParameters();
     };
     /** Recursive function to simulate clicks for demo command */
-    Geno.prototype.clickElements = function (elements, entities, parameters, delay, i) {
-        // if (i >= elements.length) { return; }
+    Geno.prototype.clickElements = function (i) {
         var _this = this;
         if (i === void 0) { i = 0; }
-        // var el = document.getElementsByTagName(elements[i].tag)[elements[i].index]
-        // el.click();
-        // // TODO: WE NEED TO TEST THIS!!!
-        // // Handling for if this step in sequence is associated with a parameter input
-        // var arg = parameters.find((p: any) => p.index === i);
-        // if (arg) {
-        //     var entity = entities.find((e: any) => e.entity === arg.name);
-        //     if (entity === undefined) {
-        //         var backupQuestion = arg.backupQuery;
-        //         // Default backup question in case developer hasn't provided
-        //         if (backupQuestion === "") {
-        //             backupQuestion = "What is " + arg + "?";
-        //         }
-        //         this.ask(backupQuestion, true, (answer) => {
-        //             this.onfinalmessage = null;
-        //             console.log("Received value for " + arg.name + ", " + answer.text);
-        //             el.value = entity.value
-        //             setTimeout(() => {
-        //                 this.clickElements(elements, entities, parameters, delay, i + 1);
-        //             }, delay);
-        //         });
-        //         return;
-        //     } else {
-        //         //TODO: Don't know if entity.value is actually a thing :/
-        //         el.value = entity.value
-        //     }
-        // }
-        setTimeout(function () {
-            _this.clickElements(elements, entities, parameters, delay, i + 1);
-        }, delay);
-    };
-    /** Intelligently convert argument to type and add to arguments list */
-    Geno.prototype.addArg = function (value) {
-        if (!isNaN(parseInt(value))) {
-            value = parseInt(value);
+        var elements = this.currentCommand.info.elements;
+        var parameters = this.currentCommand.info.parameters;
+        if (i >= elements.length) {
+            return;
         }
-        this.currentTrigger.args.push(value);
+        // Find element in webpage to click on
+        var el = document.getElementsByTagName(elements[i].tag)[elements[i].index];
+        el.click();
+        el.focus();
+        // Handles if this step in demonstration needs a parameter input
+        var expectedParam = parameters.find(function (p) { return p.index === i; });
+        if (expectedParam) {
+            var entity = this.currentCommand.entityForParameter(expectedParam.name);
+            if (entity == null) {
+                if (this.currentCommand.canUseContextForParameter(expectedParam.name)) {
+                    el.textContent += this.currentCommand.context.toString();
+                }
+                else {
+                    var backupQuestion = backupQuestion === "" ?
+                        this.currentCommand.info.parameters[expectedParam.name] :
+                        backupQuestion = "What is " + expectedParam.name + "?";
+                    this.ask(backupQuestion, true, function (answer) {
+                        _this.onfinalmessage = null;
+                        el.textContent += answer.text;
+                        setTimeout(function () {
+                            _this.clickElements(i + 1);
+                        }, _this.currentCommand.info.delay * 1000);
+                    });
+                    return;
+                }
+            }
+            else {
+                // FIXME: Sometimes entity.value is None
+                var value = entity.value !== "None" ? entity.value : this.currentCommand.query.slice(entity.start, entity.end);
+                el.textContent += value;
+            }
+        }
+        setTimeout(function () {
+            _this.clickElements(i + 1);
+        }, this.currentCommand.info.delay * 1000);
     };
     /*** UI Functions ***/
     /** Transcribe text to popover */
@@ -324,21 +496,21 @@ var Geno = /** @class */ (function () {
         var bubble = document.createElement("div");
         bubble.id = "geno-bubble";
         bubble.style.visibility = "hidden";
-        bubble.textContent = "Start speaking for suggestions";
         document.body.appendChild(bubble);
         this.box = popover;
         this.currentMessage = genoCurr;
         this.listeningIndicator = genoIndicator;
         this.micButton = genoMic;
         this.bubble = bubble;
+        // Add context selection rectangle
+        this.selectionRect = document.createElement("div");
+        this.selectionRect.id = "geno-select-rect";
         this.initRecognition();
     };
     /** Hide/show popover */
     Geno.prototype.togglePopover = function () {
         if (this.isCollapsed) {
             this.box.style.right = "10px";
-            this.bubble.style.visibility = "visible";
-            this.bubble.className = "geno-suggest";
             this.isCollapsed = false;
         }
         this.isListening ? this.stopListening() : this.startListening();

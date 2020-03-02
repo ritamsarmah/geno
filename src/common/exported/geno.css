@@ -162,6 +162,16 @@
     color: var(--theme-color);
 }
 
+/* Context Selection Rectangle */
+#geno-select-rect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: skyblue;
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Animations */
 .geno-slide-out {
     right: calc(calc(-1 * var(--chat-box-width)) - 2px);

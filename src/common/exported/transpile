@@ -1,0 +1,3 @@
+#!/bin/bash
+
+../../../node_modules/typescript/bin/tsc -p tsconfig.json

@@ -15,4 +15,10 @@ const Paths = {
     Preferences: '/geno/preferences.json'
 }
 
-module.exports = { Colors, Paths }
+const ContextType = {
+    Element: "element",         // Return elements
+    Attribute:  "attribute",    // Return an element attribute (requires contextInfo.returnAttribute)
+    Text: "text"                // Return selected/highlighted text
+}
+
+module.exports = { Colors, Paths, ContextType }

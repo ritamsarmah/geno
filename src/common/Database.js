@@ -1,9 +1,10 @@
-import { Paths } from "./constants";
+import { Paths, ContextType } from "./constants";
 import preferences from './Preferences';
 
 const lodashId = require('lodash-id')
 const low = require('lowdb');
 const FileSync = window.require('lowdb/adapters/FileSync');
+
 
 class Database {
 
@@ -45,22 +46,31 @@ class Database {
             .value();
     }
 
+    /* Get command prototype */
+    getCommandPrototype(type, parameters) {
+        return {
+            name: "untitled_command" + (this.getCommands().length + 1),
+            parameters: parameters,
+            queries: [],
+            isTrained: false,
+            contextInfo: {
+                parameter: null,
+                type: ContextType.Element,
+                selector: "*",
+                attributes: []
+            },
+            type: type
+        }
+    }
+
     /* Add a command */
     addCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {
             return { name: p, backupQuery: "" }
         });
-        var cmd = {
-            name: "untitled_command" + (this.getCommands().length + 1),
-            file: file,
-            triggerFn: triggerFn,
-            parameters: parameters,
-            queries: [],
-            isTrained: false,
-            mouseParameter: null,
-            mouseAttribute: "",
-            type: "function"
-        };
+        var cmd = this.getCommandPrototype("function", parameters);
+        cmd.file = file;
+        cmd.triggerFn = triggerFn;
 
         this.db.get('commands').insert(cmd).write()
         return cmd;
@@ -73,16 +83,10 @@ class Database {
             index += 1;
             return { name: "param" + index, index: p, backupQuery: "" }
         });
-        var cmd = {
-            name: "untitled_command" + (this.getCommands().length + 1),
-            elements: elements,
-            file: file,
-            parameters: parameters,
-            delay: 0,
-            queries: [],
-            isTrained: false,
-            type: "demo"
-        };
+        var cmd = this.getCommandPrototype("demo", parameters)
+        cmd.elements = elements;
+        cmd.file = file;
+        cmd.delay = 0;
 
         this.db.get('commands').insert(cmd).write()
         return cmd;
@@ -91,6 +95,11 @@ class Database {
     /* Update a command */
     updateCommand(id, data) {
         return this.db.get('commands').getById(id).assign(data).write();
+    }
+
+    /* Update command context info */
+    updateCommandContext(id, data) {
+        return this.db.get('commands').getById(id).get('contextInfo').assign(data).write();
     }
 
     /* Remove a command */
@@ -157,7 +166,7 @@ class Database {
         };
 
         var command = this.getCommandForId(commandId);
-        var parameters = Object.values(updatedQuery.entities).filter(en => en.label)
+        var parameters = Object.values(updatedQuery.entities).filter(en => en.label);
 
         xhr.send(JSON.stringify({
             "dev_id": preferences.getDevId(),
@@ -220,6 +229,7 @@ class Database {
 
     /*** Parameter Functions ***/
 
+    /* Change parameters for command */
     updateParameters(commandId, params) {
         var command = this.db.get('commands').getById(commandId);
         var oldParams = command.get('parameters');
@@ -242,20 +252,33 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
-    /* Change entity to map multimodal input to */
-    updateMouseParameter(commandId, parameter) {
-        this.updateCommand(commandId, { mouseParameter: parameter });
+    /* Change entity to map multimodal input */
+    updateContextParameter(commandId, parameter) {
+        this.updateCommandContext(commandId, { parameter: parameter });
         return this.getCommandForId(commandId);
     }
 
-    /* Change element attribute to read as a parameter for multimodal input */
-    updateMouseAttribute(commandId, attribute) {
-        this.updateCommand(commandId, { mouseAttribute: attribute });
+    /* Change selector for elements to match context */
+    updateContextSelector(commandId, selector) {
+        this.updateCommandContext(commandId, { selector: selector });
+        return this.getCommandForId(commandId);
+    }
+    
+    /* Change element attribute(s) to return as a parameter for multimodal input */
+    updateContextReturnAttributes(commandId, attributes) {
+        this.updateCommandContext(commandId, { returnAttributes: attributes });
+        return this.getCommandForId(commandId);
+    }
+
+    /* Change context type for multimodal */
+    updateContextType(commandId, type) {
+        this.updateCommandContext(commandId, { type: type });
         return this.getCommandForId(commandId);
     }
 
     /*** Demo Command Functions ***/
     
+    /* Change delay */
     updateDelay(commandId, delay) {
         this.db.get('commands').getById(commandId).assign({ delay: delay }).write();
         return this.getCommandForId(commandId);

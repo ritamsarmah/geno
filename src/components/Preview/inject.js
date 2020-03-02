@@ -1,22 +1,27 @@
 const { ipcRenderer } = require('electron')
 
 var clickedElements = [];
+var parameters = [];            // Generate indices for text input elements to create parameters
 
-ipcRenderer.on('recordMouseEvents', () => {
-    document.onclick = recordMouseEvents;
+ipcRenderer.on('recordEvents', () => {
+    document.onclick = recordEvents;
+    // TODO: Add oncontextmenu
     highlightElements();
-    console.log("Geno: Recording mouse events");
+    console.log("Geno: Recording events");
 });
 
-ipcRenderer.on('stopRecordingMouseEvents', () => {
+ipcRenderer.on('stopRecordingEvents', () => {
     document.onclick = null;
-    console.log("Geno: Stopped recording mouse events");
+    console.log("Geno: Stopped recording events");
     console.log("Geno: Detected " + clickedElements.length + " clicks");
     stopHighlightElements();
-    ipcRenderer.sendToHost("recordingDone", { elements: clickedElements });
+    ipcRenderer.sendToHost("recordingDone", {
+        elements: clickedElements,
+        parameters: parameters
+    });
 });
 
-function recordMouseEvents(e) {
+function recordEvents(e) {
     isRecordingMouseEvents = true;
 
     var clickedElement = (window.event)
@@ -25,15 +30,29 @@ function recordMouseEvents(e) {
     var tags = document.getElementsByTagName(clickedElement.tagName);
 
     for (var i = 0; i < tags.length; ++i) {
-        if (tags[i] == clickedElement) { 
+        if (tags[i] == clickedElement) {
             clickedElements.push({ tag: clickedElement.tagName, index: i });
             ipcRenderer.sendToHost("clickEvent", {
                 tagName: clickedElement.tagName,
-                className: clickedElement.className,
+                className: clickedElement.className.toString(),
                 numClicks: clickedElements.length
             });
+
+            // If the element allows for typing, we can create a parameter for voice input
+            if (clickedElement.tagName === "TEXTAREA"
+                || (clickedElement.tagName === "INPUT" && /^(?:text|email|number|search|tel|url|password)$/i.test(el.type))
+                || (clickedElement.isContentEditable)) {
+                window.addEventListener("keypress", keyPressListener);
+            } else {
+                window.removeEventListener("keypress", keyPressListener);
+            }
         }
     }
+}
+
+function keyPressListener() {
+    parameters.push(clickedElements.length - 1);
+    window.removeEventListener("keypress", keyPressListener);
 }
 
 /* UI Highlighting Functions */
@@ -77,7 +96,6 @@ function createMask(target) {
     hObj.style.opacity = '0.5';
     hObj.style.cursor = 'default';
     hObj.style.pointerEvents = 'none';
-    //hObj.style.WebkitTransition='top 0.2s';
     document.body.appendChild(hObj);
 }
 
@@ -86,7 +104,6 @@ function clearMasks() {
     var hwrappers = document.getElementsByClassName("highlight-wrap");
     if (hwrappersLength > 0) {
         for (var i = 0; i < hwrappersLength; i++) {
-            console.log("Removing existing wrap");
             hwrappers[i].remove();
         }
     }
