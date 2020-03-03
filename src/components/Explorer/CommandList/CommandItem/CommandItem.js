@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import ListMarker from "../../../Editor/Marker/ListMarker";
+import Marker from "../../../Editor/Marker/Marker";
 import DemoMarker from "../../../Editor/Marker/DemoMarker";
 
 import './CommandItem.css';
@@ -11,36 +11,44 @@ const path = require('path');
 
 export default class CommandItem extends Component {
 
-    render() {
+    renderMarker() {
+        if (this.props.command.type === "demo") {
+            return <DemoMarker command={this.props.command} placement="top-end"/>;
+        } else {
+            return <Marker file={this.props.command.file} triggerFn={this.props.command.triggerFn} params={this.props.command.parameters.map(p => p.name)} placement="top-end"/>
+        }
+    }
+
+    renderSummary() {
         if (this.props.command.type === "demo") {
             return (
-                <div className="cmdItem">
-                    <p className="cmdName">{this.props.command.name}</p>
-                    <span className="cmdMarker">
-                        <DemoMarker command={this.props.command} />
-                    </span>
-                    <p className="cmdPath"> {path.basename(this.props.command.file)} </p>
-                    <span className="fn">{createCountMessage(this.props.command.elements.length, "action")}</span>
+                <span>
+                    <span className="fn">{createCountMessage(this.props.command.elements.length, "action")}</span >
                     <span className="fn">{createCountMessage(this.props.command.parameters.length, "parameter")}</span>
-                    <div className="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
-                        <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
-                    </div>
-                </div>
-            ); 
+                </span>
+            );
         } else {
             return (
-                <div className="cmdItem">
-                    <p className="cmdName">{this.props.command.name}</p>
-                    <span className="cmdMarker">
-                        <ListMarker file={this.props.command.file} triggerFn={this.props.command.triggerFn} params={this.props.command.parameters.map(p => p.name)} />
-                    </span>
-                    <p className="cmdPath"> {path.basename(this.props.command.file)}</p>
+                <span>
                     <span className="fn">{this.props.command.triggerFn}</span>
-                    <div className="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
-                        <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
-                    </div>
-                </div>
-            );
+                </span>
+            )
         }
+    }
+
+    render() {
+        return (
+            <div className="cmdItem">
+                <p className="cmdName">{this.props.command.name}</p>
+                <span className="cmdMarker">
+                    {this.renderMarker()}
+                </span>
+                <p className="cmdPath"> {path.basename(this.props.command.file)} </p>
+                {this.renderSummary()}
+                <div className="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
+                    <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
+                </div>
+            </div>
+        );
     }
 }

@@ -30,7 +30,7 @@ export default class Marker extends Component {
             command: command,
         };
 
-        this.placement = "right-end";
+        this.placement = this.props.placement == null ? "right-end" : this.props.placement;
 
         this.onClick = this.onClick.bind(this);
         this.onHide = this.onHide.bind(this);

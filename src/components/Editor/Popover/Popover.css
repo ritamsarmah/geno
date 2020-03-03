@@ -102,9 +102,7 @@ button:hover {
 #queriesView {
     height: 70px;
     min-height: 70px;
-}
 
-#queriesView {
     border: 1px solid #ccc;
     border-radius: 4px;
     overflow: scroll;
