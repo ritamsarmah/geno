@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import AnalysisView from '../AnalysisView/AnalysisView';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faPlus, faMouse } from '@fortawesome/free-solid-svg-icons';
+import { GenoEvent } from '../../../common/constants';
 
 import './Popover.css'
 
 import database from '../../../common/Database';
-import { ContextType } from '../../../common/constants'
+import emitter from '../../../common/Emitter';
 
 export default class Popover extends Component {
 
@@ -23,8 +24,10 @@ export default class Popover extends Component {
             selectedQuery: null,
             command: this.props.command,
             popoverState: this.POPOVER_MAIN,
-            flipSide: false
+            flipSide: false,
+            isTrackingContext: false
         };
+
         this.dismiss = this.dismiss.bind(this);
         this.toggleQueries = this.toggleQueries.bind(this);
         this.showMain = this.showMain.bind(this);
@@ -42,6 +45,8 @@ export default class Popover extends Component {
         this.changeContextType = this.changeContextType.bind(this);
         this.changeContextParameter = this.changeContextParameter.bind(this);
         this.changeReturnAttribute = this.changeReturnAttribute.bind(this);
+        this.toggleTrackingContext = this.toggleTrackingContext.bind(this);
+        this.processContext = this.processContext.bind(this);
         this.trainModel = this.trainModel.bind(this);
     }
 
@@ -149,7 +154,6 @@ export default class Popover extends Component {
 
     /* Change value for which parameter inferred from element under mouse */
     changeContextParameter(event) {
-        // TODO
         var param = event.target.value === '-' ? null : event.target.value;
         this.setState({
             command: database.updateContextParameter(this.state.command.id, param)
@@ -172,6 +176,24 @@ export default class Popover extends Component {
         this.setState({
             command: database.updateContextType(this.state.command.id, type)
         });
+    }
+
+    /* Toggle tracking context in Preview */
+    toggleTrackingContext() {
+        this.setState({ isTrackingContext: !this.state.isTrackingContext }, () => {
+            if (this.state.isTrackingContext) {
+                emitter.on(GenoEvent.ShareContext, this.processContext);
+                emitter.emit(GenoEvent.TrackContext);
+            } else {
+                emitter.emit(GenoEvent.StopTrackContext);
+                emitter.removeListener(GenoEvent.ShareContext, this.processContext);
+            }
+        });
+    }
+
+    /* Processes received context elements and displays to user */
+    processContext(elements) {
+        console.log(elements);
     }
 
     trainModel(e) {
@@ -198,6 +220,19 @@ export default class Popover extends Component {
         );
     }
 
+    renderContextDropdown() {
+        var names = this.state.command.parameters.map(p => p.name);
+        names.push("-");
+
+        var selection = this.state.command.contextInfo.parameter != null ? this.state.command.contextInfo.parameter : "-";
+
+        return (
+            <select defaultValue={selection} onChange={this.changeContextParameter}>
+                {names.map(name => <option key={name} value={name}>{name}</option>)}
+            </select>
+        );
+    }
+
     render() {
         switch (this.state.popoverState) {
             case this.POPOVER_MAIN:
@@ -205,15 +240,17 @@ export default class Popover extends Component {
                     <div>
                         <div className="popover">
                             <form className="popoverForm">
+                                {/* Command Name */}
                                 <p className="popoverTitle">Command Name</p>
                                 <input id="commandNameInput" type="text" defaultValue={this.state.command.name} onChange={this.changeCommandName}></input>
 
+                                {/* Summary */}
                                 {this.renderSummary()}
                                 <br></br>
                                 <br></br>
 
+                                {/* Sample Queries */}
                                 <p className="popoverTitle">Sample Queries</p>
-
                                 <div>
                                     <div>
                                         <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
@@ -233,6 +270,22 @@ export default class Popover extends Component {
                                         <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
                                     </div>
                                 </div>
+
+                                {/* Multimodal Context */}
+                                <p className="popoverTitle">Multimodal Context</p>
+                                <div>
+                                    {this.renderContextDropdown()}
+                                    <span className="iconButton" onClick={this.toggleTrackingContext}>
+                                        <FontAwesomeIcon icon={faMouse} />
+                                    </span>
+                                    {/* <div>
+                                        {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
+                                    </div> */}
+                                </div>
+                                <div>
+                                    
+                                </div>
+
                                 <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
                                 <br></br>
                                 <div id="bottomButtons">

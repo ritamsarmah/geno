@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import Tippy from '@tippy.js/react';
-import builder from '../../common/Builder';
+import DemoPopover from '../Editor/Popover/DemoPopover';
+import { Colors, GenoEvent } from '../../common/constants';
+import './Preview.css'
+import 'tippy.js/themes/light-border.css';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRedoAlt, faChevronLeft, faChevronRight, faMousePointer, faCode, faStop, faTimesCircle, faHammer } from '@fortawesome/free-solid-svg-icons';
 
-import { Colors } from '../../common/constants';
-import './Preview.css'
-import 'tippy.js/themes/light-border.css';
-import DemoPopover from '../Editor/Popover/DemoPopover';
-
+import builder from '../../common/Builder';
 import database from '../../common/Database';
+import emitter from '../../common/Emitter';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
@@ -25,8 +25,10 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            address: `http://localhost:9000/examples/full.html`,
+            src: `http://localhost:9000/examples/full.html`,
             recordState: this.STOPPED,
             demoCommand: null
         }
@@ -41,6 +43,9 @@ export default class Preview extends Component {
         this.buildApp = this.buildApp.bind(this);
         this.recordEvents = this.recordEvents.bind(this);
         this.createDemoCommand = this.createDemoCommand.bind(this);
+        this.trackContext = this.trackContext.bind(this);
+        this.stopTrackingContext = this.stopTrackingContext.bind(this);
+        this.shareContextWithPopover = this.shareContextWithPopover.bind(this);
         this.stopRecordEvents = this.stopRecordEvents.bind(this);
         this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
     }
@@ -62,10 +67,20 @@ export default class Preview extends Component {
                 this.receivedHoverEvent(event.args[0]);
             } else if (event.channel === "recordingDone") {
                 this.createDemoCommand(event.args[0]);
+            } else if (event.channel === "trackedContext") {
+                this.shareContextWithPopover(event.args[0]);
             }
-        })
+        });
 
-        // TODO: Could use event listener for "console-message" to display some info
+        emitter.on(GenoEvent.TrackContext, this.trackContext);
+        emitter.on(GenoEvent.StopTrackContext, this.stopTrackingContext);
+
+        // NOTE: Could use event listener for "console-message" to display some info
+    }
+
+    componentWillUnmount() {
+        emitter.removeListener(GenoEvent.TrackContext, this.trackContext);
+        emitter.removeListener(GenoEvent.StopTrackContext, this.stopTrackingContext);
     }
 
     /* Sync address bar and state when webview load */
@@ -172,6 +187,19 @@ export default class Preview extends Component {
                 recordState: this.POPOVER
             });
         }
+    }
+
+    trackContext() {
+        this.preview.send('trackContext');
+        // TODO: do something with commandId
+    }
+
+    stopTrackingContext() {
+        this.preview.send('stopTrackingContext');
+    }
+
+    shareContextWithPopover(event) {
+        emitter.emit(GenoEvent.ShareContext, event.elements);
     }
 
     getRecordOnClick() {

@@ -201,12 +201,15 @@ export class Geno {
         this.mouseState.isDragging = false;
         this.mouseState.selection.left = event.clientX;
         this.mouseState.selection.top = event.clientY;
+        this.clearContextHighlights();
     }
 
     /** Event listener for mousemove events */
     onMouseMove(event: MouseEvent) {
         if (!this.mouseState.isMouseDown && this.mouseState.isTrackingHover) {
+            this.clearContextHighlights();
             this.contextElements = this.selectPointContext({ x: event.clientX, y: event.clientY });
+            this.setContextHighlights();
         } else if (this.mouseState.isMouseDown) {
             this.mouseState.isDragging = true;
             this.mouseState.isTrackingHover = false;
@@ -220,12 +223,16 @@ export class Geno {
     /** Event listener for mouseup events */
     onMouseUp(event: MouseEvent) {
         if (this.mouseState.isDragging) {
+            this.clearContextHighlights();
             this.contextElements = this.selectDragContext();
+            this.setContextHighlights();
+        } else {
+            this.contextElements = [];
         }
 
         this.mouseState.isMouseDown = false;
         this.mouseState.isDragging = false;
-        this.mouseState.isTrackingHover = false;
+        this.mouseState.isTrackingHover = this.contextElements.length === 0;
 
         this.hideSelectionRectangle();
     }
@@ -270,6 +277,20 @@ export class Geno {
             
             return elements.length === 1 ? elements[0] : elements;
         }
+    }
+
+    setContextHighlights() {
+        if (this.contextElements == null) return;
+        this.contextElements.forEach(el => {
+            if (el.tagName !== "BODY") {
+                el.classList.add("geno-highlight");
+            }
+        });
+    }
+
+    clearContextHighlights() {
+        if (this.contextElements == null) return;
+        this.contextElements.forEach(el => el.classList.remove("geno-highlight"));
     }
 
     drawSelectionRectangle() {
@@ -393,6 +414,7 @@ export class Geno {
         // Stop tracking context
         this.mouseState.isTrackingHover = false;
         this.mouseState.isDragging = false;
+        this.clearContextHighlights();
         document.body.removeChild(this.selectionRect);
         document.removeEventListener("mousedown", this.onMouseDownListener);
         document.removeEventListener("mousemove", this.onMouseMoveListener);
@@ -426,6 +448,7 @@ export class Geno {
             console.log(json);
             
             var context = this.extractContext(info.contextInfo)
+            console.log("Context: " + context);
             this.currentCommand = new GenoCommand(query, json.entities, info, context);
 
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
@@ -453,7 +476,7 @@ export class Geno {
                     var fn = module[this.currentCommand.info.triggerFn];
                     if (fn) {
                         var result = module[this.currentCommand.info.triggerFn].apply(null, this.currentCommand.extractedParams);
-                        console.log(result);
+                        console.log("Result of " + this.currentCommand.info.triggerFn + ": " + result);
                     } else {
                         console.error("Error: Could not find function '" + this.currentCommand.info.triggerFn + "' in module '" + this.currentCommand.info.file) + "'";
                     }

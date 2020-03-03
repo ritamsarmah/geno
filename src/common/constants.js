@@ -21,4 +21,10 @@ const ContextType = {
     Text: "text"                // Return selected/highlighted text
 }
 
-module.exports = { Colors, Paths, ContextType }
+const GenoEvent = {
+    TrackContext: 'trackContext',
+    StopTrackContext: 'stopTrackingContext',
+    ShareContext: 'shareContext'
+}
+
+module.exports = { Colors, Paths, ContextType, GenoEvent }

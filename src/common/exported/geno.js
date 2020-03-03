@@ -143,11 +143,14 @@ var Geno = /** @class */ (function () {
         this.mouseState.isDragging = false;
         this.mouseState.selection.left = event.clientX;
         this.mouseState.selection.top = event.clientY;
+        this.clearContextHighlights();
     };
     /** Event listener for mousemove events */
     Geno.prototype.onMouseMove = function (event) {
         if (!this.mouseState.isMouseDown && this.mouseState.isTrackingHover) {
+            this.clearContextHighlights();
             this.contextElements = this.selectPointContext({ x: event.clientX, y: event.clientY });
+            this.setContextHighlights();
         }
         else if (this.mouseState.isMouseDown) {
             this.mouseState.isDragging = true;
@@ -161,11 +164,16 @@ var Geno = /** @class */ (function () {
     /** Event listener for mouseup events */
     Geno.prototype.onMouseUp = function (event) {
         if (this.mouseState.isDragging) {
+            this.clearContextHighlights();
             this.contextElements = this.selectDragContext();
+            this.setContextHighlights();
+        }
+        else {
+            this.contextElements = [];
         }
         this.mouseState.isMouseDown = false;
         this.mouseState.isDragging = false;
-        this.mouseState.isTrackingHover = false;
+        this.mouseState.isTrackingHover = this.contextElements.length === 0;
         this.hideSelectionRectangle();
     };
     Geno.prototype.selectPointContext = function (mousePosition) {
@@ -206,6 +214,20 @@ var Geno = /** @class */ (function () {
                 .map(function (el) { return extractElementContext(el); });
             return elements.length === 1 ? elements[0] : elements;
         }
+    };
+    Geno.prototype.setContextHighlights = function () {
+        if (this.contextElements == null)
+            return;
+        this.contextElements.forEach(function (el) {
+            if (el.tagName !== "BODY") {
+                el.classList.add("geno-highlight");
+            }
+        });
+    };
+    Geno.prototype.clearContextHighlights = function () {
+        if (this.contextElements == null)
+            return;
+        this.contextElements.forEach(function (el) { return el.classList.remove("geno-highlight"); });
     };
     Geno.prototype.drawSelectionRectangle = function () {
         if (this.selectionRect === undefined)
@@ -344,6 +366,7 @@ var Geno = /** @class */ (function () {
             }
             console.log(json);
             var context = _this.extractContext(info.contextInfo);
+            console.log("Context: " + context);
             _this.currentCommand = new GenoCommand(query, json.entities, info, context);
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 if (info.type === "demo") {
@@ -371,7 +394,7 @@ var Geno = /** @class */ (function () {
                 var fn = module[_this.currentCommand.info.triggerFn];
                 if (fn) {
                     var result = module[_this.currentCommand.info.triggerFn].apply(null, _this.currentCommand.extractedParams);
-                    console.log(result);
+                    console.log("Result of " + _this.currentCommand.info.triggerFn + ": " + result);
                 }
                 else {
                     console.error("Error: Could not find function '" + _this.currentCommand.info.triggerFn + "' in module '" + _this.currentCommand.info.file) + "'";
