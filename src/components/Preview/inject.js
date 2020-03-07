@@ -150,7 +150,7 @@ ipcRenderer.on('trackContext', () => {
 });
 
 ipcRenderer.on('stopTrackingContext', () => {
-    clearContextHighlights();
+    clearMasks();
 
     document.removeEventListener("mouseout", onMouseOut);
     document.removeEventListener("mousedown", onMouseDown);
@@ -168,7 +168,7 @@ function shareContext() {
     } else if (contextElement.classList.length !== 0) {
         selector = contextElement.tagName.toLowerCase() + ".";
         selector += Array.from(contextElement.classList)
-            .filter(cl => cl !== "geno-highlight")
+            .filter(cl => cl !== "highlight-wrap")
             .join(".");
     }
 
@@ -188,7 +188,7 @@ function onMouseOut(event) {
 /** Event listener for mousedown events */
 function onMouseDown(event) {
     mouseState.isMouseDown = true;
-    clearContextHighlights();
+    clearMasks();
     clearTimeout(hoverTimer);
 }
 
@@ -197,9 +197,9 @@ function onMouseMove(event) {
     if (!mouseState.isMouseDown) {
         clearTimeout(hoverTimer);
         hoverTimer = setTimeout(() => {
-            clearContextHighlights();
+            clearMasks(contextElement);
             contextElement = selectPointContext({ x: event.clientX, y: event.clientY });
-            setContextHighlights();
+            applyMask(contextElement);
         }, 300);
     }
 }
@@ -212,16 +212,4 @@ function onMouseUp(event) {
 
 function selectPointContext(mousePosition) {
     return document.elementFromPoint(mousePosition.x, mousePosition.y);
-}
-
-function setContextHighlights() {
-    if (contextElement != null && contextElement.tagName !== "BODY") {
-        contextElement.classList.add("geno-highlight");
-    }
-}
-
-function clearContextHighlights() {
-    if (contextElement != null) {
-        contextElement.classList.remove("geno-highlight");
-    }
 }

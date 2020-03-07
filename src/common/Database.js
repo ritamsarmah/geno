@@ -279,6 +279,18 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
+    /* Reset information about context */
+    clearContextInfo(commandId) {
+        var command = this.getCommandForId(commandId);
+        this.updateCommandContext(commandId, {
+            type: command.contextInfo.type === ContextType.Text ? ContextType.Text : ContextType.Element,
+            selector: "*",
+            allAttributes: [],
+            attributes: []
+        });
+        return this.getCommandForId(commandId)
+    }
+
     /*** Demo Command Functions ***/
 
     /* Change delay */

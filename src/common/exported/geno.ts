@@ -185,7 +185,25 @@ export class Geno {
         });
     }
 
-    /*** Multimodal Context Functions ***/
+/*** Multimodal Context Functions ***/
+    
+    startTrackingContext() {
+        this.mouseState.isTrackingHover = true;
+        document.body.appendChild(this.selectionRect);
+        document.addEventListener("mousedown", this.onMouseDownListener);
+        document.addEventListener("mousemove", this.onMouseMoveListener);
+        document.addEventListener("mouseup", this.onMouseUpListener);
+    }
+    
+    stopTrackingContext() {
+        this.mouseState.isTrackingHover = false;
+        this.mouseState.isDragging = false;
+        this.clearContextHighlights();
+        document.body.removeChild(this.selectionRect);
+        document.removeEventListener("mousedown", this.onMouseDownListener);
+        document.removeEventListener("mousemove", this.onMouseMoveListener);
+        document.removeEventListener("mouseup", this.onMouseUpListener);
+    }
     
     /** Checks if current active element uses keyboard for input */
     activeElementHasEditableText() {
@@ -198,10 +216,8 @@ export class Geno {
     /** Event listener for mousedown events */
     onMouseDown(event: MouseEvent) {
         this.mouseState.isMouseDown = true;
-        this.mouseState.isDragging = false;
         this.mouseState.selection.left = event.clientX;
         this.mouseState.selection.top = event.clientY;
-        this.clearContextHighlights();
     }
 
     /** Event listener for mousemove events */
@@ -213,10 +229,14 @@ export class Geno {
         } else if (this.mouseState.isMouseDown) {
             this.mouseState.isDragging = true;
             this.mouseState.isTrackingHover = false;
+        }
+
+        if (this.mouseState.isDragging) {
             this.mouseState.selection.right = event.clientX;
             this.mouseState.selection.bottom = event.clientY;
             this.drawSelectionRectangle();
-            // TODO: Fix, requires dragging right and down
+        } else {
+            this.hideSelectionRectangle();
         }
     }
 
@@ -226,14 +246,13 @@ export class Geno {
             this.clearContextHighlights();
             this.contextElements = this.selectDragContext();
             this.setContextHighlights();
+            this.mouseState.isDragging = false;
         } else {
             this.contextElements = [];
+            this.mouseState.isTrackingHover = true;
         }
 
         this.mouseState.isMouseDown = false;
-        this.mouseState.isDragging = false;
-        this.mouseState.isTrackingHover = this.contextElements.length === 0;
-
         this.hideSelectionRectangle();
     }
 
@@ -282,15 +301,54 @@ export class Geno {
     setContextHighlights() {
         if (this.contextElements == null) return;
         this.contextElements.forEach(el => {
-            if (el.tagName !== "BODY") {
-                el.classList.add("geno-highlight");
-            }
+            this.applyMask(el);
         });
     }
 
     clearContextHighlights() {
         if (this.contextElements == null) return;
-        this.contextElements.forEach(el => el.classList.remove("geno-highlight"));
+        this.clearMasks();
+    }
+
+    /* Adds highlight to element */
+    applyMask(target: Element) {
+        this.createMask(target);
+        // if (document.getElementsByClassName('highlight-wrap').length > 0) {
+        //     this.resizeMask(target);
+        // } else {
+        // }
+    }
+
+    /* Change size of highlight for element */
+    resizeMask(target: Element) {
+        var rect = target.getBoundingClientRect();
+        var hObj = <HTMLElement>document.getElementsByClassName('highlight-wrap')[0];
+        hObj.style.top = rect.top + "px";
+        hObj.style.width = rect.width + "px";
+        hObj.style.height = rect.height + "px";
+        hObj.style.left = rect.left + "px";
+    }
+
+    /* Creates the highlight for an element */
+    createMask(target: Element) {
+        var rect = target.getBoundingClientRect();
+        var hObj = document.createElement("div");
+        hObj.className = 'highlight-wrap';
+        hObj.style.position = 'absolute';
+        hObj.style.top = rect.top + "px";
+        hObj.style.width = rect.width + "px";
+        hObj.style.height = rect.height + "px";
+        hObj.style.left = rect.left + "px";
+        hObj.style.backgroundColor = 'skyblue';
+        hObj.style.opacity = '0.5';
+        hObj.style.cursor = 'default';
+        hObj.style.pointerEvents = 'none';
+        document.body.appendChild(hObj);
+    }
+
+    /* Remove highlights */
+    clearMasks() {
+        Array.from(document.getElementsByClassName("highlight-wrap")).forEach(el => document.body.removeChild(el));
     }
 
     drawSelectionRectangle() {
@@ -375,19 +433,14 @@ export class Geno {
         this.isListening = true;
 
         this.recognition.start();
-
-        // Start tracking context
-        this.mouseState.isTrackingHover = true;
-        document.body.appendChild(this.selectionRect);
-        document.addEventListener("mousedown", this.onMouseDownListener);
-        document.addEventListener("mousemove", this.onMouseMoveListener);
-        document.addEventListener("mouseup", this.onMouseUpListener);
+        this.startTrackingContext();
     }
 
     /** Stop any listening action */
     stopListening() {
         if (!this.isListening || !this.recognition) return;
 
+        this.stopTrackingContext();
         this.recognition.abort();
         this.isListening = false;
 
@@ -410,15 +463,6 @@ export class Geno {
         }
 
         this.micButton.disabled = false;
-
-        // Stop tracking context
-        this.mouseState.isTrackingHover = false;
-        this.mouseState.isDragging = false;
-        this.clearContextHighlights();
-        document.body.removeChild(this.selectionRect);
-        document.removeEventListener("mousedown", this.onMouseDownListener);
-        document.removeEventListener("mousemove", this.onMouseMoveListener);
-        document.removeEventListener("mouseup", this.onMouseUpListener);
     }
 
     /*** Control Functions ***/

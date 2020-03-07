@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import AnalysisView from '../AnalysisView/AnalysisView';
+import Tippy from '@tippy.js/react';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPlus, faQuestionCircle, faCrosshairs } from '@fortawesome/free-solid-svg-icons';
-import { Colors, GenoEvent } from '../../../common/constants';
+import { faChevronDown, faChevronUp, faPlus, faQuestionCircle, faCrosshairs, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { Colors, HelpText, GenoEvent } from '../../../common/constants';
 
 import './Popover.css'
+import 'tippy.js/themes/light-border.css';
 
 import database from '../../../common/Database';
 import emitter from '../../../common/Emitter';
@@ -47,8 +49,10 @@ export default class Popover extends Component {
         this.changeContextType = this.changeContextType.bind(this);
         this.changeContextParameter = this.changeContextParameter.bind(this);
         this.changeAttribute = this.changeAttribute.bind(this);
+        this.clearContextInfo = this.clearContextInfo.bind(this);
         this.toggleTrackingContext = this.toggleTrackingContext.bind(this);
         this.processContext = this.processContext.bind(this);
+        this.isContextDefault = this.isContextDefault.bind(this);
         this.trainModel = this.trainModel.bind(this);
     }
 
@@ -179,6 +183,13 @@ export default class Popover extends Component {
         });
     }
 
+    /* Reset context information */
+    clearContextInfo() {
+        this.setState({
+            command: database.clearContextInfo(this.state.command.id)
+        });
+    }
+
     /* Toggle tracking context in Preview */
     toggleTrackingContext() {
         this.setState({ isTrackingContext: !this.state.isTrackingContext }, () => {
@@ -202,6 +213,11 @@ export default class Popover extends Component {
             })
         });
         emitter.removeListener(GenoEvent.ShareContext, this.processContext);
+    }
+
+    /* Returns if command context info is default selector */
+    isContextDefault() {
+        return this.state.command.contextInfo.selector === "*";
     }
 
     trainModel(e) {
@@ -241,7 +257,25 @@ export default class Popover extends Component {
         );
     }
 
+
+    renderTooltip(text) {
+        return (
+            <Tippy content={<div style={{ whiteSpace: "pre-wrap" }}>{text}</div>} placement="right" maxWidth="300px" animateFill={false}>
+                <span tabIndex="0">
+                    <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon> 
+                </span>
+            </Tippy>
+        );
+    }
+
     render() {
+        // Determine color and cursor for crosshairs
+        var crossHairColor = "lightgray";
+        if (this.state.command.contextInfo.parameter != null) {
+            var crossHairColor = this.state.isTrackingContext ? Colors.Theme : "black";
+        }
+        var crossHairCursor = this.state.command.contextInfo.parameter != null ? "pointer" : "default";
+
         switch (this.state.popoverState) {
             case this.POPOVER_MAIN:
                 return (
@@ -260,19 +294,9 @@ export default class Popover extends Component {
                                 {/* Example Queries */}
                                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                                     <p className="popoverTitle">Example Queries</p>
-                                    <span className="tooltip">
-                                        <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon>
-                                        <span className="tooltiptext">
-                                            Create examples of how the user may trigger this voice command. You don't need to worry about having the user say the exact query or creating an exhaustive list, but the more examples you give, the more accurate the voice recognition will be.
-                                            <br></br>
-                                            <br></br>
-                                            You can specify if parts of the query correspond to command parameters by clicking on the query in the list, and in the new view that appears, selecting a parameter in the dropdown under the word(s). To edit query text, click on the pencil icon.
-                                            <br></br>
-                                            <br></br>
-                                            Once you've finished adding your queries and configuring the parameters, click "Train Model" at the bottom to save the command (this may take a few seconds).
-                                        </span>
-                                    </span>
+                                    {this.renderTooltip(HelpText.ExampleQueries)}
                                 </div>
+                                <p className="popoverSubtitle">Queries spoken to trigger the command</p>
                                 <div>
                                     <div>
                                         <input id="addQueryInput" type="text" placeholder="Add example query"></input>
@@ -285,7 +309,7 @@ export default class Popover extends Component {
                                         minHeight: "52px",
                                         height: this.state.queriesExpanded ? "140px" : "52px",
                                         resize: this.state.queriesExpanded ? "vertical" : "none"
-                                }}>
+                                    }}>
                                         {this.state.command.queries.map(q => <div key={q.id} className="listItem" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
                                     </div>
 
@@ -296,35 +320,48 @@ export default class Popover extends Component {
 
                                 {/* Multimodal Context */}
                                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                    <p className="popoverTitle">Multimodal Input</p>
-                                    <span className="tooltip">
-                                        <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon>
-                                        <span className="tooltiptext">
-                                            Multimodal input allows users to provide a command parameter by hovering over a single element, dragging over multiple elements, or highlighting text. If you select a parameter in the dropdown, multimodal context will be passed in as the value for that parameter.
-                                            <br></br>
-                                            <br></br>
-                                            You can optionally specify the element type that should be recognized as context, by clicking the crosshairs and hovering over an element in the webpage to select it. Click the button again to stop selection. The element's ID or tag/class will be used to disambiguate if possible.
-                                            <br></br>
-                                            <br></br>
-                                            You may also specify the element attribute(s) to use for the parameter's value. After selecting the element type, click the element in the popover and select the desired attribute(s).
-                                        </span>
-                                    </span>
+                                    <p className="popoverTitle">Multimodal Context</p>
+                                    {this.renderTooltip(HelpText.Multimodal)}
                                 </div>
                                 <p className="popoverSubtitle">Infers parameter value from mouse context</p>
                                 <div>
-                                    {this.renderContextDropdown()}
-                                    <span className="iconButton" onClick={this.toggleTrackingContext}>
-                                        <FontAwesomeIcon icon={faCrosshairs} style={{ color: this.state.isTrackingContext ? Colors.Theme : "black" }} />
-                                    </span>
-
-                                    <br></br>
-                                    {/* TODO add onclick for the element to show attributes list */}
+                                    <div>
+                                        {this.renderContextDropdown()}
+                                        <span className="iconButton"
+                                            onClick={this.toggleTrackingContext}
+                                            style={{ cursor: crossHairCursor }}>
+                                            <FontAwesomeIcon
+                                                icon={faCrosshairs}
+                                                style={{ color: crossHairColor }}
+                                                disabled={true} />
+                                        </span>
+                                    </div>
                                     {/* Add checkbox for textselection */}
-                                    {/* Add button to clear context if exists */}
-                                    {/* <div className="contextItem"></div> */}
-                                    {this.state.command.contextInfo.selector}
+                                    <div style={{
+                                        marginTop: "10px",
+                                        maxWidth: "95%",
+                                        display: this.state.command.contextInfo.parameter == null ? "none" : "inline-block",
+                                    }}>
+                                        <Tippy content={<div style={{ whiteSpace: "pre-wrap" }}>hi</div>}
+                                            theme="light-border"
+                                            trigger={this.isContextDefault() ? "" : "click"}
+                                            animateFill={false}>
+                                            <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")} tabIndex="0">
+                                                {this.isContextDefault() ? "(Use any element)" : this.state.command.contextInfo.selector}
+                                            </span>
+                                        </Tippy>
+                                        <span onClick={this.clearContextInfo}>
+                                            <FontAwesomeIcon icon={faTimesCircle}
+                                                style={{
+                                                    display: this.isContextDefault() ? "none" : "inline-block",
+                                                    margin: "-1px auto",
+                                                    paddingLeft: "8px",
+                                                    cursor: "pointer"
+                                                }} />
+                                        </span>
+                                    </div>
 
-                                    <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
+                                    <input type="button" style={{ margin: "10px 0" }} value="Train Model" onClick={this.trainModel}></input>
                                     <br></br>
                                     <div id="bottomButtons">
                                         <input type="button" value="Options" onClick={this.showOptions}></input>

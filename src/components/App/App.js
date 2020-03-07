@@ -55,6 +55,7 @@ export default class App extends Component {
           database.configureProject(path[0]);
           builder.configureProject(path[0]);
           preferences.configureProject(path[0]);
+          builder.build();
         });
       });
     });

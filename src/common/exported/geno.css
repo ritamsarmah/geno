@@ -175,6 +175,7 @@
 
 .geno-highlight {
     background-color: rgba(135, 206, 235, 0.3);
+    border: solid 1px black;
 }
 
 /* Animations */

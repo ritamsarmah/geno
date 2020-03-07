@@ -5,6 +5,10 @@
     margin: 10px;
 }
 
+:focus {
+    outline: 0;
+}
+
 input[type=text], textarea {
     width: 100%;
     margin-bottom: 14px;
@@ -135,6 +139,20 @@ button:hover {
     border-radius: 4px;
 }
 
+.contextItem {
+    font-family: 'Courier New', Courier, monospace;
+    word-wrap: break-word;
+    padding: 3px 6px;
+    user-select: none;
+}
+
+.customContext:hover {
+    background-color: var(--theme-color);
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
 /* Options View */
 .paramTitle {
     margin: 0 0 5px 0;
@@ -169,33 +187,4 @@ button:hover {
     all: none;
     margin-top: 2px;
     /* -webkit-appearance: button-bevel; */
-}
-
-/* Tooltip container */
-.tooltip {
-  position: relative;
-  display: inline-block;
-}
-
-/* Tooltip text */
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 240px;
-  background-color: var(--light-bg-color);
-  color: white;
-  text-align: left;
-  padding: 8px;
-  font-size: 12px;
-  border-radius: 6px;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
- 
-  /* Position the tooltip text - see examples below! */
-  position: absolute;
-  left: 20px;
-  z-index: 1;
-}
-
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
-  visibility: visible;
 }
