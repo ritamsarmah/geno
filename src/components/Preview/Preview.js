@@ -158,7 +158,7 @@ export default class Preview extends Component {
     /* Listener triggered after receiving clickEvent ipc message from preview webview */
     receivedMouseEvent(event) {
         var message = "Clicked " + event.tagName.toLowerCase();
-        if (event.className !== null || event.className !== "") {
+        if (event.className != null && event.className !== "") {
             message += "." + event.className.replace(' ', '.');
         }
         this.setState({ 
@@ -191,7 +191,6 @@ export default class Preview extends Component {
 
     trackContext() {
         this.preview.send('trackContext');
-        // TODO: do something with commandId
     }
 
     stopTrackingContext() {
@@ -199,7 +198,7 @@ export default class Preview extends Component {
     }
 
     shareContextWithPopover(event) {
-        emitter.emit(GenoEvent.ShareContext, event.elements);
+        emitter.emit(GenoEvent.ShareContext, event.selector, event.attributes);
     }
 
     getRecordOnClick() {

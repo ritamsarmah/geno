@@ -15,7 +15,7 @@ class Emitter {
     }
 
     emit(event, ...args) {
-        this.em.emit(event, args);
+        this.em.emit(event, ...args);
     }
 
     removeListener(event, listener) {

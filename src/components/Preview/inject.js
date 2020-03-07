@@ -3,11 +3,9 @@ const { ipcRenderer } = require('electron')
 var clickedElements = [];
 var parameters = [];            // Generate indices for text input elements to create parameters
 
-var contextElements;
+var contextElement;
 var mouseState = {
     isMouseDown: false,
-    isDragging: false,
-    isTrackingHover: false,
     selection: {
         top: 0,
         left: 0,
@@ -15,7 +13,6 @@ var mouseState = {
         bottom: 0
     }
 }
-var selectionRect;
 var hoverTimer;
 
 ipcRenderer.on('recordEvents', () => {
@@ -146,18 +143,6 @@ function stopHighlightElements() {
 /*** Context Tracking ***/
 
 ipcRenderer.on('trackContext', () => {
-    mouseState.isTrackingHover = true;
-
-    selectionRect = document.createElement("div");
-    selectionRect.id = "geno-select-rect";
-    selectionRect.style.position = "absolute";
-    selectionRect.style.top = 0;
-    selectionRect.style.left = 0;
-    selectionRect.style.opacity = 0;
-    selectionRect.style.pointerEvents = "none";
-    selectionRect.style.border = "2px dotted #4A90E2"
-    document.body.appendChild(selectionRect);
-
     document.addEventListener("mouseout", onMouseOut);
     document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mousemove", onMouseMove);
@@ -165,17 +150,35 @@ ipcRenderer.on('trackContext', () => {
 });
 
 ipcRenderer.on('stopTrackingContext', () => {
-    mouseState.isTrackingHover = false;
-    mouseState.isDragging = false;
-
     clearContextHighlights();
-    document.body.removeChild(selectionRect);
 
     document.removeEventListener("mouseout", onMouseOut);
     document.removeEventListener("mousedown", onMouseDown);
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
+
+    shareContext();
 });
+
+/** Share context with host */
+function shareContext() {
+    var selector = "*";
+    if (contextElement.id != null && contextElement.id !== "") {
+        selector = contextElement.id
+    } else if (contextElement.classList.length !== 0) {
+        selector = contextElement.tagName.toLowerCase() + ".";
+        selector += Array.from(contextElement.classList)
+            .filter(cl => cl !== "geno-highlight")
+            .join(".");
+    }
+
+    var attributes = Array.from(contextElement.attributes).map(attr => attr.nodeName)
+
+    ipcRenderer.sendToHost("trackedContext", {
+        selector: selector,
+        attributes: attributes
+    });
+}
 
 /** Event listener for mouseut events */
 function onMouseOut(event) {
@@ -185,104 +188,40 @@ function onMouseOut(event) {
 /** Event listener for mousedown events */
 function onMouseDown(event) {
     mouseState.isMouseDown = true;
-    mouseState.isDragging = false;
-    mouseState.selection.left = event.clientX;
-    mouseState.selection.top = event.clientY;
     clearContextHighlights();
     clearTimeout(hoverTimer);
 }
 
 /** event listener for mousemove events */
 function onMouseMove(event) {
-    if (!mouseState.isMouseDown && mouseState.isTrackingHover) {
+    if (!mouseState.isMouseDown) {
         clearTimeout(hoverTimer);
         hoverTimer = setTimeout(() => {
             clearContextHighlights();
-            contextElements = selectPointContext({ x: event.clientX, y: event.clientY });
+            contextElement = selectPointContext({ x: event.clientX, y: event.clientY });
             setContextHighlights();
-            ipcRenderer.sendToHost("trackedContext", {
-                elements: contextElements
-            });
         }, 300);
-        // TODO: use smarter way to disambiguate elements
-    } else if (mouseState.isMouseDown) {
-        mouseState.isDragging = true;
-        mouseState.isTrackingHover = false;
-        mouseState.selection.right = event.clientX;
-        mouseState.selection.bottom = event.clientY;
-        drawSelectionRectangle();
     }
 }
 
 /** Event listener for mouseup events */
 function onMouseUp(event) {
-    if (mouseState.isDragging) {
-        clearContextHighlights();
-        contextElements = selectDragContext();
-        setContextHighlights();
-    } else {
-        contextElements = [];
-    }
-
+    contextElement = null;
     mouseState.isMouseDown = false;
-    mouseState.isDragging = false;
-    mouseState.isTrackingHover = contextElements.length === 0;
-
-    if (contextElements.length !== 0) {
-        ipcRenderer.sendToHost("trackedContext", {
-            elements: contextElements
-        });
-    }
-
-    hideSelectionRectangle();
 }
 
 function selectPointContext(mousePosition) {
-    return [document.elementFromPoint(mousePosition.x, mousePosition.y)];
-}
-
-function selectDragContext() {
-    // Find elements inside our selection rectangle
-    return Array.from(document.querySelectorAll("*")).filter(el =>
-        mouseState.selection.left <= el.getBoundingClientRect().left &&
-        mouseState.selection.top <= el.getBoundingClientRect().top &&
-        mouseState.selection.right >= el.getBoundingClientRect().right &&
-        mouseState.selection.bottom >= el.getBoundingClientRect().bottom
-    );
+    return document.elementFromPoint(mousePosition.x, mousePosition.y);
 }
 
 function setContextHighlights() {
-    if (contextElements == null) return;
-    contextElements.forEach(el => {
-        if (el.tagName !== "BODY") {
-            el.classList.add("geno-highlight");
-        }
-    });
+    if (contextElement != null && contextElement.tagName !== "BODY") {
+        contextElement.classList.add("geno-highlight");
+    }
 }
 
 function clearContextHighlights() {
-    if (contextElements == null) return;
-    contextElements.forEach(el => el.classList.remove("geno-highlight"));
-}
-
-function drawSelectionRectangle() {
-    if (selectionRect === undefined) return;
-
-    selectionRect.style.left = `${mouseState.selection.left}px`;
-    selectionRect.style.top = `${mouseState.selection.top + window.scrollY}px`;
-    selectionRect.style.width = `${mouseState.selection.right - mouseState.selection.left}px`;
-    selectionRect.style.height = `${mouseState.selection.bottom - mouseState.selection.top}px`;
-    selectionRect.style.opacity = '0.5';
-}
-
-function hideSelectionRectangle() {
-    if (selectionRect === undefined) return;
-
-    selectionRect.style.opacity = '0';
-    mouseState.selection = {
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-    };
+    if (contextElement != null) {
+        contextElement.classList.remove("geno-highlight");
+    }
 }

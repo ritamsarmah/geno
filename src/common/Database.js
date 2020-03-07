@@ -57,6 +57,7 @@ class Database {
                 parameter: null,
                 type: ContextType.Element,
                 selector: "*",
+                allAttributes: [],
                 attributes: []
             },
             type: type
@@ -94,12 +95,14 @@ class Database {
 
     /* Update a command */
     updateCommand(id, data) {
-        return this.db.get('commands').getById(id).assign(data).write();
+        this.db.get('commands').getById(id).assign(data).write();
+        return this.getCommandForId(id);
     }
 
     /* Update command context info */
     updateCommandContext(id, data) {
-        return this.db.get('commands').getById(id).get('contextInfo').assign(data).write();
+        this.db.get('commands').getById(id).get('contextInfo').assign(data).write();
+        return this.getCommandForId(id);
     }
 
     /* Remove a command */
@@ -263,10 +266,10 @@ class Database {
         this.updateCommandContext(commandId, { selector: selector });
         return this.getCommandForId(commandId);
     }
-    
+
     /* Change element attribute(s) to return as a parameter for multimodal input */
-    updateContextReturnAttributes(commandId, attributes) {
-        this.updateCommandContext(commandId, { returnAttributes: attributes });
+    updateContextAttributes(commandId, attributes) {
+        this.updateCommandContext(commandId, { attributes: attributes });
         return this.getCommandForId(commandId);
     }
 
@@ -277,15 +280,15 @@ class Database {
     }
 
     /*** Demo Command Functions ***/
-    
+
     /* Change delay */
     updateDelay(commandId, delay) {
         this.db.get('commands').getById(commandId).assign({ delay: delay }).write();
         return this.getCommandForId(commandId);
-    } 
+    }
 
     /*** Training ***/
-    
+
     trainModel(commandId, callback) {
         var command = this.getCommandForId(commandId)
 

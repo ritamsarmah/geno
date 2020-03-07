@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import AnalysisView from '../AnalysisView/AnalysisView';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronDown, faChevronUp, faPlus, faMouse } from '@fortawesome/free-solid-svg-icons';
-import { GenoEvent } from '../../../common/constants';
+import { faChevronDown, faChevronUp, faPlus, faQuestionCircle, faCrosshairs } from '@fortawesome/free-solid-svg-icons';
+import { Colors, GenoEvent } from '../../../common/constants';
 
 import './Popover.css'
 
@@ -20,6 +20,7 @@ export default class Popover extends Component {
         super(props);
         this.state = {
             queriesExpanded: false,
+            contextExpanded: false,
             renderAnalysis: false,
             selectedQuery: null,
             command: this.props.command,
@@ -30,6 +31,7 @@ export default class Popover extends Component {
 
         this.dismiss = this.dismiss.bind(this);
         this.toggleQueries = this.toggleQueries.bind(this);
+        this.toggleContext = this.toggleContext.bind(this);
         this.showMain = this.showMain.bind(this);
         this.showOptions = this.showOptions.bind(this);
         this.showContext = this.showContext.bind(this);
@@ -44,7 +46,7 @@ export default class Popover extends Component {
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
         this.changeContextType = this.changeContextType.bind(this);
         this.changeContextParameter = this.changeContextParameter.bind(this);
-        this.changeReturnAttribute = this.changeReturnAttribute.bind(this);
+        this.changeAttribute = this.changeAttribute.bind(this);
         this.toggleTrackingContext = this.toggleTrackingContext.bind(this);
         this.processContext = this.processContext.bind(this);
         this.trainModel = this.trainModel.bind(this);
@@ -58,6 +60,11 @@ export default class Popover extends Component {
     /* Toggle resizing of sample queries list */
     toggleQueries() {
         this.setState({ queriesExpanded: !this.state.queriesExpanded });
+    }
+
+    /* Toggle resizing of context list */
+    toggleContext() {
+        this.setState({ contextExpanded: !this.state.contextExpanded });
     }
 
     /* Switch to main form */
@@ -126,7 +133,7 @@ export default class Popover extends Component {
         database.updateQuery(this.state.command.id, oldText, query, (command, updatedQuery) => {
             this.state.command = command; // Don't want to trigger setState updates
             callback(updatedQuery);
-        })
+        });
     }
 
     /* Deletes query for command from database */
@@ -143,15 +150,6 @@ export default class Popover extends Component {
         });
     }
 
-    /* Change value for selector to use for context */
-    changeContextSelector(event) {
-        // TODO
-        var param = event.target.value === '-' ? null : event.target.value;
-        this.setState({
-            command: database.updateContextParameter(this.state.command.id, param)
-        });
-    }
-
     /* Change value for which parameter inferred from element under mouse */
     changeContextParameter(event) {
         var param = event.target.value === '-' ? null : event.target.value;
@@ -161,17 +159,20 @@ export default class Popover extends Component {
     }
 
     /* Change element attribute(s) to return as a parameter for multimodal input */
-    changeReturnAttribute(event) {
-        // TODO
+    changeAttribute(event) {
+        // TODO: Use data from the checkbox dropdown
         var attr = event.target.value === '-' ? null : event.target.value;
         this.setState({
-            command: database.updateContextReturnAttributes(this.state.command.id, attr.split(' '))
+            command: database.updateContextAttributes(this.state.command.id, attr.split(' '))
         });
+
+        // call change context type in callback for set state if type != text, checking attributes list?
     }
 
     /* Change type of return value for context */
     changeContextType(event) {
-        // TODO
+        // TODO: On checkbox change if list of checked attributes is not empty, attribute, else element
+        // TODO: Also call on text selection
         var type = event.target.value;
         this.setState({
             command: database.updateContextType(this.state.command.id, type)
@@ -186,14 +187,21 @@ export default class Popover extends Component {
                 emitter.emit(GenoEvent.TrackContext);
             } else {
                 emitter.emit(GenoEvent.StopTrackContext);
-                emitter.removeListener(GenoEvent.ShareContext, this.processContext);
             }
         });
     }
 
     /* Processes received context elements and displays to user */
-    processContext(elements) {
-        console.log(elements);
+    processContext(selector, attributes) {
+        console.log(selector);
+        console.log(attributes);
+        this.setState({
+            command: database.updateCommandContext(this.state.command.id, {
+                selector: selector,
+                allAttributes: attributes
+            })
+        });
+        emitter.removeListener(GenoEvent.ShareContext, this.processContext);
     }
 
     trainModel(e) {
@@ -227,7 +235,7 @@ export default class Popover extends Component {
         var selection = this.state.command.contextInfo.parameter != null ? this.state.command.contextInfo.parameter : "-";
 
         return (
-            <select defaultValue={selection} onChange={this.changeContextParameter}>
+            <select defaultValue={selection} onChange={this.changeContextParameter} style={{ width: "86%" }}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         );
@@ -249,48 +257,79 @@ export default class Popover extends Component {
                                 <br></br>
                                 <br></br>
 
-                                {/* Sample Queries */}
-                                <p className="popoverTitle">Sample Queries</p>
+                                {/* Example Queries */}
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <p className="popoverTitle">Example Queries</p>
+                                    <span className="tooltip">
+                                        <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon>
+                                        <span className="tooltiptext">
+                                            Create examples of how the user may trigger this voice command. You don't need to worry about having the user say the exact query or creating an exhaustive list, but the more examples you give, the more accurate the voice recognition will be.
+                                            <br></br>
+                                            <br></br>
+                                            You can specify if parts of the query correspond to command parameters by clicking on the query in the list, and in the new view that appears, selecting a parameter in the dropdown under the word(s). To edit query text, click on the pencil icon.
+                                            <br></br>
+                                            <br></br>
+                                            Once you've finished adding your queries and configuring the parameters, click "Train Model" at the bottom to save the command (this may take a few seconds).
+                                        </span>
+                                    </span>
+                                </div>
                                 <div>
                                     <div>
-                                        <input id="addQueryInput" type="text" placeholder="Add sample query"></input>
+                                        <input id="addQueryInput" type="text" placeholder="Add example query"></input>
                                         <span className="iconButton" onClick={this.addQuery}>
                                             <FontAwesomeIcon icon={faPlus} />
                                         </span>
                                     </div>
 
-                                    <div id="queriesView" style={{
-                                        height: this.state.queriesExpanded ? "140px" : "70px",
+                                    <div className="listView" style={{
+                                        minHeight: "52px",
+                                        height: this.state.queriesExpanded ? "140px" : "52px",
                                         resize: this.state.queriesExpanded ? "vertical" : "none"
-                                    }}>
-                                        {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
+                                }}>
+                                        {this.state.command.queries.map(q => <div key={q.id} className="listItem" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
                                     </div>
 
-                                    <div id="queryToggle" onClick={this.toggleQueries}>
+                                    <div className="listToggle" onClick={this.toggleQueries}>
                                         <FontAwesomeIcon icon={this.state.queriesExpanded ? faChevronUp : faChevronDown} />
                                     </div>
                                 </div>
 
                                 {/* Multimodal Context */}
-                                <p className="popoverTitle">Multimodal Context</p>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <p className="popoverTitle">Multimodal Input</p>
+                                    <span className="tooltip">
+                                        <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon>
+                                        <span className="tooltiptext">
+                                            Multimodal input allows users to provide a command parameter by hovering over a single element, dragging over multiple elements, or highlighting text. If you select a parameter in the dropdown, multimodal context will be passed in as the value for that parameter.
+                                            <br></br>
+                                            <br></br>
+                                            You can optionally specify the element type that should be recognized as context, by clicking the crosshairs and hovering over an element in the webpage to select it. Click the button again to stop selection. The element's ID or tag/class will be used to disambiguate if possible.
+                                            <br></br>
+                                            <br></br>
+                                            You may also specify the element attribute(s) to use for the parameter's value. After selecting the element type, click the element in the popover and select the desired attribute(s).
+                                        </span>
+                                    </span>
+                                </div>
+                                <p className="popoverSubtitle">Infers parameter value from mouse context</p>
                                 <div>
                                     {this.renderContextDropdown()}
                                     <span className="iconButton" onClick={this.toggleTrackingContext}>
-                                        <FontAwesomeIcon icon={faMouse} />
+                                        <FontAwesomeIcon icon={faCrosshairs} style={{ color: this.state.isTrackingContext ? Colors.Theme : "black" }} />
                                     </span>
-                                    {/* <div>
-                                        {this.state.command.queries.map(q => <div key={q.id} className="nlpQuery" onClick={() => this.showAnalysis(q)}>{q.text}</div>)}
-                                    </div> */}
-                                </div>
-                                <div>
-                                    
-                                </div>
 
-                                <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
-                                <br></br>
-                                <div id="bottomButtons">
-                                    <input type="button" value="Options" onClick={this.showOptions}></input>
-                                    <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
+                                    <br></br>
+                                    {/* TODO add onclick for the element to show attributes list */}
+                                    {/* Add checkbox for textselection */}
+                                    {/* Add button to clear context if exists */}
+                                    {/* <div className="contextItem"></div> */}
+                                    {this.state.command.contextInfo.selector}
+
+                                    <input type="button" style={{ marginBottom: "8px" }} value="Train Model" onClick={this.trainModel}></input>
+                                    <br></br>
+                                    <div id="bottomButtons">
+                                        <input type="button" value="Options" onClick={this.showOptions}></input>
+                                        <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
+                                    </div>
                                 </div>
                             </form>
                         </div>

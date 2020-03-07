@@ -99,9 +99,9 @@ button:hover {
     width: 87%;
 }
 
-#queriesView {
-    height: 70px;
-    min-height: 70px;
+.listView {
+    height: 52px;
+    min-height: 52px;
 
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -111,24 +111,24 @@ button:hover {
     user-select: none;
 }
 
-#queryToggle {
+.listToggle {
     color: rgb(90, 90, 90);
     border-radius: 4px;
     margin-bottom: 8px;
 }
 
-#queryToggle:hover {
+.listToggle:hover {
     background: rgb(230, 230, 230);
     cursor: pointer;
 }
 
-.nlpQuery {
+.listItem {
     text-align: left;
     font-size: 12px;
     padding: 5px;
 }
 
-.nlpQuery:hover {
+.listItem:hover {
     background-color: var(--theme-color);
     color: white;
     cursor: pointer;
@@ -169,4 +169,33 @@ button:hover {
     all: none;
     margin-top: 2px;
     /* -webkit-appearance: button-bevel; */
+}
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 240px;
+  background-color: var(--light-bg-color);
+  color: white;
+  text-align: left;
+  padding: 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  left: 20px;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
