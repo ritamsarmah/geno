@@ -79,7 +79,7 @@ export class GenoCommand {
     }
 
     canUseContextForParameter(parameter: string) {
-        if (this.context.hasOwnProperty("length") && this.context["length"] === 0) {
+        if (this.context == null || (this.context.hasOwnProperty("length") && this.context["length"] === 0)) {
             return false;
         }
         return this.contextInfo.parameter === parameter && this.context != null;
@@ -313,10 +313,6 @@ export class Geno {
     /* Adds highlight to element */
     applyMask(target: Element) {
         this.createMask(target);
-        // if (document.getElementsByClassName('highlight-wrap').length > 0) {
-        //     this.resizeMask(target);
-        // } else {
-        // }
     }
 
     /* Change size of highlight for element */

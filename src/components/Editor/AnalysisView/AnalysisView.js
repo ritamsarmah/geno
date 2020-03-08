@@ -78,7 +78,7 @@ export default class AnalysisView extends Component {
         var color = utils.stringToColor(entity.label);
 
         var names = this.props.command.parameters.map(p => p.name);
-        names.push("-");
+        names.unshift("-");
 
         var selection = entity.label != null ? entity.label : "-";
 

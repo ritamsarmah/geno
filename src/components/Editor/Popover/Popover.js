@@ -242,7 +242,7 @@ export default class Popover extends Component {
 
     renderContextDropdown() {
         var names = this.state.command.parameters.map(p => p.name);
-        names.push("-");
+        names.unshift("-");
 
         var selection = this.state.command.contextInfo.parameter != null ? this.state.command.contextInfo.parameter : "-";
 
@@ -350,27 +350,32 @@ export default class Popover extends Component {
                                     </div>
 
                                     {/* Context Selector Text */}
-                                    <div style={{
-                                        marginTop: "10px",
-                                        maxWidth: "95%",
-                                        display: this.state.command.contextInfo.parameter == null ? "none" : "inline-block",
+                                    <div className="contextSelectText" style={{
+                                        display: (this.state.command.contextInfo.parameter == null || this.isContextDefault()) ? "none" : "flex",
                                     }}>
                                         <Tippy content={this.renderAttributeSelect()}
                                             appendTo='parent'
                                             interactive={true}
                                             theme="light-border"
+                                            placement="right"
                                             trigger={this.isContextDefault() ? "" : "mouseenter"}
                                             animateFill={false}>
-                                            <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")} tabIndex="0">
-                                                {this.isContextDefault() ? "(Use any element)" : this.state.command.contextInfo.selector}
+                                            <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")}
+                                                style={{
+                                                    display: this.isContextDefault() ? "none" : "inline-block",
+                                                    maxWidth: "85%"
+                                                }}
+                                                tabIndex="0">
+                                                {this.state.command.contextInfo.selector}
                                             </span>
                                         </Tippy>
+
                                         <span onClick={this.clearContextInfo}>
                                             <FontAwesomeIcon icon={faTimesCircle}
                                                 style={{
                                                     display: this.isContextDefault() ? "none" : "inline-block",
-                                                    margin: "-1px auto",
-                                                    paddingLeft: "8px",
+                                                    margin: "-2px auto",
+                                                    paddingRight: "6px",
                                                     cursor: "pointer"
                                                 }} />
                                         </span>

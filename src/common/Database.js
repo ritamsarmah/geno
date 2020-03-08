@@ -286,7 +286,7 @@ class Database {
         if (attributes.length === 0) {
             this.updateContextType(commandId, ContextType.Element);
         } else {
-            this.updateContextType(commandId, ContextType.Type);
+            this.updateContextType(commandId, ContextType.Attribute);
         }
 
         return this.updateContextAttributes(commandId, attributes);

@@ -60,7 +60,7 @@ var GenoCommand = /** @class */ (function () {
         this.extractedParams.push(value);
     };
     GenoCommand.prototype.canUseContextForParameter = function (parameter) {
-        if (this.context.hasOwnProperty("length") && this.context["length"] === 0) {
+        if (this.context == null || (this.context.hasOwnProperty("length") && this.context["length"] === 0)) {
             return false;
         }
         return this.contextInfo.parameter === parameter && this.context != null;

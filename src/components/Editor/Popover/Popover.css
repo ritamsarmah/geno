@@ -139,6 +139,15 @@ button:hover {
     border-radius: 4px;
 }
 
+.contextSelectText {
+    margin-top: 10px;
+    width: 95%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px;
+    justify-content: space-between;
+}
+
 .contextItem {
     font-family: 'Courier New', Courier, monospace;
     word-wrap: break-word;
@@ -149,7 +158,6 @@ button:hover {
 .customContext:hover {
     background-color: var(--theme-color);
     color: white;
-    cursor: pointer;
     border-radius: 4px;
 }
 
