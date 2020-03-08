@@ -9,7 +9,9 @@ import 'codemirror/theme/base16-dark.css';
 import './Editor.css';
 
 import 'codemirror/mode/xml/xml';
+import 'codemirror/mode/css/css';
 import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/htmlmixed/htmlmixed';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
 import database from '../../common/Database';
@@ -96,6 +98,7 @@ export default class Editor extends Component {
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
         this.saveFile = this.saveFile.bind(this);
+        this.getLanguageMode = this.getLanguageMode.bind(this);
         this.codeMirror = null;
     }
 
@@ -176,6 +179,19 @@ export default class Editor extends Component {
         });
     }
 
+    getLanguageMode() {
+        switch (this.state.file.split('.').pop()) {
+            case 'xml':
+                return 'xml';
+            case 'html':
+                return 'htmlmixed';
+            case 'css':
+                return 'css';
+            default:
+                return 'javascript';
+        }
+    }
+
     render() {
         if (this.state.file) {
             return (
@@ -190,7 +206,7 @@ export default class Editor extends Component {
                         value={this.state.lastSavedText}
                         options={{
                             theme: "base16-dark",
-                            mode: "javascript",
+                            mode: this.getLanguageMode(),
                             lineNumbers: true,
                             gutters: ["commands"]
                         }}
