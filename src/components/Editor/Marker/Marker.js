@@ -33,7 +33,6 @@ export default class Marker extends Component {
         this.placement = this.props.placement == null ? "right-end" : this.props.placement;
 
         this.onClick = this.onClick.bind(this);
-        this.onHide = this.onHide.bind(this);
         this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
     }
 
@@ -43,19 +42,11 @@ export default class Marker extends Component {
             var command = database.addCommand(this.props.file, this.props.triggerFn, this.props.params);
             this.setState({ command: command });
         }
-
-        this.setState({ isVisible: !this.state.isVisible });
-    }
-
-    onHide() {
-        this.state.isVisible = false;
-        return true;
     }
 
     handlePopoverUnmount() {
         this.setState({
             command: null,
-            isVisible: false,
         });
     }
 
@@ -66,7 +57,7 @@ export default class Marker extends Component {
     render() {
         var fillClass = (this.state.command != null) ? "filledMarker" : "emptyMarker";
         return (
-            <Tippy content={this.renderTippyContent()} arrow={true} trigger="click" placement={this.placement} theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.isVisible} onHide={this.onHide}>
+            <Tippy content={this.renderTippyContent()} arrow={true} trigger="click" placement={this.placement} theme="light-border" animation="scale" inertia={true} interactive={true}>
                 <div className={fillClass} onClick={this.onClick}></div>
             </Tippy>
         );

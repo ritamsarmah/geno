@@ -273,6 +273,25 @@ class Database {
         return this.getCommandForId(commandId);
     }
 
+    /* Toggle element attribute in list of return attributes */
+    toggleContextAttribute(commandId, attribute) {
+        var command = this.getCommandForId(commandId);
+        var attributes = command.contextInfo.attributes;
+        if (attributes.includes(attribute)) {
+            attributes = attributes.filter(attr => attr !== attribute);
+        } else {
+            attributes.push(attribute);
+        }
+
+        if (attributes.length === 0) {
+            this.updateContextType(commandId, ContextType.Element);
+        } else {
+            this.updateContextType(commandId, ContextType.Type);
+        }
+
+        return this.updateContextAttributes(commandId, attributes);
+    }
+
     /* Change context type for multimodal */
     updateContextType(commandId, type) {
         this.updateCommandContext(commandId, { type: type });

@@ -153,6 +153,10 @@ button:hover {
     border-radius: 4px;
 }
 
+.checkBoxLabel {
+    font-size: 12px;
+}
+
 /* Options View */
 .paramTitle {
     margin: 0 0 5px 0;

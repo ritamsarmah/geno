@@ -4,7 +4,7 @@ import Tippy from '@tippy.js/react';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPlus, faQuestionCircle, faCrosshairs, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-import { Colors, HelpText, GenoEvent } from '../../../common/constants';
+import { Colors, ContextType, HelpText, GenoEvent } from '../../../common/constants';
 
 import './Popover.css'
 import 'tippy.js/themes/light-border.css';
@@ -48,12 +48,13 @@ export default class Popover extends Component {
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
         this.changeContextType = this.changeContextType.bind(this);
         this.changeContextParameter = this.changeContextParameter.bind(this);
-        this.changeAttribute = this.changeAttribute.bind(this);
+        this.changeContextAttribute = this.changeContextAttribute.bind(this);
         this.clearContextInfo = this.clearContextInfo.bind(this);
         this.toggleTrackingContext = this.toggleTrackingContext.bind(this);
         this.processContext = this.processContext.bind(this);
         this.isContextDefault = this.isContextDefault.bind(this);
         this.trainModel = this.trainModel.bind(this);
+        this.renderAttributeSelect = this.renderAttributeSelect.bind(this);
     }
 
     /* Dismisses this component */
@@ -163,14 +164,11 @@ export default class Popover extends Component {
     }
 
     /* Change element attribute(s) to return as a parameter for multimodal input */
-    changeAttribute(event) {
-        // TODO: Use data from the checkbox dropdown
-        var attr = event.target.value === '-' ? null : event.target.value;
+    changeContextAttribute(event) {
+        var attribute = event.target.name;
         this.setState({
-            command: database.updateContextAttributes(this.state.command.id, attr.split(' '))
+            command: database.toggleContextAttribute(this.state.command.id, attribute)
         });
-
-        // call change context type in callback for set state if type != text, checking attributes list?
     }
 
     /* Change type of return value for context */
@@ -204,8 +202,6 @@ export default class Popover extends Component {
 
     /* Processes received context elements and displays to user */
     processContext(selector, attributes) {
-        console.log(selector);
-        console.log(attributes);
         this.setState({
             command: database.updateCommandContext(this.state.command.id, {
                 selector: selector,
@@ -257,15 +253,31 @@ export default class Popover extends Component {
         );
     }
 
-
     renderTooltip(text) {
         return (
             <Tippy content={<div style={{ whiteSpace: "pre-wrap" }}>{text}</div>} placement="right" maxWidth="300px" animateFill={false}>
                 <span tabIndex="0">
-                    <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon> 
+                    <FontAwesomeIcon icon={faQuestionCircle}></FontAwesomeIcon>
                 </span>
             </Tippy>
         );
+    }
+
+    renderAttributeSelect() {
+        return (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", fontFamily: "'Courier New', Courier, monospace" }}>
+                {this.state.command.contextInfo.allAttributes.map(attr =>
+                    <div key={`context-${attr}`}>
+                        <input type="checkbox" name={attr}
+                            defaultChecked={this.state.command.contextInfo.attributes.includes(attr)}
+                            onChange={this.changeContextAttribute}>
+                        </input>
+                        {attr}
+                        <br></br>
+                    </div>
+                )}
+            </div>
+        )
     }
 
     render() {
@@ -336,15 +348,18 @@ export default class Popover extends Component {
                                                 disabled={true} />
                                         </span>
                                     </div>
-                                    {/* Add checkbox for textselection */}
+
+                                    {/* Context Selector Text */}
                                     <div style={{
                                         marginTop: "10px",
                                         maxWidth: "95%",
                                         display: this.state.command.contextInfo.parameter == null ? "none" : "inline-block",
                                     }}>
-                                        <Tippy content={<div style={{ whiteSpace: "pre-wrap" }}>hi</div>}
+                                        <Tippy content={this.renderAttributeSelect()}
+                                            appendTo='parent'
+                                            interactive={true}
                                             theme="light-border"
-                                            trigger={this.isContextDefault() ? "" : "click"}
+                                            trigger={this.isContextDefault() ? "" : "mouseenter"}
                                             animateFill={false}>
                                             <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")} tabIndex="0">
                                                 {this.isContextDefault() ? "(Use any element)" : this.state.command.contextInfo.selector}
