@@ -102,7 +102,7 @@ var Geno = /** @class */ (function () {
         this.setDevId(devId);
         // Enable Geno using ` key
         document.addEventListener("keyup", function (e) {
-            if (e.key === '\`' && !_this.activeElementHasEditableText()) {
+            if (e.key === '\`' && e.ctrlKey) {
                 _this.togglePopover();
             }
         });
@@ -145,13 +145,6 @@ var Geno = /** @class */ (function () {
         document.removeEventListener("mousedown", this.onMouseDownListener);
         document.removeEventListener("mousemove", this.onMouseMoveListener);
         document.removeEventListener("mouseup", this.onMouseUpListener);
-    };
-    /** Checks if current active element uses keyboard for input */
-    Geno.prototype.activeElementHasEditableText = function () {
-        var activeDiv = document.activeElement;
-        return document.activeElement.nodeName === 'INPUT'
-            || document.activeElement.nodeName === 'TEXTAREA'
-            || activeDiv.isContentEditable;
     };
     /** Event listener for mousedown events */
     Geno.prototype.onMouseDown = function (event) {
@@ -249,10 +242,6 @@ var Geno = /** @class */ (function () {
     /* Adds highlight to element */
     Geno.prototype.applyMask = function (target) {
         this.createMask(target);
-        // if (document.getElementsByClassName('highlight-wrap').length > 0) {
-        //     this.resizeMask(target);
-        // } else {
-        // }
     };
     /* Change size of highlight for element */
     Geno.prototype.resizeMask = function (target) {

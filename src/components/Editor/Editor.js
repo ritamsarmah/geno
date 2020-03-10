@@ -17,10 +17,9 @@ import { faSave } from '@fortawesome/free-solid-svg-icons';
 import database from '../../common/Database';
 
 const fs = window.require('fs');
-const path = require('path');
 const chokidar = window.require('chokidar');
-
-var acorn = require("acorn-loose/dist/acorn-loose.js");
+const path = require('path');
+const acorn = require("acorn-loose/dist/acorn-loose.js");
 
 function makeAnchor(type) {
     var marker = document.createElement("div");
@@ -98,8 +97,12 @@ export default class Editor extends Component {
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
         this.saveFile = this.saveFile.bind(this);
+        this.saveFileListener = this.saveFileListener.bind(this);
         this.getLanguageMode = this.getLanguageMode.bind(this);
         this.codeMirror = null;
+        
+        // Add Ctrl-S and Cmd-S functionality
+        window.addEventListener("keyup", this.saveFileListener, true);
     }
 
     editorDidMount(editor) {
@@ -113,6 +116,7 @@ export default class Editor extends Component {
 
     editorDidUnmount() {
         this.watcher.close();
+        window.removeEventListener("keyup", this.saveFileListener);
     }
 
     componentDidUpdate(prevProps) {
@@ -150,6 +154,12 @@ export default class Editor extends Component {
             }
             this.props.setSelectFile(true);
         });
+    }
+
+    saveFileListener(e) {
+        if (e.key === 's' && e.ctrlKey) {
+            this.saveFile(this.state.file, true);
+        }
     }
 
     onChange(editor, data, value) {

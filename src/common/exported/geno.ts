@@ -157,7 +157,7 @@ export class Geno {
 
         // Enable Geno using ` key
         document.addEventListener("keyup", (e) => {
-            if (e.key === '\`' && !this.activeElementHasEditableText()) {
+            if (e.key === '\`' && e.ctrlKey) {
                 this.togglePopover();
             }
         });
@@ -203,14 +203,6 @@ export class Geno {
         document.removeEventListener("mousedown", this.onMouseDownListener);
         document.removeEventListener("mousemove", this.onMouseMoveListener);
         document.removeEventListener("mouseup", this.onMouseUpListener);
-    }
-    
-    /** Checks if current active element uses keyboard for input */
-    activeElementHasEditableText() {
-        var activeDiv = <HTMLDivElement>document.activeElement;
-        return document.activeElement.nodeName === 'INPUT'
-            || document.activeElement.nodeName === 'TEXTAREA'
-            || activeDiv.isContentEditable;
     }
     
     /** Event listener for mousedown events */
