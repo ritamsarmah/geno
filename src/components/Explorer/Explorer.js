@@ -12,6 +12,7 @@ import './Explorer.css';
 
 const fs = window.require('fs');
 const path = require('path');
+const chokidar = window.require('chokidar');
 
 export default class Explorer extends Component {
     constructor(props) {
@@ -24,6 +25,13 @@ export default class Explorer extends Component {
         this.walkDone = this.walkDone.bind(this);
 
         this.walk(this.props.dir, this.walkDone);
+
+        this.watcher = chokidar.watch(this.props.dir);
+        this.watcher
+            .on('add', () => this.walk(this.props.dir, this.walkDone))
+            .on('unlink', () => this.walk(this.props.dir, this.walkDone))
+            .on('addDir', () => this.walk(this.props.dir, this.walkDone))
+            .on('unlinkDir', () => this.walk(this.props.dir, this.walkDone));
     }
 
     walk(dir, done) {

@@ -52,10 +52,10 @@
 <body>
     <div class="center-text">
         <h2>Getting Started</h2>
+        <p>Loading a project in Geno automatically generates a new directory called <code>geno</code> in the root of the project (don't modify any of the files in this directory). Before you can start creating voice commands, you'll need to integrate Geno into the project with the following steps.
         <ol>
-            <li>Navigate to your web application via the address bar.</li>
             <li>Configure your developer ID in the settings tab in the left pane.</li>
-            <li>Add the following lines to an HTML file to include Geno:
+            <li>Modify the following lines and add them to an HTML file to include Geno:
                 <br><br>
                 <code>&lt;link rel="stylesheet" type="text/css" href="./geno/geno.css" /&gt;</code>
                 <br><br>
@@ -66,7 +66,8 @@
                     &lt;/script&gt; <br>
                 </code>
             </li>
-            <li>Build and integrate using the blue build button.</li>
+            <li>Build using the blue build button.</li>
+            <li>Navigate to your web application via the address bar.</li>
         </ol>
 
         <br><br>
@@ -88,19 +89,18 @@
                 <br><br>
                 <code>export { myVoiceFunction, myOtherFunction }</code>
             </li>
-            <li>Build and integrate using the blue build button.</li>
+            <li>Build using the blue build button.</li>
             <li>Test your voice command within your webpage, by clicking the microphone button or the ` key.</li>
         </ol>
         <br>
 
         <h3>Demo Commands</h3>
         <ol>
-            <li>Click the mouse cursor button in the address bar.</li>
-            <li>Record a sequence of clicks on clickable webpage elements.</li>
-            <li>Typing into a text input element will generate a parameter that can be provided by the user</li>
+            <li>Click the mouse cursor button in the menu bar of the preview pane.</li>
+            <li>Record a sequence of clicks on clickable webpage elements. Typing into any text input element will generate a parameter that can be provided by the user to be automatically entered into the input element.</li>
             <li>Click the stop button in the menu bar of the preview pane.</li>
             <li>Add sample user queries and train the model.</li>
-            <li>Build and integrate using the blue play button</li>
+            <li>Build using the blue build button.</li>
         </ol>
         <br><br>
 
@@ -118,7 +118,7 @@
                 hovering over an element in the webpage to select it.</li>
                 <li>Optionally specify the element attribute(s) to use for the parameter's value. After the previous step, click
                 the element in the popover and select the desired attribute(s).</li>
-                <li>Build and integrate using the blue play button</li>
+                <li>Configure the rest of the command options as needed, and build.</li>
             </ol>
             <br><br>
         </div>

@@ -163,7 +163,7 @@ ipcRenderer.on('stopTrackingContext', () => {
 /** Share context with host */
 function shareContext() {
     var selector = "*";
-    if (contextElement.getAttributes.hasAttribute("id")) {
+    if (contextElement.hasAttribute("id")) {
         selector = contextElement.id
     } else if (contextElement.classList.length !== 0) {
         selector = contextElement.tagName.toLowerCase() + ".";

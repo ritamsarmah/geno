@@ -1,9 +1,11 @@
 {
   "name": "geno",
   "productName": "Geno",
+  "description": "An IDE for integrating multimodal input and voice commands into web apps",
+  "author": "UCLA HCI",
   "version": "0.0.1",
   "private": true,
-  "main": "src/electron/main.js",
+  "main": "public/electron.js",
   "homepage": "./",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
@@ -14,7 +16,7 @@
     "acorn-loose": "^6.1.0",
     "chokidar": "^3.3.1",
     "codemirror": "^5.52.0",
-    "electron": "^4.2.12",
+    "electron-is-dev": "^1.1.0",
     "express": "^4.17.1",
     "lodash-id": "^0.14.0",
     "lowdb": "^1.0.0",
@@ -33,7 +35,10 @@
     "electron": "electron .",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "preelectron-pack": "yarn build",
+    "electron-pack": "electron-builder -c.extraMetadata.main=build/electron.js",
+    "postinstall": "electron-builder install-app-deps"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -44,5 +49,22 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "devDependencies": {}
+  "devDependencies": {
+    "electron": "^4.2.12",
+    "electron-builder": "^22.4.0"
+  },
+  "build": {
+    "appId": "edu.uclahci.geno",
+    "productName": "Geno",
+    "mac": {
+      "category": "Developer Tools"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
 }

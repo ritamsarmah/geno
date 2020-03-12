@@ -20,7 +20,7 @@
     "jsx": "preserve"
   },
   "include": [
-    "src"
+    "src", "public/electron.js", "public/menu.js"
   ],
   "exclude": [
     "src/common/exported/*"

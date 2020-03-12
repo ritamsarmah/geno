@@ -4,7 +4,7 @@ import Tippy from '@tippy.js/react';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPlus, faQuestionCircle, faCrosshairs, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-import { Colors, ContextType, HelpText, GenoEvent } from '../../../common/constants';
+import { Colors,  HelpText, GenoEvent } from '../../../common/constants';
 
 import './Popover.css'
 import 'tippy.js/themes/light-border.css';
@@ -136,7 +136,9 @@ export default class Popover extends Component {
     /* Update query for command in database */
     updateQuery(oldText, query, callback) {
         database.updateQuery(this.state.command.id, oldText, query, (command, updatedQuery) => {
-            this.state.command = command; // Don't want to trigger setState updates
+            // Don't want to trigger setState updates
+            // eslint-disable-next-line
+            this.state.command = command;
             callback(updatedQuery);
         });
     }
@@ -284,7 +286,7 @@ export default class Popover extends Component {
         // Determine color and cursor for crosshairs
         var crossHairColor = "lightgray";
         if (this.state.command.contextInfo.parameter != null) {
-            var crossHairColor = this.state.isTrackingContext ? Colors.Theme : "black";
+            crossHairColor = this.state.isTrackingContext ? Colors.Theme : "black";
         }
         var crossHairCursor = this.state.command.contextInfo.parameter != null ? "pointer" : "default";
 

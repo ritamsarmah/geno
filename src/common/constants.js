@@ -28,8 +28,8 @@ const GenoEvent = {
 }
 
 const HelpText = {
-    ExampleQueries: "Add example sentences that can trigger this voice command. In usage, the user's voice input is matched to the command with the most similar example queries. The minimum is 2 examples, but more (we recommend at least 5) will improve recognition accuracy.\n\n Assign parameters to words in a query by clicking the query in the list, and in the new popup, selecting a parameter from the dropdown under the word(s). To edit query text, click on the pencil icon.\n\nOnce you've finished adding your queries and configuring the parameters, click \"Train Model\" at the bottom to save the command (this may take a few seconds).",
-    Multimodal: "Multimodal context allows a parameter's value to be provided by hovering over an element or dragging over multiple elements. Start by selecting a parameter in the dropdown to enable this functionality.\n\nYou can limit context inference to a specific element selector: click the crosshairs and hover over a webpage element to select it. Click the button again to stop selection. The element ID or tag / class will be used to disambiguate when possible.\n\nInstead of the actual element(s), you can also use a specfic attribute as the parameter value. Click the text for element selector and select the desired attribute(s)."
+    ExampleQueries: "Example queries are used to trigger a voice command, by matching user's voice input to similar examples. 5 or more examples are recommended for accurate recognition. Select parameters in a query by clicking the query in the list, and using the dropdowns under each word. Click \"Train Model\" to save changes to queries.",
+    Multimodal: "Use multimodal context to infer a parameter's value from hovering or dragging the mouse over elements. To limit context to certain selectors, click the crosshairs and hover over an element, before clicking the crosshairs again to finish. A specific attribute can be selected as a parameter value by hovering over the selector text."
 }
 
 module.exports = { Colors, Paths, ContextType, GenoEvent, HelpText }

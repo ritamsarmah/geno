@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import Tippy from '@tippy.js/react';
 import DemoPopover from '../Editor/Popover/DemoPopover';
+import Tutorial from './Tutorial';
+import Tippy from '@tippy.js/react';
 import { Colors, GenoEvent } from '../../common/constants';
 import './Preview.css'
 import 'tippy.js/themes/light-border.css';
@@ -14,6 +15,7 @@ import emitter from '../../common/Emitter';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
+const path = require('path');
 
 export default class Preview extends Component {
 
@@ -25,8 +27,8 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            address: "",
+            src: "",
             recordState: this.STOPPED,
             demoCommand: null
         }
@@ -115,7 +117,13 @@ export default class Preview extends Component {
     /* Navigate to new page in webview */
     navigate() {
         this.stopRecordEvents();
-        this.setState({ src: this.state.address });
+        if (!this.state.address.startsWith("http") && !this.state.address.startsWith("file://")) {
+            this.setState({ address: "http://" + this.state.address }, () => {
+                this.setState({ src: this.state.address });
+            });
+        } else {
+            this.setState({ src: this.state.address });
+        }
     }
 
     /* Reload webview */
@@ -283,7 +291,9 @@ export default class Preview extends Component {
         return (
             <div>
                 {buttons}
-                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
+                {this.state.address !== ""
+                    ? <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
+                    : <Tutorial></Tutorial>}
             </div>
         );
     }
