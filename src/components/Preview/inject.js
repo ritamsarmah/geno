@@ -30,6 +30,8 @@ ipcRenderer.on('stopRecordingEvents', () => {
         elements: clickedElements,
         parameters: parameters
     });
+    clickedElements = [];
+    parameters = [];
 });
 
 /* Record interaction events for programming by demo */
@@ -43,11 +45,16 @@ function recordEvents(e) {
 
     for (var i = 0; i < tags.length; ++i) {
         if (tags[i] == clickedElement) {
-            clickedElements.push({ tag: clickedElement.tagName, index: i });
+            var isClickable = (typeof clickedElement.click === "function");
+            if (isClickable) {
+                clickedElements.push({ tag: clickedElement.tagName, index: i });
+            }
+
             ipcRenderer.sendToHost("clickEvent", {
                 tagName: clickedElement.tagName,
                 className: clickedElement.className.toString(),
-                numClicks: clickedElements.length
+                numClicks: clickedElements.length,
+                isClickable: isClickable
             });
 
             // If the element allows for typing, we can create a parameter for voice input
@@ -72,8 +79,12 @@ function keyPressListener() {
 
 /* Highlights element underneath mouse cursor and informs preview */
 function highlightListener(e) {
-    ipcRenderer.sendToHost("hoverEvent", { tag: e.target.tagName });
-    applyMask(e.target);
+    var isClickable = (typeof e.target.click === "function");
+    ipcRenderer.sendToHost("hoverEvent", {
+        tag: e.target.tagName,
+        isClickable: isClickable
+    });
+    applyMask(e.target, isClickable ? 'skyblue' : 'red');
 }
 
 /* Listener to trigger highlight removal */
@@ -82,11 +93,11 @@ function mouseOutListener(e) {
 }
 
 /* Adds highlight to element */
-function applyMask(target) {
+function applyMask(target, color) {
     if (document.getElementsByClassName('highlight-wrap').length > 0) {
         resizeMask(target);
     } else {
-        createMask(target);
+        createMask(target, color);
     }
 }
 
@@ -101,7 +112,7 @@ function resizeMask(target) {
 }
 
 /* Creates the highlight for an element */
-function createMask(target) {
+function createMask(target, color) {
     var rect = target.getBoundingClientRect();
     var hObj = document.createElement("div");
     hObj.className = 'highlight-wrap';
@@ -110,7 +121,7 @@ function createMask(target) {
     hObj.style.width = rect.width + "px";
     hObj.style.height = rect.height + "px";
     hObj.style.left = rect.left + "px";
-    hObj.style.backgroundColor = 'skyblue';
+    hObj.style.backgroundColor = color;
     hObj.style.opacity = '0.5';
     hObj.style.cursor = 'default';
     hObj.style.pointerEvents = 'none';
@@ -156,27 +167,28 @@ ipcRenderer.on('stopTrackingContext', () => {
     document.removeEventListener("mousedown", onMouseDown);
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
-
-    shareContext();
 });
 
 /** Share context with host */
 function shareContext() {
-    var selector = "*";
+    var selector = contextElement.tagName.toLowerCase();
     if (contextElement.hasAttribute("id")) {
         selector = contextElement.id
     } else if (contextElement.classList.length !== 0) {
-        selector = contextElement.tagName.toLowerCase() + ".";
-        selector += Array.from(contextElement.classList)
+        selector += "." + Array.from(contextElement.classList)
             .filter(cl => cl !== "highlight-wrap")
             .join(".");
     }
 
     var attributes = Array.from(contextElement.attributes).map(attr => attr.nodeName)
+    var attributeExamples = {}
+    attributes.forEach(attr => attributeExamples[attr] = contextElement.getAttribute(attr));
+    console.log(selector);
 
     ipcRenderer.sendToHost("trackedContext", {
         selector: selector,
-        attributes: attributes
+        attributes: attributes,
+        attributeExamples: attributeExamples
     });
 }
 
@@ -199,7 +211,9 @@ function onMouseMove(event) {
         hoverTimer = setTimeout(() => {
             clearMasks(contextElement);
             contextElement = selectPointContext({ x: event.clientX, y: event.clientY });
-            applyMask(contextElement);
+            applyMask(contextElement, 'skyblue');
+            console.log(contextElement);
+            shareContext();
         }, 300);
     }
 }

@@ -198,19 +198,20 @@ export default class Popover extends Component {
                 emitter.emit(GenoEvent.TrackContext);
             } else {
                 emitter.emit(GenoEvent.StopTrackContext);
+                emitter.removeListener(GenoEvent.ShareContext, this.processContext);
             }
         });
     }
 
     /* Processes received context elements and displays to user */
-    processContext(selector, attributes) {
+    processContext(selector, attributes, attributeExamples) {
         this.setState({
             command: database.updateCommandContext(this.state.command.id, {
                 selector: selector,
-                allAttributes: attributes
+                allAttributes: attributes,
+                attributeExamples: attributeExamples
             })
         });
-        emitter.removeListener(GenoEvent.ShareContext, this.processContext);
     }
 
     /* Returns if command context info is default selector */
@@ -267,14 +268,14 @@ export default class Popover extends Component {
 
     renderAttributeSelect() {
         return (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", fontFamily: "'Courier New', Courier, monospace" }}>
+            <div className="attributeBox">
                 {this.state.command.contextInfo.allAttributes.map(attr =>
                     <div key={`context-${attr}`}>
                         <input type="checkbox" name={attr}
                             defaultChecked={this.state.command.contextInfo.attributes.includes(attr)}
                             onChange={this.changeContextAttribute}>
                         </input>
-                        {attr}
+                        <label>{`${attr} (${this.state.command.contextInfo.attributeExamples[attr]})`}</label>
                         <br></br>
                     </div>
                 )}
@@ -310,7 +311,6 @@ export default class Popover extends Component {
                                     <p className="popoverTitle">Example Queries</p>
                                     {this.renderTooltip(HelpText.ExampleQueries)}
                                 </div>
-                                <p className="popoverSubtitle">Queries spoken to trigger the command</p>
                                 <div>
                                     <div>
                                         <input id="addQueryInput" type="text" placeholder="Add example query"></input>
@@ -337,7 +337,6 @@ export default class Popover extends Component {
                                     <p className="popoverTitle">Multimodal Context</p>
                                     {this.renderTooltip(HelpText.Multimodal)}
                                 </div>
-                                <p className="popoverSubtitle">Infers parameter value from mouse context</p>
                                 <div>
                                     <div>
                                         {this.renderContextDropdown()}
@@ -361,7 +360,8 @@ export default class Popover extends Component {
                                             theme="light-border"
                                             placement="right"
                                             trigger={this.isContextDefault() ? "" : "mouseenter"}
-                                            animateFill={false}>
+                                            animateFill={false}
+                                            maxWidth="none">
                                             <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")}
                                                 style={{
                                                     display: this.isContextDefault() ? "none" : "inline-block",

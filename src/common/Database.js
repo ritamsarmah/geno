@@ -58,7 +58,8 @@ class Database {
                 type: ContextType.Element,
                 selector: "*",
                 allAttributes: [],
-                attributes: []
+                attributes: [],
+                attributeExamples: []
             },
             type: type
         }

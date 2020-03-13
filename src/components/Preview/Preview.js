@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import DemoPopover from '../Editor/Popover/DemoPopover';
-import Tutorial from './Tutorial';
 import Tippy from '@tippy.js/react';
 import { Colors, GenoEvent } from '../../common/constants';
 import './Preview.css'
@@ -15,7 +14,6 @@ import emitter from '../../common/Emitter';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
-const path = require('path');
 
 export default class Preview extends Component {
 
@@ -27,8 +25,10 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            address: "",
-            src: "",
+            // address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            address: "http://localhost:9000/examples/full.html",
+            src: "http://localhost:9000/examples/full.html",
             recordState: this.STOPPED,
             demoCommand: null
         }
@@ -117,7 +117,9 @@ export default class Preview extends Component {
     /* Navigate to new page in webview */
     navigate() {
         this.stopRecordEvents();
-        if (!this.state.address.startsWith("http") && !this.state.address.startsWith("file://")) {
+        if (this.state.address === "") {
+            this.setState({ src: `file://${app.getAppPath()}/src/components/Preview/preview.html` })
+        } else if (!this.state.address.startsWith("http") && !this.state.address.startsWith("file://")) {
             this.setState({ address: "http://" + this.state.address }, () => {
                 this.setState({ src: this.state.address });
             });
@@ -163,23 +165,31 @@ export default class Preview extends Component {
 
     /* Listener triggered after receiving clickEvent ipc message from preview webview */
     receivedMouseEvent(event) {
-        var message = "Clicked " + event.tagName.toLowerCase();
+        var selector = event.tagName.toLowerCase();
         if (event.className != null && event.className !== "") {
-            message += "." + event.className.replace(' ', '.');
+            selector += "." + event.className.replace(' ', '.');
         }
-        this.setState({ 
-            demoMessage: message,
-            numClicks: event.numClicks
-         });
+
+        if (event.isClickable) {
+            this.setState({
+                demoMessage: `Clicked ${selector}`,
+                numClicks: event.numClicks
+            });
+        } else {
+            this.setState({
+                demoMessage: `Ignoring non-clickable ${selector}`,
+            });
+        }
+        
     }
 
     /* Listener triggered after receiving hoverEvent ipc message from preview webview */
     receivedHoverEvent(event) {
-        this.setState({ 
-            currentTag: event.tag.toLowerCase()
-         });
+        this.setState({
+            currentTag: event.tag.toLowerCase(),
+        });
     }
-    
+
     /* Listener triggered after receiving recordingDone ipc message from preview webview */
     createDemoCommand(event) {
         var elements = event.elements;
@@ -204,7 +214,7 @@ export default class Preview extends Component {
     }
 
     shareContextWithPopover(event) {
-        emitter.emit(GenoEvent.ShareContext, event.selector, event.attributes);
+        emitter.emit(GenoEvent.ShareContext, event.selector, event.attributes, event.attributeExamples);
     }
 
     getRecordOnClick() {
@@ -291,9 +301,7 @@ export default class Preview extends Component {
         return (
             <div>
                 {buttons}
-                {this.state.address !== ""
-                    ? <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
-                    : <Tutorial></Tutorial>}
+                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
             </div>
         );
     }
