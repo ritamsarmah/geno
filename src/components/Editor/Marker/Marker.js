@@ -48,16 +48,24 @@ export default class Marker extends Component {
         this.setState({
             command: null,
         });
+        document.body.click(); // Really hacky way to dismiss the popover
     }
 
     renderTippyContent() {
-        return (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : (<span></span>);
+        return (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : "";
     }
 
     render() {
         var fillClass = (this.state.command != null) ? "filledMarker" : "emptyMarker";
         return (
-            <Tippy content={this.renderTippyContent()} arrow={true} trigger="click" placement={this.placement} theme="light-border" animation="scale" inertia={true} interactive={true}>
+            <Tippy content={this.renderTippyContent()}
+                arrow={true}
+                trigger="click"
+                placement={this.placement}
+                theme="light-border"
+                animation="scale"
+                inertia={true}
+                interactive={true}>
                 <div className={fillClass} onClick={this.onClick}></div>
             </Tippy>
         );

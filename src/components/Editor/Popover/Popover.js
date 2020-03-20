@@ -205,16 +205,14 @@ export default class Popover extends Component {
     }
 
     /* Processes received context elements and displays to user */
-    processContext(contexts) {
-        console.log(contexts);
-        // selector, attributes, attributeExamples
-        // this.setState({
-        //     command: database.updateCommandContext(this.state.command.id, {
-        //         selector: selector,
-        //         allAttributes: attributes,
-        //         attributeExamples: attributeExamples
-        //     })
-        // });
+    processContext(context) {
+        this.setState({
+            command: database.updateCommandContext(this.state.command.id, {
+                selector: context.selector,
+                allAttributes: context.attributes,
+                attributeExamples: context.attributeExamples
+            })
+        });
     }
 
     /* Returns if command context info is default selector */

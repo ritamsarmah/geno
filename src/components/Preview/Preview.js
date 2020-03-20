@@ -214,7 +214,7 @@ export default class Preview extends Component {
     }
 
     shareContextWithPopover(event) {
-        emitter.emit(GenoEvent.ShareContext, event.contexts);
+        emitter.emit(GenoEvent.ShareContext, event.contexts[0]);
     }
 
     getRecordOnClick() {
