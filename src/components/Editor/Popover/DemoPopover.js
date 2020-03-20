@@ -22,19 +22,6 @@ export default class DemoPopover extends Popover {
         });
     }
 
-    trainModel(e) {
-        var button = e.target
-        button.value = "Training..."
-        database.trainModel(this.state.command.id, (res, status) => {
-            if (status === 200) {
-                console.log(res);
-                button.value = "Train Model (Success)"
-            } else {
-                button.value = "Train Model (Failed)"
-            }
-        });
-    }
-
     changeParameter(event, oldName) {
         // TODO: Fix the bug here that moves popover down for some reason
         if (event.target.value !== "") {

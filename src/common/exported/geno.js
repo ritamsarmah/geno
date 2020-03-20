@@ -1,3 +1,10 @@
+/*
+ **************************
+ * Geno Helper Functions
+ *
+ * DO NOT MODIFY THIS FILE
+ **************************
+ */
 export var GenoState;
 (function (GenoState) {
     GenoState[GenoState["Ready"] = 1] = "Ready";
@@ -389,6 +396,10 @@ var Geno = /** @class */ (function () {
         var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
         xhr.onload = function () {
+            if (xhr.status != 200) {
+                window.alert("Error");
+                return;
+            }
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
             var info = _this.commands[json.intent.name];

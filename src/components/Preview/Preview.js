@@ -214,7 +214,7 @@ export default class Preview extends Component {
     }
 
     shareContextWithPopover(event) {
-        emitter.emit(GenoEvent.ShareContext, event.selector, event.attributes, event.attributeExamples);
+        emitter.emit(GenoEvent.ShareContext, event.contexts);
     }
 
     getRecordOnClick() {
@@ -301,7 +301,7 @@ export default class Preview extends Component {
         return (
             <div>
                 {buttons}
-                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
+                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`} on></webview>
             </div>
         );
     }

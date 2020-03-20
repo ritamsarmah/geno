@@ -169,26 +169,35 @@ ipcRenderer.on('stopTrackingContext', () => {
     document.removeEventListener("mouseup", onMouseUp);
 });
 
-/** Share context with host */
-function shareContext() {
-    var selector = contextElement.tagName.toLowerCase();
-    if (contextElement.hasAttribute("id")) {
-        selector = contextElement.id
-    } else if (contextElement.classList.length !== 0) {
-        selector += "." + Array.from(contextElement.classList)
+function extractContextInfo(element) {
+    var info = {};
+    var selector = element.tagName.toLowerCase();
+    if (element.hasAttribute("id")) {
+        selector = element.id
+    } else if (element.classList.length !== 0) {
+        selector += "." + Array.from(element.classList)
             .filter(cl => cl !== "highlight-wrap")
             .join(".");
     }
 
-    var attributes = Array.from(contextElement.attributes).map(attr => attr.nodeName)
+    var attributes = Array.from(element.attributes).map(attr => attr.nodeName)
     var attributeExamples = {}
-    attributes.forEach(attr => attributeExamples[attr] = contextElement.getAttribute(attr));
-    console.log(selector);
+    attributes.forEach(attr => attributeExamples[attr] = element.getAttribute(attr));
 
-    ipcRenderer.sendToHost("trackedContext", {
+    return {
         selector: selector,
         attributes: attributes,
         attributeExamples: attributeExamples
+    };
+}
+
+/** Share context with host */
+function shareContext() {
+    var contexts = [extractContextInfo(contextElement)];
+    Array.from(contextElement.children).forEach(el => contexts.push(extractContextInfo(el)));
+
+    ipcRenderer.sendToHost("trackedContext", {
+        contexts: contexts
     });
 }
 
@@ -212,9 +221,8 @@ function onMouseMove(event) {
             clearMasks(contextElement);
             contextElement = selectPointContext({ x: event.clientX, y: event.clientY });
             applyMask(contextElement, 'skyblue');
-            console.log(contextElement);
             shareContext();
-        }, 300);
+        }, 200);
     }
 }
 

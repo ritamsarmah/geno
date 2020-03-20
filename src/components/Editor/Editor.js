@@ -4,14 +4,28 @@ import Marker from './Marker/Marker';
 
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 
+// Styles
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
+import 'codemirror/addon/dialog/dialog.css';
 import './Editor.css';
 
+// Language support
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/css/css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/htmlmixed/htmlmixed';
+
+// Addons
+import 'codemirror/addon/search/search';
+import 'codemirror/addon/search/searchcursor';
+import 'codemirror/addon/search/jump-to-line';
+import 'codemirror/addon/dialog/dialog';
+import 'codemirror/addon/edit/closebrackets';
+// import 'codemirror/addon/hint/show-hint';
+// import 'codemirror/addon/hint/anyword-hint';
+// import 'codemirror/addon/hint/javascript-hint';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
 import database from '../../common/Database';
@@ -218,7 +232,8 @@ export default class Editor extends Component {
                             theme: "base16-dark",
                             mode: this.getLanguageMode(),
                             lineNumbers: true,
-                            gutters: ["commands"]
+                            gutters: ["commands"],
+                            autoCloseBrackets: true
                         }}
                         editorDidMount={this.editorDidMount}
                         onChange={this.onChange}

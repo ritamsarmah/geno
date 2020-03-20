@@ -108,15 +108,10 @@ class Database {
 
     /* Remove a command */
     removeCommand(id) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/intent/delete');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        xhr.send(JSON.stringify({
+        this.sendBackendRequest("intent/delete", {
             "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(id).name,
-        }));
-
+        });
         return this.db.get('commands').removeById(id).write();
     }
 
@@ -155,43 +150,37 @@ class Database {
     /* Make changes to a query and train model */
     updateQuery(commandId, oldText, updatedQuery, callback) {
         // Perform entity analysis and execute callback
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/query/update');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        var command = this.getCommandForId(commandId);
+        var parameters = Object.values(updatedQuery.entities).filter(en => en.label);
 
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
+        this.sendBackendRequest("query/update", {
+            "dev_id": preferences.getDevId(),
+            "intent": command.name,
+            "parameters": parameters,
+            "old_query": oldText,
+            "new_query": updatedQuery.text
+        }, (xhr, error) => {
+            if (error) {
+                console.log(error);
+            } else {
                 // TODO: There's a bug here
                 this.db.get('commands').getById(commandId).get('queries')
                     .updateById(updatedQuery.id, updatedQuery).write();
 
                 callback(this.getCommandForId(commandId), this.getQueryForId(commandId, updatedQuery.id));
             }
-        };
-
-        var command = this.getCommandForId(commandId);
-        var parameters = Object.values(updatedQuery.entities).filter(en => en.label);
-
-        xhr.send(JSON.stringify({
-            "dev_id": preferences.getDevId(),
-            "intent": command.name,
-            "parameters": parameters,
-            "old_query": oldText,
-            "new_query": updatedQuery.text
-        }));
+        });
     }
 
     /* Delete a query and train model */
     removeQuery(commandId, queryId) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/query/delete');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        xhr.send(JSON.stringify({
+        this.sendBackendRequest('query/delete', {
             "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(commandId).name,
             "query": this.getQueryForId(commandId, queryId).text
-        }));
+        }, (xhr, error) => {
+            if (error) console.log(error);
+        });
 
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
         return this.getCommandForId(commandId);
@@ -324,34 +313,38 @@ class Database {
     trainModel(commandId, callback) {
         var command = this.getCommandForId(commandId)
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/intent/train');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        var thisDb = this;
-
-        xhr.onreadystatechange = function () {
-            if (this.readyState === XMLHttpRequest.DONE) {
-                if (this.status === 200) {
-                    thisDb.updateCommand(commandId, { "isTrained": true });
-                    // Add entity information for command
-                    var json = JSON.parse(this.responseText);
-                    thisDb.parseEntityResponse(commandId,
-                        json['rasa_nlu_data']['common_examples'].filter(ex => ex.intent === command.name))
-                }
-                callback(this.response, this.status);
-            }
-        }
-
-        var params;
-        params = {
+        this.sendBackendRequest('intent/train', {
             "dev_id": preferences.getDevId(),
             "intent": command.name,
             "queries": command.queries,
             "parameters": command.parameters.map(p => p.name)
-        }
+        }, (xhr, error) => {
+            if (error) {
+                console.log(error);
+            } else {
+                this.updateCommand(commandId, { "isTrained": true });
 
-        xhr.send(JSON.stringify(params));
+                // Add entity information for command
+                var json = JSON.parse(xhr.responseText);
+                this.parseEntityResponse(commandId,
+                    json['rasa_nlu_data']['common_examples'].filter(ex => ex.intent === command.name))
+            }
+            callback(error);
+        });
+    }
+
+    /*** Network Requests ***/
+    sendBackendRequest(endpoint, body, completion) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", `http://localhost:3001/${endpoint}`);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify(body));
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                var error = (xhr.status === 200) ? null : xhr.responseText;
+                if (completion) completion(xhr, error);
+            }
+        }
     }
 }
 

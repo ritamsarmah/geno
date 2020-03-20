@@ -1,3 +1,10 @@
+/*
+ **************************
+ * Geno Helper Functions
+ *
+ * DO NOT MODIFY THIS FILE
+ **************************
+ */
 export enum GenoState {
     Ready = 1,
     Listening,
@@ -468,6 +475,11 @@ export class Geno {
         xhr.open('GET', url);
 
         xhr.onload = () => {
+            if (xhr.status != 200) {
+                window.alert("Error");
+                return
+            }
+
             var json = JSON.parse(xhr.responseText);
             var confidence = json.intent.confidence;
             var info = this.commands[json.intent.name];

@@ -28,7 +28,8 @@ export default class Popover extends Component {
             command: this.props.command,
             popoverState: this.POPOVER_MAIN,
             flipSide: false,
-            isTrackingContext: false
+            isTrackingContext: false,
+            buttonValue: "Train Model"
         };
 
         this.dismiss = this.dismiss.bind(this);
@@ -204,14 +205,16 @@ export default class Popover extends Component {
     }
 
     /* Processes received context elements and displays to user */
-    processContext(selector, attributes, attributeExamples) {
-        this.setState({
-            command: database.updateCommandContext(this.state.command.id, {
-                selector: selector,
-                allAttributes: attributes,
-                attributeExamples: attributeExamples
-            })
-        });
+    processContext(contexts) {
+        console.log(contexts);
+        // selector, attributes, attributeExamples
+        // this.setState({
+        //     command: database.updateCommandContext(this.state.command.id, {
+        //         selector: selector,
+        //         allAttributes: attributes,
+        //         attributeExamples: attributeExamples
+        //     })
+        // });
     }
 
     /* Returns if command context info is default selector */
@@ -222,12 +225,10 @@ export default class Popover extends Component {
     trainModel(e) {
         var button = e.target
         button.value = "Training..."
-        database.trainModel(this.state.command.id, (res, status) => {
-            if (status === 200) {
-                console.log(res);
-                button.value = "Train Model (Success)"
-            } else {
-                button.value = "Train Model (Failed)"
+        database.trainModel(this.state.command.id, (error) => {
+            this.setState({ buttonValue: `Train Model (${error ? "Failed" : "Success"})` });
+            if (error) {
+                window.alert(error);
             }
         });
     }
@@ -383,7 +384,7 @@ export default class Popover extends Component {
                                         </span>
                                     </div>
 
-                                    <input type="button" style={{ margin: "10px 0" }} value="Train Model" onClick={this.trainModel}></input>
+                                    <input type="button" style={{ margin: "10px 0" }} value={this.state.buttonValue} onClick={this.trainModel}></input>
                                     <br></br>
                                     <div id="bottomButtons">
                                         <input type="button" value="Options" onClick={this.showOptions}></input>
