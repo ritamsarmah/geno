@@ -16,6 +16,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
 import database from '../../common/Database';
 
+const electron = window.require('electron').remote;
+const electronLocalShortcut = window.require('electron-localshortcut');
 const fs = window.require('fs');
 const chokidar = window.require('chokidar');
 const path = require('path');
@@ -102,7 +104,7 @@ export default class Editor extends Component {
         this.codeMirror = null;
         
         // Add Ctrl-S and Cmd-S functionality
-        window.addEventListener("keyup", this.saveFileListener, true);
+        electronLocalShortcut.register(electron.getCurrentWindow(), 'CmdOrCtrl+S', this.saveFileListener);
     }
 
     editorDidMount(editor) {
@@ -116,7 +118,7 @@ export default class Editor extends Component {
 
     editorDidUnmount() {
         this.watcher.close();
-        window.removeEventListener("keyup", this.saveFileListener);
+        electronLocalShortcut.unregister(electron.getCurrentWindow(), 'CmdOrCtrl+S', this.saveFileListener);
     }
 
     componentDidUpdate(prevProps) {
@@ -156,10 +158,8 @@ export default class Editor extends Component {
         });
     }
 
-    saveFileListener(e) {
-        if (e.key === 's' && e.ctrlKey) {
-            this.saveFile(this.state.file, true);
-        }
+    saveFileListener() {
+        this.saveFile(this.state.file, true);
     }
 
     onChange(editor, data, value) {
