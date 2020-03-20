@@ -124,24 +124,9 @@ class Database {
 
     /* Add a query to a command */
     addQuery(commandId, queryText) {
-        var words = queryText.split(" ");
-        var entities = {};
-
-        // Map start index of entity in queryText to entity info
-        var index = 0;
-        words.forEach(word => {
-            entities[index] = {
-                label: null,
-                text: word,
-                start: index,
-                end: index + word.length
-            };
-            index += word.length + 1;
-        });
-
         var data = {
             text: queryText,
-            entities: entities
+            entities: this.splitIntoEntities(queryText)
         };
         this.db.get('commands').getById(commandId).get('queries').insert(data).write();
         return this.getCommandForId(commandId);
@@ -149,21 +134,24 @@ class Database {
 
     /* Make changes to a query and train model */
     updateQuery(commandId, oldText, updatedQuery, callback) {
-        // Perform entity analysis and execute callback
         var command = this.getCommandForId(commandId);
-        var parameters = Object.values(updatedQuery.entities).filter(en => en.label);
+
+        // Don't make changes if old text and new text are the same
+        if (oldText === updatedQuery.text) {
+            callback(command, this.getQueryForId(commandId, updatedQuery.id));
+            return;
+        }
 
         this.sendBackendRequest("query/update", {
             "dev_id": preferences.getDevId(),
             "intent": command.name,
-            "parameters": parameters,
-            "old_query": oldText,
-            "new_query": updatedQuery.text
+            "old_text": oldText,
+            "new_query": updatedQuery
         }, (xhr, error) => {
             if (error) {
                 console.log(error);
             } else {
-                // TODO: There's a bug here
+                updatedQuery.entities = this.splitIntoEntities(updatedQuery.text)
                 this.db.get('commands').getById(commandId).get('queries')
                     .updateById(updatedQuery.id, updatedQuery).write();
 
@@ -333,7 +321,8 @@ class Database {
         });
     }
 
-    /*** Network Requests ***/
+    /*** Utility Functions ***/
+    
     sendBackendRequest(endpoint, body, completion) {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", `http://localhost:3001/${endpoint}`);
@@ -345,6 +334,25 @@ class Database {
                 if (completion) completion(xhr, error);
             }
         }
+    }
+
+    splitIntoEntities(text) {
+        var words = text.split(" ");
+        var entities = {};
+
+        // Map start index of entity in queryText to entity info
+        var index = 0;
+        words.forEach(word => {
+            entities[index] = {
+                label: null,
+                text: word,
+                start: index,
+                end: index + word.length
+            };
+            index += word.length + 1;
+        });
+
+        return entities;
     }
 }
 
