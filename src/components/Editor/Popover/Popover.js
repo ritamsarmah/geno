@@ -350,7 +350,7 @@ export default class Popover extends Component {
                                 </div>
                                 <div>
                                     <div>
-                                        <input id="addQueryInput" type="text" placeholder="Add example query"></input>
+                                        <input id="addQueryInput" type="text" placeholder="Add example query" onKeyUp={e => { if (e.key == "Enter") this.addQuery(); }}></input>
                                         <span className="iconButton" onClick={this.addQuery}>
                                             <FontAwesomeIcon icon={faPlus} />
                                         </span>
