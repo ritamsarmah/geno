@@ -57,9 +57,9 @@ class Database {
                 parameter: null,
                 type: ContextType.Element,
                 selector: "*",
-                allAttributes: [],
-                attributes: [],
-                attributeExamples: []
+                allAttributes: [],      // list of detected attributes for the selector
+                attributes: [],         // list of selected attributes
+                attributeExamples: []   // list of example values for detected attributes
             },
             type: type
         }
@@ -325,7 +325,7 @@ class Database {
     
     sendBackendRequest(endpoint, body, completion) {
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", `http://localhost:3001/${endpoint}`);
+        xhr.open("POST", `http://localhost:3313/${endpoint}`);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xhr.send(JSON.stringify(body));
         xhr.onreadystatechange = () => {

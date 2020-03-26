@@ -89,10 +89,13 @@ function astSearch(node) {
                 }
             }
         }
+    } else if (node.type === "ExportNamedDeclaration") {
+        if (node.declaration != null) {
+            return functions.concat(astSearch(node.declaration));
+        }
     }
 
     // Arrow Functions
-
     if ("body" in node) {
         for (let i = 0; i < node.body.length; i++) {
             functions = functions.concat(astSearch(node.body[i]));

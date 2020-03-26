@@ -62,7 +62,6 @@ class Builder {
             fs.copyFile(jsSource, jsDest, (err) => {});
             fs.copyFile(cssSource, cssDest, (err) => {});
         });
-        
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  **************************
- * Geno Helper Functions
+ * Geno Helper Module
  *
  * DO NOT MODIFY THIS FILE
  **************************
@@ -393,7 +393,7 @@ var Geno = /** @class */ (function () {
             return;
         }
         var xhr = new XMLHttpRequest();
-        var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
+        var url = "http://localhost:3313/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
         xhr.onload = function () {
             if (xhr.status != 200) {

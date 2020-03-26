@@ -1,6 +1,6 @@
 /*
  **************************
- * Geno Helper Functions
+ * Geno Helper Module
  *
  * DO NOT MODIFY THIS FILE
  **************************
@@ -471,13 +471,13 @@ export class Geno {
         }
 
         var xhr = new XMLHttpRequest();
-        var url = "http://localhost:3001/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
+        var url = "http://localhost:3313/response?dev_id=" + encodeURIComponent(this.devId) + "&query=" + encodeURIComponent(query);
         xhr.open('GET', url);
 
         xhr.onload = () => {
             if (xhr.status != 200) {
                 window.alert("Error");
-                return
+                return;
             }
 
             var json = JSON.parse(xhr.responseText);

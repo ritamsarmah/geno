@@ -50,6 +50,7 @@
     font-family: var(--body-font);
     font-size: 13px;
     text-align: right;
+    z-index: 1;
 }
 
 .geno-bubble:after {
