@@ -47,7 +47,7 @@ export default class Explorer extends Component {
             files.forEach((file) => {
                 file = path.resolve(dir, file);
                 fs.stat(file, (err, stat) => {
-                    if (stat && stat.isDirectory()) {
+                    if (stat && stat.isDirectory() && path.basename(file) !== "node_modules") {
                         this.walk(file, (err, res) => {
                             results.push({
                                 path: path,

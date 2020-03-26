@@ -4,7 +4,7 @@ import Tippy from '@tippy.js/react';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp, faPlus, faQuestionCircle, faCrosshairs, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-import { Colors,  HelpText, GenoEvent } from '../../../common/constants';
+import { Colors, ContextType, HelpText, GenoEvent } from '../../../common/constants';
 
 import './Popover.css'
 import 'tippy.js/themes/light-border.css';
@@ -47,7 +47,6 @@ export default class Popover extends Component {
         this.updateQuery = this.updateQuery.bind(this);
         this.deleteQuery = this.deleteQuery.bind(this);
         this.changeBackupQuery = this.changeBackupQuery.bind(this);
-        this.changeContextType = this.changeContextType.bind(this);
         this.changeContextParameter = this.changeContextParameter.bind(this);
         this.changeContextAttribute = this.changeContextAttribute.bind(this);
         this.clearContextInfo = this.clearContextInfo.bind(this);
@@ -174,16 +173,6 @@ export default class Popover extends Component {
         });
     }
 
-    /* Change type of return value for context */
-    changeContextType(event) {
-        // TODO: On checkbox change if list of checked attributes is not empty, attribute, else element
-        // TODO: Also call on text selection
-        var type = event.target.value;
-        this.setState({
-            command: database.updateContextType(this.state.command.id, type)
-        });
-    }
-
     /* Reset context information */
     clearContextInfo() {
         this.setState({
@@ -197,9 +186,11 @@ export default class Popover extends Component {
             if (this.state.isTrackingContext) {
                 emitter.on(GenoEvent.ShareContext, this.processContext);
                 emitter.emit(GenoEvent.TrackContext);
+                document.body.style.setProperty('cursor', 'crosshair', 'important');
             } else {
                 emitter.emit(GenoEvent.StopTrackContext);
                 emitter.removeListener(GenoEvent.ShareContext, this.processContext);
+                document.body.style.setProperty('cursor', 'inherit');
             }
         });
     }
@@ -209,6 +200,8 @@ export default class Popover extends Component {
         this.setState({
             command: database.updateCommandContext(this.state.command.id, {
                 selector: context.selector,
+                type: ContextType.Element,
+                attributes: [], // reset attributes if we are changing selector, since old attribute a
                 allAttributes: context.attributes,
                 attributeExamples: context.attributeExamples
             })
@@ -232,6 +225,34 @@ export default class Popover extends Component {
     }
 
     /* UI Rendering Functions */
+    
+    renderContextDescription() {
+        var description = "";
+        switch (this.state.command.contextInfo.type) {
+            case ContextType.Element:
+                description = "Parameter value will be an HTML element";
+                break;
+            case ContextType.Attribute:
+                if (this.state.command.contextInfo.attributes.length == 1) {
+                    description = "Parameter value will be a single attribute";
+                } else {
+                    description = "Parameter value will be an array of attributes";
+                }
+                break;
+        }
+
+        return (
+            <p className="popoverSubtitle"
+                tabIndex="0"
+                style={{
+                    marginTop: "7px",
+                    fontSize: "11px",
+                    display: "inline-block"
+                }}>
+                {description}
+            </p>
+        );
+    }
 
     renderSummary() {
         return (
@@ -266,20 +287,28 @@ export default class Popover extends Component {
     }
 
     renderAttributeSelect() {
-        return (
-            <div className="attributeBox">
-                {this.state.command.contextInfo.allAttributes.map(attr =>
-                    <div key={`context-${attr}`}>
-                        <input type="checkbox" name={attr}
-                            defaultChecked={this.state.command.contextInfo.attributes.includes(attr)}
-                            onChange={this.changeContextAttribute}>
-                        </input>
-                        <label>{`${attr} (${this.state.command.contextInfo.attributeExamples[attr]})`}</label>
-                        <br></br>
-                    </div>
-                )}
-            </div>
-        )
+        if (this.state.command.contextInfo.allAttributes.length == 0) {
+            return (
+                <div className="attributeBox">
+                    No attributes available
+                </div>
+            );
+        } else {
+            return (
+                <div className="attributeBox">
+                    {this.state.command.contextInfo.allAttributes.map(attr =>
+                        <div key={`context-${attr}`}>
+                            <input type="checkbox" name={attr}
+                                defaultChecked={this.state.command.contextInfo.attributes.includes(attr)}
+                                onChange={this.changeContextAttribute}>
+                            </input>
+                            <label>{`${attr} (${this.state.command.contextInfo.attributeExamples[attr]})`}</label>
+                            <br></br>
+                        </div>
+                    )}
+                </div>
+            )
+        }
     }
 
     render() {
@@ -381,6 +410,7 @@ export default class Popover extends Component {
                                                 }} />
                                         </span>
                                     </div>
+                                    {this.renderContextDescription()}
 
                                     <input type="button" style={{ margin: "10px 0" }} value={this.state.buttonValue} onClick={this.trainModel}></input>
                                     <br></br>

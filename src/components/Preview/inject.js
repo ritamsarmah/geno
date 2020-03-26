@@ -158,6 +158,7 @@ ipcRenderer.on('trackContext', () => {
     document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
+    document.body.style.setProperty('cursor', 'crosshair', 'important');
 });
 
 ipcRenderer.on('stopTrackingContext', () => {
@@ -167,6 +168,7 @@ ipcRenderer.on('stopTrackingContext', () => {
     document.removeEventListener("mousedown", onMouseDown);
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
+    document.body.style.setProperty('cursor', 'inherit');
 });
 
 function extractContextInfo(element) {

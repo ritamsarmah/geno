@@ -54,20 +54,18 @@
         <h2>Getting Started</h2>
         <p>Loading a project in Geno automatically generates a new directory called <code>geno</code> in the root of the project (don't modify any of the files in this directory). Before you can start creating voice commands, you'll need to integrate Geno into the project with the following steps.
         <ol>
-            <li>Configure your developer ID in the settings tab in the left pane.</li>
-            <li>Modify the following lines and add them to an HTML file to include Geno:
+            <!-- <li>Configure your developer ID in the settings tab in the left pane.</li> -->
+            <li>Add the following lines to an HTML file to include Geno:
                 <br><br>
-                <code>&lt;link rel="stylesheet" type="text/css" href="./geno/geno.css" /&gt;</code>
+                <code>&lt;link rel="stylesheet" href="./geno/geno.css" /&gt;</code>
                 <br><br>
                 <code>
-                    &lt;script type="module"&gt; <br>
-                        import { geno } from "/PATH/TO/geno/geno.js"; <br>
-                        geno.start(YOUR_DEV_ID); <br>
-                    &lt;/script&gt; <br>
+                    &lt;script type="module" src="/PATH/TO/geno/custom.js"&gt;&lt;/script&gt; <br>
                 </code>
             </li>
             <li>Build using the blue build button.</li>
-            <li>Navigate to your web application via the address bar.</li>
+            <!-- <li>Navigate to your web application via the address bar.</li> -->
+            <li>Navigate to your application in a web browser.</li>
             <li>Start speaking to Geno by clicking the microphone button in the bottom right or Ctrl-`.</li>
         </ol>
 

@@ -25,10 +25,10 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            // address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            address: "http://localhost:9000/examples/full.html",
-            src: "http://localhost:9000/examples/full.html",
+            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // address: "http://localhost:9000/examples/full.html",
+            // src: "http://localhost:9000/examples/full.html",
             recordState: this.STOPPED,
             demoCommand: null
         }
@@ -301,7 +301,7 @@ export default class Preview extends Component {
         return (
             <div>
                 {buttons}
-                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`} on></webview>
+                <webview id="preview" src={this.state.src} autosize="on" preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}></webview>
             </div>
         );
     }
