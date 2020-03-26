@@ -133,29 +133,33 @@ class Database {
     }
 
     /* Make changes to a query and train model */
-    updateQuery(commandId, oldText, updatedQuery, callback) {
+    updateQuery(commandId, queryId, oldText, newText, callback) {
         var command = this.getCommandForId(commandId);
+        var query = this.getQueryForId(commandId, queryId);
 
         // Don't make changes if old text and new text are the same
-        if (oldText === updatedQuery.text) {
-            callback(command, this.getQueryForId(commandId, updatedQuery.id));
+        if (oldText === newText) {
+            callback(command, query);
             return;
         }
+
+        // Create updated query with new text
+        query.text = newText;
 
         this.sendBackendRequest("query/update", {
             "dev_id": preferences.getDevId(),
             "intent": command.name,
             "old_text": oldText,
-            "new_query": updatedQuery
-        }, (xhr, error) => {
+            "new_query": query
+        }, (_xhr, error) => {
             if (error) {
                 console.log(error);
             } else {
-                updatedQuery.entities = this.splitIntoEntities(updatedQuery.text)
+                query.entities = this.splitIntoEntities(newText)
                 this.db.get('commands').getById(commandId).get('queries')
-                    .updateById(updatedQuery.id, updatedQuery).write();
+                    .updateById(queryId, query).write();
 
-                callback(this.getCommandForId(commandId), this.getQueryForId(commandId, updatedQuery.id));
+                callback(this.getCommandForId(commandId), this.getQueryForId(commandId, queryId));
             }
         });
     }

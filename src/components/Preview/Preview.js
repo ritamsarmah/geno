@@ -25,10 +25,10 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            // address: "http://localhost:9000/examples/full.html",
-            // src: "http://localhost:9000/examples/full.html",
+            // address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            address: "http://localhost:9000/examples/full.html",
+            src: "http://localhost:9000/examples/full.html",
             recordState: this.STOPPED,
             demoCommand: null
         }
@@ -120,11 +120,11 @@ export default class Preview extends Component {
         if (this.state.address === "") {
             this.setState({ src: `file://${app.getAppPath()}/src/components/Preview/preview.html` })
         } else if (!this.state.address.startsWith("http") && !this.state.address.startsWith("file://")) {
-            this.setState({ address: "http://" + this.state.address }, () => {
-                this.setState({ src: this.state.address });
+            this.setState((state, _props) => ({ address: `http://${state.address}` }), () => {
+                this.setState((state, _props) => ({ src: state.address }));
             });
         } else {
-            this.setState({ src: this.state.address });
+            this.setState((state, _props) => ({ src: state.address }));
         }
     }
 

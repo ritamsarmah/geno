@@ -96,7 +96,7 @@ export default class AnalysisView extends Component {
             var content = document.getElementById("editableQuery");
             this.updateNLPInfo(content.innerHTML);
         } else {
-            this.setState({ editMode: !this.state.editMode });
+            this.setState((state, _props) => ({ editMode: !state.editMode }));
         }
     }
 
@@ -104,15 +104,15 @@ export default class AnalysisView extends Component {
     updateNLPInfo(newText) {
         this.spinRefresh(true);
         var oldText = this.state.query.text;
-        var thisAnalysis = this;
 
-        var newQuery = this.state.query;
-        newQuery.text = newText;
-        this.props.updateQuery(oldText, newQuery, (updatedQuery) => {
-            thisAnalysis.state.query = updatedQuery;
-            thisAnalysis.setState({ editMode: false });
-            thisAnalysis.colorEntities();
-            thisAnalysis.spinRefresh(false);
+        this.props.updateQuery(this.state.query.id, oldText, newText, (updatedQuery) => {
+            this.setState({
+                query: updatedQuery,
+                editMode: false
+            }, () => {
+                this.colorEntities();
+                this.spinRefresh(false);
+            });
         });
     }
 
@@ -163,6 +163,9 @@ export default class AnalysisView extends Component {
                 <div id="close" onClick={this.dismiss}>
                     <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>
                 </div>
+                {/* <div id="addParameter" onClick={this.toggleEdit}>
+                    <FontAwesomeIcon icon={this.state.editMode ? faSyncAlt : faPen}></FontAwesomeIcon>
+                </div> */}
                 <div id="refresh" onClick={this.toggleEdit}>
                     <FontAwesomeIcon icon={this.state.editMode ? faSyncAlt : faPen}></FontAwesomeIcon>
                 </div>

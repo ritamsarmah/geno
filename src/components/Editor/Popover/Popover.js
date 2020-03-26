@@ -64,12 +64,12 @@ export default class Popover extends Component {
 
     /* Toggle resizing of sample queries list */
     toggleQueries() {
-        this.setState({ queriesExpanded: !this.state.queriesExpanded });
+        this.setState((state, _props) => ({ queriesExpanded: !state.queriesExpanded }));
     }
 
     /* Toggle resizing of context list */
     toggleContext() {
-        this.setState({ contextExpanded: !this.state.contextExpanded });
+        this.setState((state, _props) => ({ contextExpanded: !state.contextExpanded }));
     }
 
     /* Switch to main form */
@@ -134,8 +134,8 @@ export default class Popover extends Component {
     }
 
     /* Update query for command in database */
-    updateQuery(oldText, query, callback) {
-        database.updateQuery(this.state.command.id, oldText, query, (command, updatedQuery) => {
+    updateQuery(queryId, oldText, newText, callback) {
+        database.updateQuery(this.state.command.id, queryId, oldText, newText, (command, updatedQuery) => {
             // Don't want to trigger setState updates
             // eslint-disable-next-line
             this.state.command = command;
@@ -182,7 +182,7 @@ export default class Popover extends Component {
 
     /* Toggle tracking context in Preview */
     toggleTrackingContext() {
-        this.setState({ isTrackingContext: !this.state.isTrackingContext }, () => {
+        this.setState((state, _props) => ({ isTrackingContext: !state.isTrackingContext }), () => {
             if (this.state.isTrackingContext) {
                 emitter.on(GenoEvent.ShareContext, this.processContext);
                 emitter.emit(GenoEvent.TrackContext);
@@ -228,17 +228,26 @@ export default class Popover extends Component {
     
     renderContextDescription() {
         var description = "";
-        switch (this.state.command.contextInfo.type) {
-            case ContextType.Element:
-                description = "Parameter value will be an HTML element";
-                break;
-            case ContextType.Attribute:
-                if (this.state.command.contextInfo.attributes.length == 1) {
-                    description = "Parameter value will be a single attribute";
-                } else {
-                    description = "Parameter value will be an array of attributes";
-                }
-                break;
+
+        if (this.state.command.contextInfo.parameter == null) {
+            return null;
+        } else {
+            switch (this.state.command.contextInfo.type) {
+                case ContextType.Element:
+                    if (this.isContextDefault()) {
+                        description = "Pass any HTML element for parameter";
+                    } else {
+                        description = "Pass HTML element if it matches selector";
+                    }
+                    break;
+                case ContextType.Attribute:
+                    if (this.state.command.contextInfo.attributes.length == 1) {
+                        description = "Pass a single attribute for element";
+                    } else {
+                        description = "Pass an array of attributes for element";
+                    }
+                    break;
+            }
         }
 
         return (
