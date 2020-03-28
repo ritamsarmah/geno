@@ -27,12 +27,14 @@ export default class CommandItem extends Component {
                     <span className="fn">{createCountMessage(this.props.command.parameters.length, "parameter")}</span>
                 </span>
             );
-        } else {
+        } else if (this.props.command.type === "function") {
             return (
                 <span>
                     <span className="fn">{this.props.command.triggerFn}</span>
                 </span>
             )
+        } else {
+            return null;
         }
     }
 

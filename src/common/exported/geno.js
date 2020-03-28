@@ -116,7 +116,7 @@ var Geno = /** @class */ (function () {
     };
     /*** Speech Functions ***/
     /** Display/speak phrase to user */
-    Geno.prototype.respond = function (phrase, speak, callback) {
+    Geno.prototype.say = function (phrase, speak, callback) {
         if (speak === void 0) { speak = true; }
         if (callback === void 0) { callback = null; }
         this.currentMessage.textContent = phrase;
@@ -131,7 +131,7 @@ var Geno = /** @class */ (function () {
     Geno.prototype.ask = function (phrase, speak, callback) {
         var _this = this;
         if (speak === void 0) { speak = true; }
-        this.respond(phrase, speak, function () {
+        this.say(phrase, speak, function () {
             _this.onfinalmessage = callback;
             _this.startListening();
         });
@@ -421,7 +421,7 @@ var Geno = /** @class */ (function () {
                 }
             }
             else {
-                _this.respond("Sorry, I didn't understand.");
+                _this.say("Sorry, I didn't understand.");
                 _this.setBorderColor(GenoState.Error);
             }
         };

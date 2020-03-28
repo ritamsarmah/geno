@@ -1,4 +1,5 @@
 import database from './Database';
+import { Paths } from '../common/constants';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
@@ -54,7 +55,6 @@ class Builder {
         var cssDest = this.dir + '/geno/geno.css';
 
         // Copy over backup sample queries
-
         fs.mkdir(this.dir + '/geno', (err) => {
             fs.copyFile(jsSource, jsDest, (err) => {
                 fs.appendFileSync(jsDest, generatedCode);
@@ -63,6 +63,14 @@ class Builder {
             fs.copyFile(cssSource, cssDest, (err) => {});
         });
     }
+
+    /* Generate function skeleton for command in custom.js */
+    createSkeleton(name, parameters) {
+        var customFile = this.dir + Paths.Custom;
+        var skeleton = `\nexport ${name}(${parameters.join(', ')}) {\n}`;
+        fs.appendFileSync(customFile, skeleton); 
+    }
+    
 }
 
 var builder = new Builder();

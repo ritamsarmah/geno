@@ -46,7 +46,7 @@ class Database {
             .value();
     }
 
-    /* Get command prototype */
+    /* Constructs command prototype */
     getCommandPrototype(type, parameters) {
         return {
             name: "untitled_command" + (this.getCommands().length + 1),
@@ -66,7 +66,7 @@ class Database {
     }
 
     /* Add a command */
-    addCommand(file, triggerFn, params) {
+    addFunctionCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {
             return { name: p, backupQuery: "" }
         });
@@ -122,13 +122,17 @@ class Database {
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
-    /* Add a query to a command */
-    addQuery(commandId, queryText) {
-        var data = {
+    /* Constructs query prototype given text */
+    getQueryPrototype(queryText) {
+        return {
             text: queryText,
             entities: this.splitIntoEntities(queryText)
         };
-        this.db.get('commands').getById(commandId).get('queries').insert(data).write();
+    }
+
+    /* Add a query to a command */
+    addQuery(commandId, queryText) {
+        this.db.get('commands').getById(commandId).get('queries').insert(this.getQueryPrototype(queryText)).write();
         return this.getCommandForId(commandId);
     }
 
@@ -265,11 +269,10 @@ class Database {
             attributes.push(attribute);
         }
 
-        if (attributes.length === 0) {
-            this.updateContextType(commandId, ContextType.Element);
-        } else {
-            this.updateContextType(commandId, ContextType.Attribute);
-        }
+        this.updateContextType(commandId,
+            (attributes.length === 0)
+                ? ContextType.Element
+                : ContextType.Attribute);
 
         return this.updateContextAttributes(commandId, attributes);
     }

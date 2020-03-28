@@ -6,7 +6,7 @@
 #analysisView {
     z-index: 999999999;
     position: absolute;
-    top: 213px;
+    top: 144px; /* If including summary info, top: 213px; */
     width: 400px;
     padding: 30px 30px 50px 30px;
     

@@ -24,8 +24,9 @@ export default class App extends Component {
     this.state = {
       dir: null, // Current project directory
       currentFile: null, // Current file in editor
-      canSelectFile: true // Handle file saving/access (avoid losing unsaved changes)
+      canSelectFile: true, // Handle file saving/access (avoid losing unsaved changes)
     }
+
     this.openFileBrowser = this.openFileBrowser.bind(this);
     this.configureProject = this.configureProject.bind(this);
     this.selectFile = this.selectFile.bind(this);
@@ -56,11 +57,11 @@ export default class App extends Component {
       fs.writeFile(customPath, `/**\n * Geno can generate JavaScript function skeletons here\n * for function-based voice commands you create. Feel free to write\n * your own additional functions or code here as well.\n */\n\nimport { geno } from './geno.js'\n\n// Initialize Geno with your developer ID\ngeno.start(${devId});`, { flag: 'wx' }, (err) => {
         fs.writeFile(commandsPath, `{"commands":[]}`, { flag: 'wx' }, (err) => {
           fs.writeFile(preferencesPath, `{"dev_id":"${devId}", "continuous": false, "api":"WebSpeech"}`, { flag: 'wx' }, (err) => {
-            this.setState({ dir: path[0] });
             database.configureProject(path[0]);
             builder.configureProject(path[0]);
             preferences.configureProject(path[0]);
             builder.build();
+            this.setState({ dir: path[0] });
           });
         });
       });
@@ -123,7 +124,7 @@ export default class App extends Component {
     if (this.state.dir) {
       return (
         <div className="App">
-          <Split sizes={[20, 40, 40]} minSize={[0, 0, 0]}>
+          <Split sizes={[21, 39, 40]} minSize={[0, 0, 0]}>
             <div className="split"><Explorer dir={this.state.dir} selectFile={this.selectFile} /></div>
             <div className="split"><Editor dir={this.state.dir} file={this.state.currentFile} setSelectFile={this.setSelectFile} forceSaveFile={this.state.forceSaveFile} /></div>
             <div className="split"><Preview dir={this.state.dir} /></div>

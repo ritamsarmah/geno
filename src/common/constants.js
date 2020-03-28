@@ -29,8 +29,8 @@ const GenoEvent = {
 }
 
 const HelpText = {
-    ExampleQueries: "Example queries are used to trigger a voice command, by matching user's voice input to similar examples. 5 or more examples are recommended for accurate recognition. Select parameters in a query by clicking the query in the list, and using the dropdowns under each word. Click \"Train Model\" to save changes to queries.",
-    Multimodal: "Multimodal context infers a parameter's value from hovering or dragging the mouse over elements. To limit context to a certain selector, click the crosshairs and hover over an element, before clicking the crosshairs again to finish. A specific attribute can be selected as a parameter value by hovering over the selector text."
+    ExampleQueries: "Add 2 or more example queries for training voice command recognition. Click on a query in the list to assign parameters using the dropdown under each word.",
+    Multimodal: "Infer a parameter from a user hovering/dragging the mouse over elements. Limit context to a certain selector by clicking the crosshairs and hovering over an element in the preview, before clicking the crosshairs again to finish. Use attribute(s) as context by hovering over the selector text and selecting from checklist."
 }
 
 module.exports = { Colors, Paths, ContextType, GenoEvent, HelpText }

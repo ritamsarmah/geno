@@ -277,7 +277,7 @@ export default class Preview extends Component {
                     <div className="pill">{this.state.numClicks + (this.state.numClicks === 1 ? " click" : " clicks")}</div>
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
                     <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState === this.POPOVER}>
-                        <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
+                        <button title="Create Demo Command" className="previewBtn" onClick={this.getRecordOnClick()}>
                             {this.getRecordIcon()}
                         </button>
                     </Tippy>

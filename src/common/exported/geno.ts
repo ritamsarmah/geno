@@ -173,7 +173,7 @@ export class Geno {
     /*** Speech Functions ***/
 
     /** Display/speak phrase to user */
-    respond(phrase: string, speak: boolean = true, callback: (() => void) | null = null): void {
+    say(phrase: string, speak: boolean = true, callback: (() => void) | null = null): void {
         this.currentMessage.textContent = phrase;
         this.addChatMessage(phrase, "geno");
 
@@ -186,7 +186,7 @@ export class Geno {
 
     /** Display/speak phrase to user and execute callback on user response */
     ask(phrase: string, speak: boolean = true, callback: (message: GenoMessage) => void): void {
-        this.respond(phrase, speak, () => {
+        this.say(phrase, speak, () => {
             this.onfinalmessage = callback;
             this.startListening();
         });
@@ -503,7 +503,7 @@ export class Geno {
                     this.extractParameters();
                 }
             } else {
-                this.respond("Sorry, I didn't understand.");
+                this.say("Sorry, I didn't understand.");
                 this.setBorderColor(GenoState.Error);
             }
         };

@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import Popover from '../Popover/Popover';
+import FunctionPopover from '../Popover/FunctionPopover';
 import Tippy from '@tippy.js/react';
-
 import database from '../../../common/Database';
+import emitter from '../../../common/Emitter';
+import { GenoEvent } from '../../../common/constants';
 
 import './Marker.css'
 import 'tippy.js/themes/light-border.css';
@@ -39,7 +40,7 @@ export default class Marker extends Component {
     onClick() {
         // Used for creation of new commands in editor
         if (this.state.command == null) {
-            var command = database.addCommand(this.props.file, this.props.triggerFn, this.props.params);
+            var command = database.addFunctionCommand(this.props.file, this.props.triggerFn, this.props.params);
             this.setState({ command: command });
         }
     }
@@ -52,7 +53,7 @@ export default class Marker extends Component {
     }
 
     renderTippyContent() {
-        return (this.state.command != null) ? (<Popover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : "";
+        return (this.state.command != null) ? (<FunctionPopover command={this.state.command} unmountMe={this.handlePopoverUnmount} />) : "";
     }
 
     render() {
@@ -62,6 +63,7 @@ export default class Marker extends Component {
                 arrow={true}
                 trigger="click"
                 placement={this.placement}
+                flipOnUpdate={true}
                 theme="light-border"
                 animation="scale"
                 inertia={true}

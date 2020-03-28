@@ -1,0 +1,16 @@
+#newCommandBtn {
+    cursor: pointer;
+
+    margin: 4px 2px;
+    padding: 2px 4px;
+    border-radius: 50%;
+    text-align: center;
+    text-decoration: none;
+    background-color: var(--theme-color);
+    color: white;
+}
+
+#newCommandBtn:hover {
+    background-color: var(--theme-color);
+    color: white;
+}
