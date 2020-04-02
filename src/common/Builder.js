@@ -67,7 +67,7 @@ class Builder {
     /* Generate function skeleton for command in custom.js */
     createSkeleton(name, parameters) {
         var customFile = this.dir + Paths.Custom;
-        var skeleton = `\nexport ${name}(${parameters.join(', ')}) {\n}`;
+        var skeleton = `\n\nexport function ${name}(${parameters.map(p => p.name).join(', ')}) {}`;
         fs.appendFileSync(customFile, skeleton); 
     }
     

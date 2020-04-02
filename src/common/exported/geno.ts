@@ -256,7 +256,17 @@ export class Geno {
     }
 
     selectPointContext(mousePosition: { [id: string]: number }) {
-        return [document.elementFromPoint(mousePosition.x, mousePosition.y)];
+        var el = document.elementFromPoint(mousePosition.x, mousePosition.y);
+        try {
+            // Certain elements might not have className (svg), so we wrap this in try-catch
+            if (el.className.includes("geno-") || el.id.includes("geno-")) {
+                return [];
+            } else {
+                return [el];
+            }
+        } catch {
+            ;
+        }
     }
 
     selectDragContext() {
@@ -278,7 +288,14 @@ export class Geno {
                 case GenoContextType.Element:
                     return element;
                 case GenoContextType.Attribute:
-                    var attributes = contextInfo.attributes.map(attr => element.getAttribute(attr));
+                    var attributes = contextInfo.attributes.map(attr => {
+                        // We allow using other "attributes" like innerText
+                        if (attr === "innerText") {
+                            return (<HTMLElement>element).innerText;
+                        } else {
+                            return element.getAttribute(attr)
+                        }
+                    });
                     return attributes.length === 1 ? attributes[0] : attributes;
             }
         }
@@ -288,7 +305,7 @@ export class Geno {
             return window.getSelection().toString();
         } else {
             var query = contextInfo.selector;
-            query += contextInfo.attributes.map(attr => "[" + attr + "]");
+            query += contextInfo.attributes.filter(attr => attr !== "innerText").map(attr => "[" + attr + "]");
             var elements = this.contextElements
                 .filter(el => el.matches(query))
                 .map(el => extractElementContext(el));
@@ -327,18 +344,29 @@ export class Geno {
     /* Creates the highlight for an element */
     createMask(target: Element) {
         var rect = target.getBoundingClientRect();
-        var hObj = document.createElement("div");
-        hObj.className = 'highlight-wrap';
-        hObj.style.position = 'absolute';
-        hObj.style.top = rect.top + "px";
-        hObj.style.width = rect.width + "px";
-        hObj.style.height = rect.height + "px";
-        hObj.style.left = rect.left + "px";
-        hObj.style.backgroundColor = 'skyblue';
-        hObj.style.opacity = '0.5';
-        hObj.style.cursor = 'default';
-        hObj.style.pointerEvents = 'none';
-        document.body.appendChild(hObj);
+
+        var canvas = document.createElement('canvas'); //Create a canvas element
+        canvas.className = 'highlight-wrap';
+        //Set canvas width/height
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        //Set canvas drawing area width/height
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        //Position canvas
+        canvas.style.position = 'absolute';
+        canvas.style.left = "0";
+        canvas.style.top = "0";
+        canvas.style.zIndex = "100000";
+        canvas.style.opacity = '0.5';
+        canvas.style.cursor = 'default';
+        canvas.style.pointerEvents = 'none'; //Make sure you can click 'through' the canvas
+        document.body.appendChild(canvas); //Append canvas to body element
+        var context = canvas.getContext('2d');
+        //Draw rectangle
+        context.rect(rect.x, rect.y, rect.width, rect.height);
+        context.fillStyle = "skyblue";
+        context.fill();
     }
 
     /* Remove highlights */
@@ -432,7 +460,7 @@ export class Geno {
     }
 
     /** Stop any listening action */
-    stopListening() {
+    stopListening(cancel: Boolean = false) {
         if (!this.isListening || !this.recognition) return;
 
         this.stopTrackingContext();
@@ -443,16 +471,19 @@ export class Geno {
         this.micButton.style.color = "black";
         this.setBorderColor();
 
-        var transcript = this.currentMessage.textContent;
-        if (transcript != null) {
-            this.addChatMessage(transcript, "user");
 
-            if (transcript !== "..." && this.chatHistory.length) {
-                var message = this.chatHistory.slice(-1)[0];
-                if (this.onfinalmessage) {
-                    this.onfinalmessage(message);
-                } else {
-                    this.executeCommand(message.text);
+        if (!cancel) {
+            var transcript = this.currentMessage.textContent;
+            if (transcript != null) {
+                this.addChatMessage(transcript, "user");
+
+                if (transcript !== "..." && this.chatHistory.length) {
+                    var message = this.chatHistory.slice(-1)[0];
+                    if (this.onfinalmessage) {
+                        this.onfinalmessage(message);
+                    } else {
+                        this.executeCommand(message.text);
+                    }
                 }
             }
         }
@@ -497,7 +528,6 @@ export class Geno {
 
             if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
                 if (info.type === "demo") {
-                    // TODO: include context or capture all this info in a new GenoDemoCommand
                     this.clickElements();
                 } else if (info.type === "function") {
                     this.extractParameters();
@@ -628,8 +658,12 @@ export class Geno {
         var genoIndicator = document.createElement("div");
         genoIndicator.id = "geno-indicator";
         genoIndicator.className = "la-ball-scale-multiple la-2x";
-        genoIndicator.appendChild(document.createElement("div"))
-        genoIndicator.appendChild(document.createElement("div"))
+        genoIndicator.classList.add("geno-nocontext");
+        for (let i = 0; i < 2; i++) {
+            var indicatorCircle = document.createElement("div");
+            indicatorCircle.className = "geno-nocontext";
+            genoIndicator.appendChild(indicatorCircle);
+        }
 
         var genoMic = document.createElement("div");
         genoMic.id = "geno-mic";
@@ -688,7 +722,7 @@ export class Geno {
             this.bubble.style.visibility = "hidden"
             this.isCollapsed = true
         }
-        this.stopListening();
+        this.stopListening(true);
     }
 
     /** Modify UI border color based on current state */

@@ -114,18 +114,29 @@ function resizeMask(target) {
 /* Creates the highlight for an element */
 function createMask(target, color) {
     var rect = target.getBoundingClientRect();
-    var hObj = document.createElement("div");
-    hObj.className = 'highlight-wrap';
-    hObj.style.position = 'absolute';
-    hObj.style.top = rect.top + "px";
-    hObj.style.width = rect.width + "px";
-    hObj.style.height = rect.height + "px";
-    hObj.style.left = rect.left + "px";
-    hObj.style.backgroundColor = color;
-    hObj.style.opacity = '0.5';
-    hObj.style.cursor = 'default';
-    hObj.style.pointerEvents = 'none';
-    document.body.appendChild(hObj);
+
+    var canvas = document.createElement('canvas'); //Create a canvas element
+    canvas.className = 'highlight-wrap';
+    //Set canvas width/height
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    //Set canvas drawing area width/height
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    //Position canvas
+    canvas.style.position = 'absolute';
+    canvas.style.left = 0;
+    canvas.style.top = 0;
+    canvas.style.zIndex = 100000;
+    canvas.style.opacity = '0.5';
+    canvas.style.cursor = 'default';
+    canvas.style.pointerEvents = 'none'; //Make sure you can click 'through' the canvas
+    document.body.appendChild(canvas); //Append canvas to body element
+    var context = canvas.getContext('2d');
+    //Draw rectangle
+    context.rect(rect.x, rect.y, rect.width, rect.height);
+    context.fillStyle = color;
+    context.fill();
 }
 
 /* Remove highlights */
@@ -172,7 +183,6 @@ ipcRenderer.on('stopTrackingContext', () => {
 });
 
 function extractContextInfo(element) {
-    var info = {};
     var selector = element.tagName.toLowerCase();
     if (element.hasAttribute("id")) {
         selector = element.id
@@ -185,6 +195,10 @@ function extractContextInfo(element) {
     var attributes = Array.from(element.attributes).map(attr => attr.nodeName)
     var attributeExamples = {}
     attributes.forEach(attr => attributeExamples[attr] = element.getAttribute(attr));
+    
+    // Add special "attributes"
+    attributes.push('innerText');
+    attributeExamples['innerText'] = element.innerText;
 
     return {
         selector: selector,

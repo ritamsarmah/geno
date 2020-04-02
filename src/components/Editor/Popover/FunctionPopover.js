@@ -134,7 +134,6 @@ export default class FunctionPopover extends Popover {
         return (
             <div>
                 <input className="conditionalButton" style={{ margin: "10px 0" }} type="button" value={this.state.buttonValue} onClick={this.trainModel} disabled={this.isCommandValid()}></input>
-                <br></br>
                 <div id="bottomButtons">
                     <input type="button" value="Options" onClick={this.showOptions}></input>
                     <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>

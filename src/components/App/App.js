@@ -54,7 +54,7 @@ export default class App extends Component {
     const devId = Math.floor(Math.random() * 1000000);
 
     fs.mkdir(genoPath, (err) => {
-      fs.writeFile(customPath, `/**\n * Geno can generate JavaScript function skeletons here\n * for function-based voice commands you create. Feel free to write\n * your own additional functions or code here as well.\n */\n\nimport { geno } from './geno.js'\n\n// Initialize Geno with your developer ID\ngeno.start(${devId});`, { flag: 'wx' }, (err) => {
+      fs.writeFile(customPath, `/**\n * Geno can generate JavaScript function skeletons here\n * for function-based voice commands you create. Feel free to write\n * your own additional functions or code here as well.\n */\n\nimport { geno } from './geno.js';\n\n// Initialize Geno with your developer ID\ngeno.start(${devId});`, { flag: 'wx' }, (err) => {
         fs.writeFile(commandsPath, `{"commands":[]}`, { flag: 'wx' }, (err) => {
           fs.writeFile(preferencesPath, `{"dev_id":"${devId}", "continuous": false, "api":"WebSpeech"}`, { flag: 'wx' }, (err) => {
             database.configureProject(path[0]);

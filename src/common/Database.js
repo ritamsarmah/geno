@@ -49,7 +49,7 @@ class Database {
     /* Constructs command prototype */
     getCommandPrototype(type, parameters) {
         return {
-            name: "untitled_command" + (this.getCommands().length + 1),
+            name: "untitledCommand" + (this.getCommands().length + 1),
             parameters: parameters,
             queries: [],
             isTrained: false,
@@ -223,8 +223,8 @@ class Database {
         var command = this.db.get('commands').getById(commandId);
         var oldParams = command.get('parameters');
         var newParams = params.map(p => {
-            var oldParam = oldParams.find({ name: p }).value()
-            return oldParam ? oldParam : { name: p, backupQuery: "" }
+            var oldParam = oldParams.find({ name: p }).value();
+            return (oldParam != null) ? oldParam : { name: p, backupQuery: "" }
         });
         command.assign({ parameters: newParams }).write();
     }
