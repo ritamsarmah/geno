@@ -22,6 +22,7 @@ export default class AnalysisView extends Component {
         this.colorEntities = this.colorEntities.bind(this);
         this.toggleEdit = this.toggleEdit.bind(this);
         this.spinRefresh = this.spinRefresh.bind(this);
+        this.onChangeEntity = this.onChangeEntity.bind(this);
 
         if (this.props.flipSide) {
             this.sideName = "analysis-left";
@@ -60,30 +61,56 @@ export default class AnalysisView extends Component {
         var color = entity.label != null ? utils.stringToColor(entity.label) : "lightgray";
         var marginRight = finalSegment ? "0px" : "10px";
         return (
-            <span id={entity.start} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
+            <span id={`entity-${entity.start}`} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
                 {text}
             </span>
         );
     }
 
     /* Update entity label */
-    updateEntity(query, entity, event) {
-        var label = event.target.value === "-" ? null : event.target.value
-        database.updateEntity(this.props.command.id, query.id, entity, label);
+    onChangeEntity(entity, event) {
+        switch (event.target.value) {
+            case "+ Add Parameter": 
+                // TODO: Create from prompt
+                var newLabel = "yo";
+                if (!this.props.command.parameters.includes(newLabel)) {
+                    this.props.command.parameters.push({name: newLabel})
+                    this.updateEntity(entity, newLabel);
+                }
+                break;
+            case "-":
+                this.updateEntity(entity, null);
+                break;
+            default:
+                this.updateEntity(entity, event.target.value);
+        }
+    }
+
+    /* Update entity label */
+    updateEntity(entity, label) {
+        if (this.props.updatesDatabase) {
+            database.updateEntity(this.props.command.id, this.state.query.id, entity, label);
+        } else {
+            this.state.query.entities[entity.start].label = label;
+        }
         this.colorEntities();
     }
 
     /* Create dropdown for text segment */
-    createDropdown(query, entity) {
+    createDropdown(entity) {
         var color = utils.stringToColor(entity.label);
 
         var names = this.props.command.parameters.map(p => p.name);
         names.unshift("-");
 
+        if (!this.props.updatesDatabase) {
+            names.push("+ Add Parameter");
+        }
+
         var selection = entity.label != null ? entity.label : "-";
 
         return (
-            <select className="entitySelect" id={entity.start} data-curr={selection} defaultValue={selection} style={{ color: color }} onChange={(event) => this.updateEntity(query, entity, event)}>
+            <select className="entitySelect" id={`select-entity-${entity.start}`} data-curr={selection} defaultValue={selection} style={{ color: color }} onChange={(event) => this.onChangeEntity(entity, event)}>
                 {names.map(name => <option key={name} value={name}>{name}</option>)}
             </select>
         )
@@ -119,27 +146,26 @@ export default class AnalysisView extends Component {
     /* Sets colored underlines under query representing NLP entity */
     colorEntities() {
         var content = document.getElementById("nlpQuery");
-        if (!content) {
-            return;
-        }
+        if (!content) return;
+
         content.innerHTML = "";
 
-        var numEntities = Object.keys(this.state.query.entities).length 
+        var numEntities = Object.keys(this.state.query.entities).length
 
         if (numEntities === 0) {
             content.innerHTML = this.state.query.text;
         } else {
             Object.keys(this.state.query.entities).forEach((index, i) => {
-                var entity = this.state.query.entities[index]; 
+                var entity = this.state.query.entities[index];
                 const dummy = document.createElement("span"); // Create dummy div to render
                 content.appendChild(dummy);
                 var spaceNeeded = (i === numEntities - 1); // Add space between text segments
 
                 ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
-                    var span = document.getElementById(entity.start);
+                    var span = document.getElementById(`entity-${entity.start}`);
                     const dropdownDummy = document.createElement("span"); // Create dummy div to render
                     span.appendChild(dropdownDummy);
-                        ReactDOM.render(this.createDropdown(this.state.query, entity), dropdownDummy);
+                    ReactDOM.render(this.createDropdown(entity), dropdownDummy);
                 });
             });
         }

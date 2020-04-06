@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import FileTree from './FileTree/FileTree';
 import CommandList from './CommandList/CommandList';
 import PreferencesTab from './PreferencesTab/PreferencesTab';
-import AddCommandButton from '../AddCommandButton/AddCommandButton';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone, faFolder, faCog } from "@fortawesome/free-solid-svg-icons";
@@ -142,7 +141,6 @@ export default class Explorer extends Component {
                     <div className="tabButton" onClick={this.showSettings}>
                         <FontAwesomeIcon icon={faCog} color={this.isTabEnabled(2)} />
                     </div>
-                    <AddCommandButton />
                 </div>
                 {content}
             </div>

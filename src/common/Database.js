@@ -65,6 +65,13 @@ class Database {
         }
     }
 
+    addCommandByPrototype(command) {
+        console.log(command);
+        // TODO: Create command without including queries
+        // TODO: Add queries one by one (remove original ID) to generate IDs
+        // this.db.get('commands').insert(command).write();
+    }
+
     /* Add a command */
     addFunctionCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {

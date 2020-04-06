@@ -25,10 +25,12 @@ export default class Preview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            // address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            // src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-            address: "http://localhost:9000/examples/full.html",
-            src: "http://localhost:9000/examples/full.html",
+            address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+            // address: "http://localhost:9000/examples/full.html",
+            // src: "http://localhost:9000/examples/full.html",
+            address: "http://localhost:9000/examples/selectable.html",
+            src: "http://localhost:9000/examples/selectable.html",
             recordState: this.STOPPED,
             demoCommand: null
         }

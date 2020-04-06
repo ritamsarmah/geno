@@ -24,6 +24,7 @@ export default class Popover extends Component {
             isTrackingContext: false,
         };
 
+        this.analysisUpdatesDatabase = true;
         this.bindFunctions();
     }
 
@@ -53,6 +54,7 @@ export default class Popover extends Component {
             emitter.emit(GenoEvent.StopTrackContext);
             emitter.removeListener(GenoEvent.ShareContext, this.processContext);
         }
+        this.setState({ renderAnalysis: false });
         this.props.unmountMe();
     }
 
@@ -330,7 +332,16 @@ export default class Popover extends Component {
                         </div>
                     </form>
                 </div>
-                {this.state.renderAnalysis ? <AnalysisView command={this.state.command} query={this.state.selectedQuery} updateQuery={this.updateQuery} deleteQuery={this.deleteQuery} flipSide={this.state.flipSide} unmountMe={this.handleAnalysisUnmount} /> : null}
+                {this.state.renderAnalysis
+                    ? <AnalysisView
+                        command={this.state.command}
+                        query={this.state.selectedQuery}
+                        updateQuery={this.updateQuery}
+                        deleteQuery={this.deleteQuery}
+                        flipSide={this.state.flipSide}
+                        unmountMe={this.handleAnalysisUnmount}
+                        updatesDatabase={this.analysisUpdatesDatabase} />
+                    : null}
             </div>
         );
     }

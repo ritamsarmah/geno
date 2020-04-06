@@ -1,35 +1,34 @@
 import React from 'react';
 import Popover from './Popover';
+import builder from '../../../common/Builder';
 import database from '../../../common/Database';
 import './Popover.css';
 
 import { ContextType } from '../../../common/constants';
 
-const lodashId = require('lodash-id');
-
 export default class UniversalPopover extends Popover {
+
+    constructor(props) {
+        super(props);
+        this.analysisUpdatesDatabase = false;
+    }
 
     bindFunctions() {
         super.bindFunctions();
         this.createFunctionCommand = this.createFunctionCommand.bind(this);
-        this.createDemoCommand = this.createDemoCommand.bind(this);
     }
 
-    shouldComponentUpdate(nextProps) {
-        // FIXME: Closing popover and reopening doesn't update state correctly, so old data is still there
+    shouldComponentUpdate(nextProps, nextState) {
         if (this.props.command == null) {
-            this.setState({ command: nextProps.command });
+            this.state.command = nextProps.command;
         }
         return true;
     }
 
     createFunctionCommand() {
-        // TODO: create function command, navigate to editor file
-        this.dismiss();
-    }
-
-    createDemoCommand() {
-        // TODO: start recording demo command (switch to Preview?)
+        builder.createSkeleton(this.state.command.name, this.state.command.parameters, this.props.file);
+        // TODO: Create function command in database
+        // database.addCommandByPrototype(this.state.command)
         this.dismiss();
     }
 
@@ -146,11 +145,19 @@ export default class UniversalPopover extends Popover {
         return (
             <div style={{ margin: "10px 0" }}>
                 <div id="bottomButtons">
-                    <input className="conditionalButton" type="button" value="Create Function" onClick={this.createFunctionCommand} disabled={this.isCommandValid()}></input>
-                    <input className="conditionalButton" type="button" style={{ marginLeft: "8px" }} value="Create Demo" onClick={this.createDemoCommand} disabled={this.isCommandValid()}></input>
+                    <input type="button" value="Cancel" onClick={this.dismiss}></input>
+                    <input className="conditionalButton" type="button" style={{ marginLeft: "8px" }} value="Create Function" onClick={this.createFunctionCommand} disabled={this.isCommandValid()}></input>
                 </div>
+                
             </div>
         );
     }
 
+    render() {
+        if (this.state.command != null) {
+            return super.render();
+        } else {
+            return null;
+        }
+    }
 }

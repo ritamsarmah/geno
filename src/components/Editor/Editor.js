@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import Marker from './Marker/Marker';
-
+import AddCommandButton from '../AddCommandButton/AddCommandButton';
+import database from '../../common/Database';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSave } from '@fortawesome/free-solid-svg-icons';
 
 // Styles
 import 'codemirror/lib/codemirror.css';
@@ -25,10 +28,6 @@ import 'codemirror/addon/edit/closebrackets';
 // import 'codemirror/addon/hint/show-hint';
 // import 'codemirror/addon/hint/anyword-hint';
 // import 'codemirror/addon/hint/javascript-hint';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave } from '@fortawesome/free-solid-svg-icons';
-import database from '../../common/Database';
 
 const electron = window.require('electron').remote;
 const electronLocalShortcut = window.require('electron-localshortcut');
@@ -118,6 +117,7 @@ export default class Editor extends Component {
         this.saveFile = this.saveFile.bind(this);
         this.saveFileListener = this.saveFileListener.bind(this);
         this.getLanguageMode = this.getLanguageMode.bind(this);
+        this.onCreateCommand = this.onCreateCommand.bind(this);
         this.codeMirror = null;
         
         // Add Ctrl-S and Cmd-S functionality
@@ -153,7 +153,7 @@ export default class Editor extends Component {
         }
     }
 
-    readFile(file) {
+    readFile(file, callback) {
         fs.readFile(file, "utf8", (err, data) => {
             this.setState({
                 lastSavedText: data,
@@ -161,6 +161,7 @@ export default class Editor extends Component {
             });
             this.codeMirror.doc.clearHistory();
             this.props.setSelectFile(true);
+            if (callback != null) callback();
         });
     }
 
@@ -219,6 +220,12 @@ export default class Editor extends Component {
         }
     }
 
+    onCreateCommand() {
+        this.readFile(this.state.file, () => {
+            this.saveFile(this.state.file, true);
+        });
+    }
+
     render() {
         if (this.state.file) {
             return (
@@ -228,6 +235,7 @@ export default class Editor extends Component {
                             <FontAwesomeIcon icon={faSave} size="lg" />
                         </span>
                         {path.basename(this.state.file)}
+                        <AddCommandButton file={this.state.file} onCreateCommand={this.onCreateCommand}/>
                     </div>
                     <CodeMirror
                         value={this.state.lastSavedText}

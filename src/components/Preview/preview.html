@@ -52,12 +52,12 @@
 <body>
     <div class="center-text">
         <h2>Getting Started</h2>
-        <p>Loading a project in Geno automatically generates a new directory called <code>geno</code> in the root of the project (don't modify any of the files in this directory). Before you can start creating voice commands, you'll need to integrate Geno into the project with the following steps.
+        <p>Loading a project in Geno automatically generates a new directory called <code>geno</code> in the root of the project with all the files you need. Before you can start creating voice commands, you'll need to integrate Geno into the project with the following steps.
         <ol>
             <!-- <li>Configure your developer ID in the settings tab in the left pane.</li> -->
             <li>Add the following lines to an HTML file to include Geno:
                 <br><br>
-                <code>&lt;link rel="stylesheet" href="./geno/geno.css" /&gt;</code>
+                <code>&lt;link href="/PATH/TO/geno/geno.css" rel="stylesheet" /&gt;</code>
                 <br><br>
                 <code>
                     &lt;script type="module" src="/PATH/TO/geno/custom.js"&gt;&lt;/script&gt; <br>
@@ -130,7 +130,7 @@
                 <code>import { geno } from "/path/to/geno/geno.js";</code>
             </li>
             <li>
-                Use <code>geno.respond()</code> to speak to the user.
+                Use <code>geno.say()</code> to speak to the user.
             </li>
             <li>
                 Use <code>geno.ask()</code> to speak to the user, listen for a response, and execute a callback on the response.

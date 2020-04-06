@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import UniversalPopover from '../Editor/Popover/UniversalPopover';
 import Tippy from '@tippy.js/react';
 import database from '../../common/Database';
-import emitter from '../../common/Emitter';
-import { GenoEvent } from '../../common/constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
@@ -15,10 +13,7 @@ export default class AddCommandButton extends Component {
         super(props);
 
         this.state = {
-            command: database.getCommandPrototype(undefined, [{
-                name: 'test',
-                backupQuery: ''
-            }])
+            command: database.getCommandPrototype(undefined, [])
         };
 
         this.onShow = this.onShow.bind(this);
@@ -27,24 +22,22 @@ export default class AddCommandButton extends Component {
 
     onShow() {
         this.setState({
-            command: database.getCommandPrototype(undefined, [{
-                name: 'test',
-                backupQuery: ''
-            }])
+            command: database.getCommandPrototype(undefined, [])
         });
     }
 
     handlePopoverUnmount() {
         this.setState({
-            command: null,
+            command: null
         });
         document.body.click(); // Really hacky way to dismiss the popover
+        this.props.onCreateCommand()
     }
 
     render() {
         return (
             <Tippy
-                content={<UniversalPopover command={this.state.command} unmountMe={this.handlePopoverUnmount} />}
+                content={<UniversalPopover file={this.props.file} command={this.state.command} unmountMe={this.handlePopoverUnmount} />}
                 arrow={true}
                 trigger="click"
                 placement="auto"
