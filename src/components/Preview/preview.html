@@ -52,91 +52,108 @@
 <body>
     <div class="center-text">
         <h2>Getting Started</h2>
-        <p>Loading a project in Geno automatically generates a new directory called <code>geno</code> in the root of the project with all the files you need. Before you can start creating voice commands, you'll need to integrate Geno into the project with the following steps.
-        <ol>
-            <!-- <li>Configure your developer ID in the settings tab in the left pane.</li> -->
-            <li>Add the following lines to an HTML file to include Geno:
-                <br><br>
-                <code>&lt;link href="/PATH/TO/geno/geno.css" rel="stylesheet" /&gt;</code>
-                <br><br>
-                <code>
-                    &lt;script type="module" src="/PATH/TO/geno/custom.js"&gt;&lt;/script&gt; <br>
+        <p>Geno automatically generates a new directory called <code>geno</code> in the root of the project with all the
+            files you need. Here is how you can create your first voice command:
+            <ol>
+                <!-- <li>Configure your developer ID in the settings tab in the left pane.</li> -->
+                <li>Add the following lines to an HTML file to include Geno:
+                    <br>
+                    <code>&lt;link href="/PATH/TO/geno/geno.css" rel="stylesheet" /&gt;</code>
+                    <br><br>
+                    <code>
+                    &lt;script type="module" src="/PATH/TO/geno/custom.js"&gt;&lt;/script&gt;
                 </code>
-            </li>
-            <li>Build using the blue build button.</li>
-            <!-- <li>Navigate to your web application via the address bar.</li> -->
-            <li>Navigate to your application in a web browser.</li>
-            <li>Start speaking to Geno by clicking the microphone button in the bottom right or Ctrl-`.</li>
-        </ol>
+                </li>
+                <li><a href="#creation">Create a voice command.</a></li>
+                <li>Build using the blue build button.</li>
+                <!-- <li>Navigate to your web application via the address bar.</li> -->
+                <li>Navigate to your application in a web browser.</li>
+                <li>Start speaking to Geno by clicking the microphone button in the bottom right or Ctrl-`.</li>
+            </ol>
 
-        <br><br>
+            <br><br>
 
-        <h2>Creating Voice Commands</h2>
-        <p>There are two types of voice commands you can create with Geno. Function commands trigger a function in a
-            JavaScript file. Demo commands replay a sequence of UI interactions (clicks and typing) in the webpage.
+            <div id="#creation">
+                <h2>Creating Voice Commands</h2>
+                <p>There are two types of voice commands you can create with Geno.</p>
+                <ol>
+                    <li><b>Function commands</b> trigger a function in a JavaScript file.</li>
+                    <li><b>Demo commands</b> replay a sequence of clicks in the webpage.</li>
+                </ol>
         </p>
         <br>
         <h3>Function Commands</h3>
+        <p>You can add function commands to an existing function or use Geno to generate a function skeleton for you.</p>
         <ol>
-            <li>Click the blue circle next to any function.</li>
-            <li>Add sample user queries that could trigger the command (minimum 2, though adding more will improve
-                accuracy).</li>
-            <li>For any function parameters, click each sample query and map words to the correct parameters</li>
+            <li>Open a JavaScript file from the explorer pane on the left.</li>
+            <li>In the editor, click the blue circle next to any function or click the + button in the top right to generate a function.</li>
+            <li>Add a unique command name.</li>
+            <li>Add sample user queries that trigger the command.</li>
+            <li>Click each sample query and map words to any function parameters.</li>
             <li>Optionally <a href="#multimodal">configure multimodal input.</a></li>
+            <li>Click "Create Function" if generating a new function, or ensure the pre-existing function is exported, e.g. <code>export function foo()</code></li>
             <li>Click "Train Model" and wait for the model to finish training.</li>
-            <li>Export functions mapped to voice commands:
-                <br><br>
-                <code>export { myVoiceFunction, myOtherFunction }</code>
-            </li>
-            <li>Build using the blue build button.</li>
-            <li>Test your voice command within your webpage, by clicking the microphone button or the ` key.</li>
+            <li>Save your file and build using the blue build button.</li>
+            <li>Test your voice command within your webpage.</li>
         </ol>
         <br>
 
         <h3>Demo Commands</h3>
         <ol>
-            <li>Click the mouse cursor button in the menu bar of the preview pane.</li>
-            <li>Record a sequence of clicks on clickable webpage elements. Typing into any text input element will generate a parameter that can be provided by the user to be automatically entered into the input element.</li>
+            <li>Navigate to your webpage in the preview pane.</li>
+            <li>Click the mouse cursor button in the menu bar.</li>
+            <li>Record a sequence of clicks on clickable webpage elements. Typing into any text input element will
+                generate a
+                parameter that can be provided by the user to be automatically entered into the input element.</li>
             <li>Click the stop button in the menu bar of the preview pane.</li>
-            <li>Add sample user queries and train the model.</li>
+            <li>Finish configuring the command with queries and train the model.</li>
             <li>Build using the blue build button.</li>
         </ol>
         <br><br>
+    </div>
 
-        <div id="multimodal">
-            <h2>Configuring Multimodal Input</h2>
-            <p>
-                Multimodal input allows users to provide a command parameter by hovering over a single element, dragging
-                over multiple elements, or highlighting text.
-                <br>
-            </p>
-            <ol>
-                <li>Open the popover for a command and find the "Multimodal Input" section.</li>
-                <li>Select a parameter from the dropdown to support multimodal input.</li>
-                <li>Optionally specify the element type that should be recognized as context, by clicking the crosshairs and
+    <div id="multimodal">
+        <h2>Configuring Multimodal Input</h2>
+        <p>
+            Multimodal input allows users to optionally provide a command parameter by hovering over a single element, dragging
+            over multiple elements, or highlighting text.
+            <br>
+        </p>
+        <ol>
+            <li>Open the popover for a command and find the "Mouse Context" section.</li>
+            <li>Select the parameter to support multimodal input from the dropdown.</li>
+            <li>Optionally specify a selector that should be recognized as context by clicking the crosshairs and
                 hovering over an element in the webpage to select it.</li>
-                <li>Optionally specify the element attribute(s) to use for the parameter's value. After the previous step, click
+            <li>Optionally specify the element attribute(s) to use for the parameter's value. After the previous step,
+                click
                 the element in the popover and select the desired attribute(s).</li>
-                <li>Configure the rest of the command options as needed, and build.</li>
-            </ol>
-            <br><br>
-        </div>
-
-        <h2>Adding Voice Responses</h2>
-        <p>You can directly add simple voice interaction functionality into your webpage.</p>
-        <ul>
-            <li>Import <code>geno</code> at the top of the file:
-                <br><br>
-                <code>import { geno } from "/path/to/geno/geno.js";</code>
-            </li>
-            <li>
-                Use <code>geno.say()</code> to speak to the user.
-            </li>
-            <li>
-                Use <code>geno.ask()</code> to speak to the user, listen for a response, and execute a callback on the response.
-            </li>
-        </ul>
+            <li>Configure the rest of the command options as needed, and build.</li>
+        </ol>
         <br><br>
+    </div>
+
+    <h2>Adding Voice Responses</h2>
+    <p>We have provided functions in Geno to add simple voice interaction functionality.</p>
+    <ul>
+        <li>Import <code>geno</code> in your JavaScript file:
+            <br><br>
+            <code>import { geno } from "/PATH/TO/geno/geno.js";</code>
+        </li>
+        <li>
+            <code>geno.say(phrase, speak, callback)</code> - speak to the user. <br><br>
+            <code>phrase (string)</code> - the phrase to say to the user <br>
+            <code>speak (boolean)</code> - generate speech from phrase and speak to user (defaults to true) <br>
+            <code>callback (() => void)</code> - callback to execute after saying phrase <br>
+        </li>
+        <li>
+            <code>geno.ask()</code> – speak to the user, listen for a response, and optionally execute a callback on the
+            response. <br><br>
+            <code>phrase (string)</code> - the phrase to say to the user <br>
+            <code>speak (boolean)</code> - generate speech from phrase and speak to user (defaults to true) <br>
+            <code>callback ((GenoMessage) => void)</code> - callback to execute after saying phrase. The text property of GenoMessage contains the user response as a string.<br>
+        </li>
+    </ul>
+    <br><br>
     </div>
 </body>
 
