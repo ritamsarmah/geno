@@ -8,6 +8,8 @@ import utils from '../../../common/utils';
 
 import "./AnalysisView.css"
 
+const prompt = window.require('electron-prompt');
+
 export default class AnalysisView extends Component {
 
     constructor(props) {
@@ -70,13 +72,21 @@ export default class AnalysisView extends Component {
     /* Update entity label */
     onChangeEntity(entity, event) {
         switch (event.target.value) {
-            case "+ Add Parameter": 
-                // TODO: Create from prompt
-                var newLabel = "yo";
-                if (!this.props.command.parameters.includes(newLabel)) {
-                    this.props.command.parameters.push({name: newLabel})
-                    this.updateEntity(entity, newLabel);
-                }
+            case "+ Add Parameter":
+                prompt({
+                    title: 'Add Parameter',
+                    label: 'Enter parameter name:',
+                    type: 'input'
+                }).then(newParameter => {
+                    if (newParameter != null) {
+                        if (!this.props.command.parameters.includes(newParameter)) {
+                            this.props.command.parameters.push({ name: newParameter})
+                            this.updateEntity(entity, newParameter);
+                        }
+                    } else {
+                        this.updateEntity(entity, null); 
+                    }
+                });
                 break;
             case "-":
                 this.updateEntity(entity, null);

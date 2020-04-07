@@ -69,7 +69,7 @@ class Database {
         console.log(command);
         // TODO: Create command without including queries
         // TODO: Add queries one by one (remove original ID) to generate IDs
-        // this.db.get('commands').insert(command).write();
+        this.db.get('commands').insert(command).write();
     }
 
     /* Add a command */
