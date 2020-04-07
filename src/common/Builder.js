@@ -69,7 +69,7 @@ class Builder {
         if (file == null) {
             file = this.dir + Paths.Custom;
         }
-        var skeleton = `\n\nexport function ${name}(${parameters.map(p => p.name).join(', ')}) {\n\t// TODO: Implement\n}`;
+        var skeleton = `\n\nexport function ${name}(${parameters.map(p => p.name).join(', ')}) {\n  // TODO: Implement\n}`;
         fs.appendFileSync(file, skeleton); 
     }
     

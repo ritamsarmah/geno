@@ -18,7 +18,7 @@ export default class UniversalPopover extends Popover {
         this.createFunctionCommand = this.createFunctionCommand.bind(this);
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps) {
         if (this.props.command == null) {
             this.state.command = nextProps.command;
         }
@@ -27,8 +27,7 @@ export default class UniversalPopover extends Popover {
 
     createFunctionCommand() {
         builder.createSkeleton(this.state.command.name, this.state.command.parameters, this.props.file);
-        // TODO: Create function command in database
-        // database.addCommandByPrototype(this.state.command)
+        database.addCommandByPrototype(this.state.command, this.props.relativePath)
         this.dismiss();
     }
 
@@ -54,8 +53,11 @@ export default class UniversalPopover extends Popover {
 
     updateQuery(queryId, oldText, newText, callback) {
         var index = this.state.command.queries.findIndex(q => q.id === queryId);
+        
         var query = this.state.command.queries[index];
         query.text = newText;
+        queries.entities = database.splitIntoEntities(newText)
+        
         var queries = this.state.command.queries;
         queries[index] = query;
 

@@ -13,7 +13,7 @@ export default class AddCommandButton extends Component {
         super(props);
 
         this.state = {
-            command: database.getCommandPrototype(undefined, [])
+            command: database.getCommandPrototype("function", [])
         };
 
         this.onShow = this.onShow.bind(this);
@@ -22,7 +22,7 @@ export default class AddCommandButton extends Component {
 
     onShow() {
         this.setState({
-            command: database.getCommandPrototype(undefined, [])
+            command: database.getCommandPrototype("function", [])
         });
     }
 
@@ -37,7 +37,7 @@ export default class AddCommandButton extends Component {
     render() {
         return (
             <Tippy
-                content={<UniversalPopover file={this.props.file} command={this.state.command} unmountMe={this.handlePopoverUnmount} />}
+                content={<UniversalPopover relativePath={this.props.relativePath} file={this.props.file} command={this.state.command} unmountMe={this.handlePopoverUnmount} />}
                 arrow={true}
                 trigger="click"
                 placement="auto"

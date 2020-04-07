@@ -25,9 +25,6 @@ import 'codemirror/addon/search/searchcursor';
 import 'codemirror/addon/search/jump-to-line';
 import 'codemirror/addon/dialog/dialog';
 import 'codemirror/addon/edit/closebrackets';
-// import 'codemirror/addon/hint/show-hint';
-// import 'codemirror/addon/hint/anyword-hint';
-// import 'codemirror/addon/hint/javascript-hint';
 
 const electron = window.require('electron').remote;
 const electronLocalShortcut = window.require('electron-localshortcut');
@@ -235,7 +232,7 @@ export default class Editor extends Component {
                             <FontAwesomeIcon icon={faSave} size="lg" />
                         </span>
                         {path.basename(this.state.file)}
-                        <AddCommandButton file={this.state.file} onCreateCommand={this.onCreateCommand}/>
+                        <AddCommandButton relativePath={path.relative(this.props.dir, this.state.file)} file={this.state.file} onCreateCommand={this.onCreateCommand}/>
                     </div>
                     <CodeMirror
                         value={this.state.lastSavedText}

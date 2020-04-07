@@ -59,12 +59,11 @@ export default class AnalysisView extends Component {
 
     /* Create text segment for NLP information */
     createEntitySegment(entity, finalSegment) {
-        var text = this.state.query.text.substring(entity.start, entity.end);
         var color = entity.label != null ? utils.stringToColor(entity.label) : "lightgray";
         var marginRight = finalSegment ? "0px" : "10px";
         return (
             <span id={`entity-${entity.start}`} className="textSegment" style={{ borderBottomColor: color, marginRight: marginRight }} onFocus={this.removeHighlights}>
-                {text}
+                {entity.text}
             </span>
         );
     }
@@ -160,16 +159,36 @@ export default class AnalysisView extends Component {
 
         content.innerHTML = "";
 
-        var numEntities = Object.keys(this.state.query.entities).length
+        var entityCount = Object.keys(this.state.query.entities).length
 
-        if (numEntities === 0) {
+        if (entityCount === 0) {
             content.innerHTML = this.state.query.text;
         } else {
+            // TODO: Create multiple divs inside nlpQuery, splitting text segments by width in case string exceeds view widt
+            // Iterate through length of string
+            // Keep track of current width
+            // Check the entity.start + entity.text.length + currentWidth < maxWidth
+            //      if yes then add it to currentWidth and create span for current div
+            //      if not then render current div, create a new div and create span for new div
+
+            const maxWidth = 28;
+            var lineWidth = 0;
             Object.keys(this.state.query.entities).forEach((index, i) => {
                 var entity = this.state.query.entities[index];
+
+                // Create dummy element to render
+                if (lineWidth + entity.text.length > maxWidth) {
+                    var br = document.createElement("br");
+                    content.appendChild(br);
+                    lineWidth = entity.text.length;
+                } else {
+                    lineWidth += entity.text.length;
+                }
+                
                 const dummy = document.createElement("span"); // Create dummy div to render
                 content.appendChild(dummy);
-                var spaceNeeded = (i === numEntities - 1); // Add space between text segments
+
+                const spaceNeeded = (i === entityCount - 1); // Add space between text segments
 
                 ReactDOM.render(this.createEntitySegment(entity, spaceNeeded), dummy, () => {
                     var span = document.getElementById(`entity-${entity.start}`);
@@ -199,9 +218,6 @@ export default class AnalysisView extends Component {
                 <div id="close" onClick={this.dismiss}>
                     <FontAwesomeIcon icon={faTimes}></FontAwesomeIcon>
                 </div>
-                {/* <div id="addParameter" onClick={this.toggleEdit}>
-                    <FontAwesomeIcon icon={this.state.editMode ? faSyncAlt : faPen}></FontAwesomeIcon>
-                </div> */}
                 <div id="refresh" onClick={this.toggleEdit}>
                     <FontAwesomeIcon icon={this.state.editMode ? faSyncAlt : faPen}></FontAwesomeIcon>
                 </div>

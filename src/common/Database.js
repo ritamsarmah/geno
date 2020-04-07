@@ -65,10 +65,10 @@ class Database {
         }
     }
 
-    addCommandByPrototype(command) {
-        console.log(command);
-        // TODO: Create command without including queries
-        // TODO: Add queries one by one (remove original ID) to generate IDs
+    addCommandByPrototype(command, file) {
+        // Add queries using database command to generate proper IDs
+        command.file = file;
+        command.triggerFn = command.name;
         this.db.get('commands').insert(command).write();
     }
 
