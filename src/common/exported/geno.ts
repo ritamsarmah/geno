@@ -51,12 +51,12 @@ export class GenoCommand {
     contextInfo: GenoContextInfo;
     context?: string | Element | (string | Element | string[])[];
 
-    constructor(query: string, entities: any[], info: any, context) {
+    constructor(query: string, entities: any[], expectedParams: string[], info: any, context) {
         this.query = query;
         this.entities = entities;
         this.info = info;
         this.extractedParams = [];
-        this.expectedParams = Object.keys(info.parameters); // Can always assume in correct call order
+        this.expectedParams = expectedParams;
         this.contextInfo = new GenoContextInfo(this);
         this.context = context;
     }
@@ -523,19 +523,32 @@ export class Geno {
             console.log(json);
             
             var context = this.extractContext(info.contextInfo)
-            console.log("Context: " + context);
-            this.currentCommand = new GenoCommand(query, json.entities, info, context);
+            console.log("Context: " + (context == null ? "(None)" : context));
 
-            if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
-                if (info.type === "demo") {
-                    this.clickElements();
-                } else if (info.type === "function") {
-                    this.extractParameters();
-                }
-            } else {
-                this.say("Sorry, I didn't understand.");
-                this.setBorderColor(GenoState.Error);
-            }
+            import("../" + info.file)
+                .then((module) => {
+                    // Retrieve order of arguments from module
+                    var fn = module[info.triggerFn];
+                    var argString = fn.toString()
+                        .split('\n')[0]
+                        .match(/\([^)]*\)/)[0];
+                    var expectedParams = argString
+                        .substring(1, argString.length - 1)
+                        .split(/\s*,\s*/);
+
+                    this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+
+                    if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
+                        if (info.type === "demo") {
+                            this.clickElements();
+                        } else if (info.type === "function") {
+                            this.extractParameters();
+                        }
+                    } else {
+                        this.say("Sorry, I didn't understand.");
+                        this.setBorderColor(GenoState.Error);
+                    }
+                });  
         };
 
         xhr.send();
@@ -548,11 +561,12 @@ export class Geno {
             import("../" + this.currentCommand.info.file)
                 .then((module) => {
                     var fn = module[this.currentCommand.info.triggerFn];
+                    console.log(`Executing function: ${this.currentCommand.info.triggerFn}(${this.currentCommand.extractedParams.join(', ')})`);
                     if (fn) {
                         var result = module[this.currentCommand.info.triggerFn].apply(null, this.currentCommand.extractedParams);
-                        console.log("Result of " + this.currentCommand.info.triggerFn + ": " + result);
+                        console.log(`Return value: ${result}`);
                     } else {
-                        console.error("Error: Could not find function '" + this.currentCommand.info.triggerFn + "' in module '" + this.currentCommand.info.file) + "'";
+                        console.error(`Error: Could not find function '${this.currentCommand.info.triggerFn}' in module '${this.currentCommand.info.file}'`);
                     }
                     this.currentCommand = null;
                 });
@@ -603,11 +617,8 @@ export class Geno {
                 if (this.currentCommand.canUseContextForParameter(expectedParam.name)) {
                     el.textContent += this.currentCommand.context.toString()
                 } else {
-                    var backupQuestion = backupQuestion === "" ?
-                        this.currentCommand.info.parameters[expectedParam.name] :
-                        backupQuestion = "What is " + expectedParam.name + "?";
-
-                    this.ask(backupQuestion, true, (answer) => {
+                    // TODO: Check if backup question works
+                    this.ask(this.currentCommand.backupQuestion(expectedParam), true, (answer) => {
                         this.onfinalmessage = null;
                         el.textContent += answer.text;
                         setTimeout(() => {
@@ -617,7 +628,6 @@ export class Geno {
                     return;
                 }
             } else {
-                // FIXME: Sometimes entity.value is None
                 var value = entity.value !== "None" ? entity.value : this.currentCommand.query.slice(entity.start, entity.end);
                 el.textContent += value;
             }

@@ -37,12 +37,12 @@ var GenoContextInfo = /** @class */ (function () {
 }());
 export { GenoContextInfo };
 var GenoCommand = /** @class */ (function () {
-    function GenoCommand(query, entities, info, context) {
+    function GenoCommand(query, entities, expectedParams, info, context) {
         this.query = query;
         this.entities = entities;
         this.info = info;
         this.extractedParams = [];
-        this.expectedParams = Object.keys(info.parameters); // Can always assume in correct call order
+        this.expectedParams = expectedParams;
         this.contextInfo = new GenoContextInfo(this);
         this.context = context;
     }
@@ -442,20 +442,31 @@ var Geno = /** @class */ (function () {
             }
             console.log(json);
             var context = _this.extractContext(info.contextInfo);
-            console.log("Context: " + context);
-            _this.currentCommand = new GenoCommand(query, json.entities, info, context);
-            if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
-                if (info.type === "demo") {
-                    _this.clickElements();
+            console.log("Context: " + (context == null ? "(None)" : context));
+            import("../" + info.file)
+                .then(function (module) {
+                // Retrieve order of arguments from module
+                var fn = module[info.triggerFn];
+                var argString = fn.toString()
+                    .split('\n')[0]
+                    .match(/\([^)]*\)/)[0];
+                var expectedParams = argString
+                    .substring(1, argString.length - 1)
+                    .split(/\s*,\s*/);
+                _this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+                if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
+                    if (info.type === "demo") {
+                        _this.clickElements();
+                    }
+                    else if (info.type === "function") {
+                        _this.extractParameters();
+                    }
                 }
-                else if (info.type === "function") {
-                    _this.extractParameters();
+                else {
+                    _this.say("Sorry, I didn't understand.");
+                    _this.setBorderColor(GenoState.Error);
                 }
-            }
-            else {
-                _this.say("Sorry, I didn't understand.");
-                _this.setBorderColor(GenoState.Error);
-            }
+            });
         };
         xhr.send();
     };
@@ -467,12 +478,13 @@ var Geno = /** @class */ (function () {
             import("../" + this.currentCommand.info.file)
                 .then(function (module) {
                 var fn = module[_this.currentCommand.info.triggerFn];
+                console.log("Executing function: " + _this.currentCommand.info.triggerFn + "(" + _this.currentCommand.extractedParams.join(', ') + ")");
                 if (fn) {
                     var result = module[_this.currentCommand.info.triggerFn].apply(null, _this.currentCommand.extractedParams);
-                    console.log("Result of " + _this.currentCommand.info.triggerFn + ": " + result);
+                    console.log("Return value: " + result);
                 }
                 else {
-                    console.error("Error: Could not find function '" + _this.currentCommand.info.triggerFn + "' in module '" + _this.currentCommand.info.file) + "'";
+                    console.error("Error: Could not find function '" + _this.currentCommand.info.triggerFn + "' in module '" + _this.currentCommand.info.file + "'");
                 }
                 _this.currentCommand = null;
             });
@@ -524,10 +536,8 @@ var Geno = /** @class */ (function () {
                     el.textContent += this.currentCommand.context.toString();
                 }
                 else {
-                    var backupQuestion = backupQuestion === "" ?
-                        this.currentCommand.info.parameters[expectedParam.name] :
-                        backupQuestion = "What is " + expectedParam.name + "?";
-                    this.ask(backupQuestion, true, function (answer) {
+                    // TODO: Check if backup question works
+                    this.ask(this.currentCommand.backupQuestion(expectedParam), true, function (answer) {
                         _this.onfinalmessage = null;
                         el.textContent += answer.text;
                         setTimeout(function () {
@@ -538,7 +548,6 @@ var Geno = /** @class */ (function () {
                 }
             }
             else {
-                // FIXME: Sometimes entity.value is None
                 var value = entity.value !== "None" ? entity.value : this.currentCommand.query.slice(entity.start, entity.end);
                 el.textContent += value;
             }
