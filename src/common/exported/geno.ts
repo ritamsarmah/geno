@@ -91,7 +91,7 @@ export class GenoCommand {
         }
         return this.contextInfo.parameter === parameter && this.context != null;
     }
-    
+
 }
 
 export class Geno {
@@ -100,7 +100,7 @@ export class Geno {
 
     devId: number;
     currentCommand: GenoCommand;
-    commands: { [id: string]: any }; 
+    commands: { [id: string]: any };
     chatHistory: GenoMessage[];
     isListening: boolean;
     isCollapsed: boolean;
@@ -135,7 +135,7 @@ export class Geno {
     // Timers
     borderTimer?: number;
     listeningTimer?: number;
-    
+
     // Speech Recognition Class
     recognition?: SpeechRecognition;
 
@@ -181,6 +181,8 @@ export class Geno {
             var utterance = new SpeechSynthesisUtterance(phrase);
             utterance.onend = callback;
             speechSynthesis.speak(utterance);
+        } else {
+            callback();
         }
     }
 
@@ -192,8 +194,8 @@ export class Geno {
         });
     }
 
-/*** Multimodal Context Functions ***/
-    
+    /*** Multimodal Context Functions ***/
+
     startTrackingContext() {
         this.mouseState.isTrackingHover = true;
         document.body.appendChild(this.selectionRect);
@@ -201,7 +203,7 @@ export class Geno {
         document.addEventListener("mousemove", this.onMouseMoveListener);
         document.addEventListener("mouseup", this.onMouseUpListener);
     }
-    
+
     stopTrackingContext() {
         this.mouseState.isTrackingHover = false;
         this.mouseState.isDragging = false;
@@ -211,7 +213,7 @@ export class Geno {
         document.removeEventListener("mousemove", this.onMouseMoveListener);
         document.removeEventListener("mouseup", this.onMouseUpListener);
     }
-    
+
     /** Event listener for mousedown events */
     onMouseDown(event: MouseEvent) {
         this.mouseState.isMouseDown = true;
@@ -283,7 +285,7 @@ export class Geno {
         if (this.contextElements == null) return null;
 
         // Helper function to extract context for an element
-        var extractElementContext = function(element: Element) {
+        var extractElementContext = function (element: Element) {
             switch (contextInfo.type) {
                 case GenoContextType.Element:
                     return element;
@@ -309,7 +311,7 @@ export class Geno {
             var elements = this.contextElements
                 .filter(el => el.matches(query))
                 .map(el => extractElementContext(el));
-            
+
             return elements.length === 1 ? elements[0] : elements;
         }
     }
@@ -492,7 +494,7 @@ export class Geno {
     }
 
     /*** Control Functions ***/
-    
+
     /** Execute appropriate function based on match to query */
     executeCommand(query: string) {
         if (typeof query != "string") return;
@@ -520,35 +522,47 @@ export class Geno {
                 info = Object.values(this.commands)[0];
             }
 
-            console.log(json);
-            
+            console.log("NLP Backend Result", json);
+
             var context = this.extractContext(info.contextInfo)
-            console.log("Context: " + (context == null ? "(None)" : context));
 
-            import("../" + info.file)
-                .then((module) => {
-                    // Retrieve order of arguments from module
-                    var fn = module[info.triggerFn];
-                    var argString = fn.toString()
-                        .split('\n')[0]
-                        .match(/\([^)]*\)/)[0];
-                    var expectedParams = argString
-                        .substring(1, argString.length - 1)
-                        .split(/\s*,\s*/);
+            if (info == null) {
+                this.say("Sorry, I didn't understand.");
+                this.setBorderColor(GenoState.Error);
+            } else if (info.type === "demo") {
+                var expectedParams = Object.keys(info.parameters);
 
-                    this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+                this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
 
-                    if (info && (json.intent_ranking.length == 0 || confidence > 0.50)) {
-                        if (info.type === "demo") {
-                            this.clickElements();
-                        } else if (info.type === "function") {
+                if (json.intent_ranking.length === 0 || confidence > 0.50) {
+                    this.clickElements();
+                } else {
+                    this.say("Sorry, I didn't understand.");
+                    this.setBorderColor(GenoState.Error);
+                }
+            } else if (info.type === "function") {
+                import("../" + info.file)
+                    .then((module) => {
+                        // Retrieve order of arguments from module
+                        var fn = module[info.triggerFn];
+                        var argString = fn.toString().split('\n')[0].match(/\([^)]*\)/)[0];
+                        var expectedParams = argString.substring(1, argString.length - 1).split(/\s*,\s*/);
+
+                        this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+
+                        if (json.intent_ranking.length === 0 || confidence > 0.50) {
                             this.extractParameters();
+                        } else {
+                            this.say("Sorry, I didn't understand.");
+                            this.setBorderColor(GenoState.Error);
                         }
-                    } else {
-                        this.say("Sorry, I didn't understand.");
-                        this.setBorderColor(GenoState.Error);
-                    }
-                });  
+                    }).catch(err => {
+                        console.log(`Failed to load module ${err}`);
+                    });
+            } else {
+                this.say("Sorry, I didn't understand.");
+                this.setBorderColor(GenoState.Error);
+            }
         };
 
         xhr.send();
@@ -558,7 +572,8 @@ export class Geno {
     extractParameters() {
         // All arguments retrieved, so trigger function
         if (this.currentCommand.didExtractAllParams()) {
-            import("../" + this.currentCommand.info.file)
+            console.log("found all parameters")
+            import(`../${this.currentCommand.info.file}`)
                 .then((module) => {
                     var fn = module[this.currentCommand.info.triggerFn];
                     console.log(`Executing function: ${this.currentCommand.info.triggerFn}(${this.currentCommand.extractedParams.join(', ')})`);
@@ -569,20 +584,26 @@ export class Geno {
                         console.error(`Error: Could not find function '${this.currentCommand.info.triggerFn}' in module '${this.currentCommand.info.file}'`);
                     }
                     this.currentCommand = null;
+                }).catch(err => {
+                    console.log(`Failed to load module ${err}`);
                 });
             return;
         }
 
         // Retrieve arguments
         for (let index = this.currentCommand.extractedParams.length; index < this.currentCommand.expectedParams.length; index++) {
+
             var expectedParam = this.currentCommand.expectedParams[index];
             var entity = this.currentCommand.entityForParameter(expectedParam);
 
             if (entity == null) {
                 if (this.currentCommand.canUseContextForParameter(expectedParam)) {
+                    console.log(`Using context for ${expectedParam}`);
                     this.currentCommand.addParameter(this.currentCommand.context);
                 } else {
-                    this.ask(this.currentCommand.backupQuestion(expectedParam), true, (answer) => {
+                    console.log(`Missing entity for ${expectedParam}`);
+                        this.ask(this.currentCommand.backupQuestion(expectedParam), true, (answer) => {
+                        console.log(answer.text);
                         this.onfinalmessage = null;
                         this.currentCommand.addParameter(answer.text);
                         this.extractParameters();
@@ -650,7 +671,7 @@ export class Geno {
         var popover = document.createElement("div");
         popover.id = "geno-ui";
         popover.classList.add("geno-slide-out");
-        
+
         var genoChat = document.createElement("div");
         genoChat.className = "geno-chat";
         var genoCurr = document.createElement("div");
@@ -664,7 +685,7 @@ export class Geno {
 
         var genoButtonCenter = document.createElement("div");
         genoButtonCenter.className = "geno-button-center";
-        
+
         var genoIndicator = document.createElement("div");
         genoIndicator.id = "geno-indicator";
         genoIndicator.className = "la-ball-scale-multiple la-2x";

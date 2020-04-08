@@ -79,7 +79,7 @@ export default class AnalysisView extends Component {
                 }).then(newParameter => {
                     if (newParameter != null) {
                         if (!this.props.command.parameters.includes(newParameter)) {
-                            this.props.command.parameters.push({ name: newParameter})
+                            this.props.command.parameters.push({ name: newParameter, backupQuery: "" });
                             this.updateEntity(entity, newParameter);
                         }
                     } else {

@@ -27,7 +27,10 @@ export default class UniversalPopover extends Popover {
 
     createFunctionCommand() {
         builder.createSkeleton(this.state.command.name, this.state.command.parameters, this.props.file);
-        database.addCommandByPrototype(this.state.command, this.props.relativePath)
+        database.addCommandByPrototype(this.state.command, this.props.relativePath);
+        database.trainModel(this.state.command.id, (error) => {
+            console.log(error);
+        });
         this.dismiss();
     }
 
@@ -56,7 +59,7 @@ export default class UniversalPopover extends Popover {
         
         var query = this.state.command.queries[index];
         query.text = newText;
-        queries.entities = database.splitIntoEntities(newText)
+        query.entities = database.splitIntoEntities(newText)
         
         var queries = this.state.command.queries;
         queries[index] = query;
