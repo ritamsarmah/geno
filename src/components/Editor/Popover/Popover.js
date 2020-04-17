@@ -53,6 +53,7 @@ export default class Popover extends Component {
         if (this.state.isTrackingContext) {
             emitter.emit(GenoEvent.StopTrackContext);
             emitter.removeListener(GenoEvent.ShareContext, this.processContext);
+            document.body.style.setProperty('cursor', 'inherit');
         }
         this.setState({ renderAnalysis: false });
         this.props.unmountMe();
@@ -106,6 +107,9 @@ export default class Popover extends Component {
     /* Dropdown event handler for adding a query */
     onChangeContextParameter(event) {
         var param = event.target.value === '-' ? null : event.target.value;
+        if (param == null && this.state.isTrackingContext) {
+            this.toggleTrackingContext();
+        }
         this.changeContextParameter(param);
     }
 
@@ -287,11 +291,13 @@ export default class Popover extends Component {
                                 {this.renderContextDropdown()}
                                 <span className="iconButton"
                                     onClick={this.toggleTrackingContext}
-                                    style={{ cursor: crossHairCursor }}>
+                                    style={{
+                                        cursor: crossHairCursor,
+                                        pointerEvents: this.state.command.contextInfo.parameter == null ? "none" : "auto"
+                                    }}>
                                     <FontAwesomeIcon
                                         icon={faCrosshairs}
-                                        style={{ color: crossHairColor }}
-                                        disabled={true} />
+                                        style={{ color: crossHairColor }} />
                                 </span>
                             </div>
 

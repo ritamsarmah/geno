@@ -104,8 +104,8 @@ button:hover {
 }
 
 .listView {
-    height: 52px;
-    min-height: 52px;
+    height: 105px;
+    min-height: 105px;
     max-height: 200px;
     resize: vertical;
 
