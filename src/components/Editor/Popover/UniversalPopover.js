@@ -152,8 +152,7 @@ export default class UniversalPopover extends Popover {
                 <div id="bottomButtons">
                     <input type="button" value="Cancel" onClick={this.dismiss}></input>
                     <input className="conditionalButton" type="button" style={{ marginLeft: "8px" }} value="Create Function" onClick={this.createFunctionCommand} disabled={this.isCommandValid()}></input>
-                </div>
-                
+                </div> 
             </div>
         );
     }
