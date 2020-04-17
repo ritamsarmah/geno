@@ -53,10 +53,8 @@ var GenoCommand = /** @class */ (function () {
         return this.entities.find(function (e) { return e.entity === parameter; });
     };
     GenoCommand.prototype.backupQuestion = function (parameter) {
-        console.log(parameter);
         var backupQuestion = this.info.parameters[parameter];
-        console.log(backupQuestion);
-        if (backupQuestion == null || backupQuestion === "") {
+        if (backupQuestion === "") {
             backupQuestion = "What is " + parameter + "?";
         }
         return backupQuestion;
@@ -99,9 +97,6 @@ var Geno = /** @class */ (function () {
         this.onMouseDownListener = this.onMouseDown.bind(this);
         this.onMouseMoveListener = this.onMouseMove.bind(this);
         this.onMouseUpListener = this.onMouseUp.bind(this);
-        this.say = this.say.bind(this);
-        this.ask = this.ask.bind(this);
-        this.extractParameters = this.extractParameters.bind(this);
     }
     /** Configure developer ID */
     Geno.prototype.setDevId = function (devId) {
@@ -140,7 +135,6 @@ var Geno = /** @class */ (function () {
         var _this = this;
         if (speak === void 0) { speak = true; }
         this.say(phrase, speak, function () {
-            console.log('beep');
             _this.onfinalmessage = callback;
             _this.startListening();
         });
@@ -279,40 +273,34 @@ var Geno = /** @class */ (function () {
     Geno.prototype.applyMask = function (target) {
         this.createMask(target);
     };
-    /* Change size of highlight for element */
-    Geno.prototype.resizeMask = function (target) {
-        var rect = target.getBoundingClientRect();
-        var hObj = document.getElementsByClassName('highlight-wrap')[0];
-        hObj.style.top = rect.top + "px";
-        hObj.style.width = rect.width + "px";
-        hObj.style.height = rect.height + "px";
-        hObj.style.left = rect.left + "px";
-    };
     /* Creates the highlight for an element */
     Geno.prototype.createMask = function (target) {
-        var rect = target.getBoundingClientRect();
         var canvas = document.createElement('canvas'); //Create a canvas element
         canvas.className = 'highlight-wrap';
-        //Set canvas width/height
+        // Set canvas width/height
         canvas.style.width = '100%';
         canvas.style.height = '100%';
-        //Set canvas drawing area width/height
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        //Position canvas
+        // Position canvas
         canvas.style.position = 'absolute';
-        canvas.style.left = "0";
-        canvas.style.top = "0";
         canvas.style.zIndex = "100000";
         canvas.style.opacity = '0.5';
         canvas.style.cursor = 'default';
         canvas.style.pointerEvents = 'none'; //Make sure you can click 'through' the canvas
         document.body.appendChild(canvas); //Append canvas to body element
-        var context = canvas.getContext('2d');
-        //Draw rectangle
-        context.rect(rect.x, rect.y, rect.width, rect.height);
-        context.fillStyle = "skyblue";
-        context.fill();
+        this.drawMask(canvas, target);
+    };
+    /* Draw mask */
+    Geno.prototype.drawMask = function (canvas, target) {
+        // Set canvas drawing area width/height
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.left = window.scrollX + "px";
+        canvas.style.top = window.scrollY + "px";
+        var rect = target.getBoundingClientRect();
+        var canvasContext = canvas.getContext('2d');
+        canvasContext.rect(rect.x, rect.y, rect.width, rect.height);
+        canvasContext.fillStyle = "skyblue";
+        canvasContext.fill();
     };
     /* Remove highlights */
     Geno.prototype.clearMasks = function () {
@@ -422,6 +410,10 @@ var Geno = /** @class */ (function () {
                 }
             }
         }
+        else {
+            this.onfinalmessage = null;
+            this.currentCommand = null;
+        }
         this.micButton.disabled = false;
     };
     /*** Control Functions ***/
@@ -439,10 +431,15 @@ var Geno = /** @class */ (function () {
         xhr.open('GET', url);
         xhr.onload = function () {
             if (xhr.status != 200) {
-                window.alert("Error");
+                console.error("An error occurred while communicating with backend");
                 return;
             }
             var json = JSON.parse(xhr.responseText);
+            // Check if confidence is there, as indication of trained model
+            if (json.intent["confidence"] == null) {
+                console.warn("The model has not been trained with any commands.");
+                return;
+            }
             var confidence = json.intent.confidence;
             var info = _this.commands[json.intent.name];
             // Only 1 command so always use it (since backend does not create classifer for 1 command)
@@ -451,6 +448,9 @@ var Geno = /** @class */ (function () {
             }
             console.log("NLP Backend Result", json);
             var context = _this.extractContext(info.contextInfo);
+            if (context != null || context != []) {
+                console.log("Context:", context);
+            }
             if (info == null) {
                 _this.say("Sorry, I didn't understand.");
                 _this.setBorderColor(GenoState.Error);
@@ -482,7 +482,7 @@ var Geno = /** @class */ (function () {
                         _this.setBorderColor(GenoState.Error);
                     }
                 }).catch(function (err) {
-                    console.log("Failed to load module " + err);
+                    console.error("Failed to load module " + err);
                 });
             }
             else {
@@ -497,7 +497,6 @@ var Geno = /** @class */ (function () {
         var _this = this;
         // All arguments retrieved, so trigger function
         if (this.currentCommand.didExtractAllParams()) {
-            console.log("found all parameters");
             import("../" + this.currentCommand.info.file)
                 .then(function (module) {
                 var fn = module[_this.currentCommand.info.triggerFn];
@@ -511,7 +510,7 @@ var Geno = /** @class */ (function () {
                 }
                 _this.currentCommand = null;
             }).catch(function (err) {
-                console.log("Failed to load module " + err);
+                console.log("Error while executing function\n" + err);
             });
             return;
         }
@@ -526,8 +525,7 @@ var Geno = /** @class */ (function () {
                 }
                 else {
                     console.log("Missing entity for " + expectedParam);
-                    var question = this.currentCommand.backupQuestion(expectedParam);
-                    this.ask(question, true, function (answer) {
+                    this.ask(this.currentCommand.backupQuestion(expectedParam), true, function (answer) {
                         console.log(answer.text);
                         _this.onfinalmessage = null;
                         _this.currentCommand.addParameter(answer.text);

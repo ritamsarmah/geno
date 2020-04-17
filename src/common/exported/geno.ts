@@ -333,42 +333,38 @@ export class Geno {
         this.createMask(target);
     }
 
-    /* Change size of highlight for element */
-    resizeMask(target: Element) {
-        var rect = target.getBoundingClientRect();
-        var hObj = <HTMLElement>document.getElementsByClassName('highlight-wrap')[0];
-        hObj.style.top = rect.top + "px";
-        hObj.style.width = rect.width + "px";
-        hObj.style.height = rect.height + "px";
-        hObj.style.left = rect.left + "px";
-    }
-
     /* Creates the highlight for an element */
     createMask(target: Element) {
-        var rect = target.getBoundingClientRect();
-
         var canvas = document.createElement('canvas'); //Create a canvas element
         canvas.className = 'highlight-wrap';
-        //Set canvas width/height
+        // Set canvas width/height
         canvas.style.width = '100%';
         canvas.style.height = '100%';
-        //Set canvas drawing area width/height
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        //Position canvas
+
+        // Position canvas
         canvas.style.position = 'absolute';
-        canvas.style.left = "0";
-        canvas.style.top = "0";
         canvas.style.zIndex = "100000";
         canvas.style.opacity = '0.5';
         canvas.style.cursor = 'default';
         canvas.style.pointerEvents = 'none'; //Make sure you can click 'through' the canvas
         document.body.appendChild(canvas); //Append canvas to body element
-        var context = canvas.getContext('2d');
-        //Draw rectangle
-        context.rect(rect.x, rect.y, rect.width, rect.height);
-        context.fillStyle = "skyblue";
-        context.fill();
+
+        this.drawMask(canvas, target);
+    }
+
+    /* Draw mask */
+    drawMask(canvas: HTMLCanvasElement, target: Element) {
+        // Set canvas drawing area width/height
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        canvas.style.left = `${window.scrollX}px`;
+        canvas.style.top = `${window.scrollY}px`;
+
+        var rect = target.getBoundingClientRect();
+        var canvasContext = canvas.getContext('2d');
+        canvasContext.rect(rect.x, rect.y, rect.width, rect.height);
+        canvasContext.fillStyle = "skyblue";
+        canvasContext.fill();
     }
 
     /* Remove highlights */
@@ -488,6 +484,9 @@ export class Geno {
                     }
                 }
             }
+        } else {
+            this.onfinalmessage = null;
+            this.currentCommand = null;
         }
 
         this.micButton.disabled = false;
@@ -509,11 +508,18 @@ export class Geno {
 
         xhr.onload = () => {
             if (xhr.status != 200) {
-                window.alert("Error");
+                console.error("An error occurred while communicating with backend");
                 return;
             }
 
             var json = JSON.parse(xhr.responseText);
+
+            // Check if confidence is there, as indication of trained model
+            if (json.intent["confidence"] == null) {
+                console.warn("The model has not been trained with any commands.")
+                return;
+            }
+
             var confidence = json.intent.confidence;
             var info = this.commands[json.intent.name];
 
@@ -525,6 +531,9 @@ export class Geno {
             console.log("NLP Backend Result", json);
 
             var context = this.extractContext(info.contextInfo)
+            if (context != null || context != []) {
+                console.log("Context:", context);
+            }
 
             if (info == null) {
                 this.say("Sorry, I didn't understand.");
@@ -557,7 +566,7 @@ export class Geno {
                             this.setBorderColor(GenoState.Error);
                         }
                     }).catch(err => {
-                        console.log(`Failed to load module ${err}`);
+                        console.error(`Failed to load module ${err}`);
                     });
             } else {
                 this.say("Sorry, I didn't understand.");
@@ -572,7 +581,6 @@ export class Geno {
     extractParameters() {
         // All arguments retrieved, so trigger function
         if (this.currentCommand.didExtractAllParams()) {
-            console.log("found all parameters")
             import(`../${this.currentCommand.info.file}`)
                 .then((module) => {
                     var fn = module[this.currentCommand.info.triggerFn];
@@ -585,7 +593,7 @@ export class Geno {
                     }
                     this.currentCommand = null;
                 }).catch(err => {
-                    console.log(`Failed to load module ${err}`);
+                    console.error(`Error while executing function\n${err}`);
                 });
             return;
         }
@@ -602,7 +610,7 @@ export class Geno {
                     this.currentCommand.addParameter(this.currentCommand.context);
                 } else {
                     console.log(`Missing entity for ${expectedParam}`);
-                        this.ask(this.currentCommand.backupQuestion(expectedParam), true, (answer) => {
+                    this.ask(this.currentCommand.backupQuestion(expectedParam), true, (answer) => {
                         console.log(answer.text);
                         this.onfinalmessage = null;
                         this.currentCommand.addParameter(answer.text);
