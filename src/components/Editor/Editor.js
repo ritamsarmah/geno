@@ -239,6 +239,7 @@ export default class Editor extends Component {
                         options={{
                             theme: "base16-dark",
                             mode: this.getLanguageMode(),
+                            tabSize: 2,
                             lineNumbers: true,
                             gutters: ["commands"],
                             autoCloseBrackets: true
