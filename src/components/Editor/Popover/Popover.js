@@ -50,11 +50,9 @@ export default class Popover extends Component {
 
     /* Dismisses this component */
     dismiss() {
-        if (this.state.isTrackingContext) {
-            emitter.emit(GenoEvent.StopTrackContext);
-            emitter.removeListener(GenoEvent.ShareContext, this.processContext);
-            document.body.style.setProperty('cursor', 'inherit');
-        }
+        emitter.emit(GenoEvent.StopTrackContext);
+        emitter.removeListener(GenoEvent.ShareContext, this.processContext);
+        document.body.style.setProperty('cursor', 'inherit');
         this.setState({ renderAnalysis: false });
         this.props.unmountMe();
     }
@@ -258,17 +256,17 @@ export default class Popover extends Component {
                 <div className="popover">
                     <form className="popoverForm">
                         {/* Command Name */}
-                        <p className="popoverTitle">Command Name</p>
+                        <p className="popoverTitle">Intent Name</p>
                         <input id="commandNameInput" type="text" defaultValue={this.state.command.name} onChange={(e) => this.changeCommandName(e.target.value.replace(/ /g, "_"))}></input>
 
-                        {/* Example Queries */}
+                        {/* Example Utterances */}
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <p className="popoverTitle">Example Queries</p>
+                            <p className="popoverTitle">Example Utterances</p>
                             {this.renderTooltip(HelpText.ExampleQueries)}
                         </div>
                         <div>
                             <div>
-                                <input id="addQueryInput" type="text" placeholder="Add example query" onKeyUp={e => { if (e.key == "Enter") this.onAddQuery(); }}></input>
+                                <input id="addQueryInput" type="text" placeholder="Add example utterance" onKeyUp={e => { if (e.key == "Enter") this.onAddQuery(); }}></input>
                                 <span className="iconButton" onClick={this.onAddQuery}>
                                     <FontAwesomeIcon icon={faPlus} />
                                 </span>
@@ -283,7 +281,7 @@ export default class Popover extends Component {
 
                         {/* Multimodal Context */}
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                            <p className="popoverTitle">Mouse Context</p>
+                            <p className="popoverTitle">Multimodal GUI Context</p>
                             {this.renderTooltip(HelpText.Multimodal)}
                         </div>
                         <div>
@@ -310,7 +308,7 @@ export default class Popover extends Component {
                                     interactive={true}
                                     theme="light-border"
                                     placement="right"
-                                    trigger={this.isContextDefault() ? "" : "mouseenter"}
+                                    trigger={this.isContextDefault() ? "" : "mouseenter click"}
                                     animateFill={false}
                                     maxWidth="none">
                                     <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")}

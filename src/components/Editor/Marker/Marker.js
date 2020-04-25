@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import FunctionPopover from '../Popover/FunctionPopover';
 import Tippy from '@tippy.js/react';
 import database from '../../../common/Database';
-import emitter from '../../../common/Emitter';
-import { GenoEvent } from '../../../common/constants';
 
 import './Marker.css'
 import 'tippy.js/themes/light-border.css';
