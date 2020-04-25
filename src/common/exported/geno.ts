@@ -309,7 +309,14 @@ export class Geno {
             var query = contextInfo.selector;
             query += contextInfo.attributes.filter(attr => attr !== "innerText").map(attr => "[" + attr + "]");
             var elements = this.contextElements
-                .filter(el => el.matches(query))
+                .map(el => {
+                    // Check if context elements (or parents of context element) match query selector
+                    while (el != null && !el.matches(query)) {
+                        el = el.parentElement;
+                    } 
+                    return el;
+                })
+                .filter(el => el != null)
                 .map(el => extractElementContext(el));
 
             return elements.length === 1 ? elements[0] : elements;
@@ -513,9 +520,13 @@ export class Geno {
             }
 
             var json = JSON.parse(xhr.responseText);
+            if (json == null) {
+                console.error("An error occurred while communicating with backend");
+                return;
+            }
 
             // Check if confidence is there, as indication of trained model
-            if (json.intent["confidence"] == null) {
+            if (!("intent" in json) || !("confidence" in json.intent)) {
                 console.warn("The model has not been trained with any commands.")
                 return;
             }
@@ -530,6 +541,10 @@ export class Geno {
 
             console.log("NLP Backend Result", json);
 
+            if (info == null) {
+                console.error("There was an error finding the specified intent. After creating or modifying commands, ensure that you press the build button. The backend model might also have an unused intent.")
+                return;
+            }
             var context = this.extractContext(info.contextInfo)
             if (context != null || context != []) {
                 console.log("Context:", context);

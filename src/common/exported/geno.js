@@ -251,7 +251,14 @@ var Geno = /** @class */ (function () {
             var query = contextInfo.selector;
             query += contextInfo.attributes.filter(function (attr) { return attr !== "innerText"; }).map(function (attr) { return "[" + attr + "]"; });
             var elements = this.contextElements
-                .filter(function (el) { return el.matches(query); })
+                .map(function (el) {
+                // Check if context elements (or parents of context element) match query selector
+                while (el != null && !el.matches(query)) {
+                    el = el.parentElement;
+                }
+                return el;
+            })
+                .filter(function (el) { return el != null; })
                 .map(function (el) { return extractElementContext(el); });
             return elements.length === 1 ? elements[0] : elements;
         }
@@ -435,8 +442,12 @@ var Geno = /** @class */ (function () {
                 return;
             }
             var json = JSON.parse(xhr.responseText);
+            if (json == null) {
+                console.error("An error occurred while communicating with backend");
+                return;
+            }
             // Check if confidence is there, as indication of trained model
-            if (json.intent["confidence"] == null) {
+            if (!("intent" in json) || !("confidence" in json.intent)) {
                 console.warn("The model has not been trained with any commands.");
                 return;
             }
@@ -447,6 +458,10 @@ var Geno = /** @class */ (function () {
                 info = Object.values(_this.commands)[0];
             }
             console.log("NLP Backend Result", json);
+            if (info == null) {
+                console.error("There was an error finding the specified intent. After creating or modifying commands, ensure that you press the build button. The backend model might also have an unused intent.");
+                return;
+            }
             var context = _this.extractContext(info.contextInfo);
             if (context != null || context != []) {
                 console.log("Context:", context);
@@ -510,7 +525,7 @@ var Geno = /** @class */ (function () {
                 }
                 _this.currentCommand = null;
             }).catch(function (err) {
-                console.log("Error while executing function\n" + err);
+                console.error("Error while executing function\n" + err);
             });
             return;
         }
