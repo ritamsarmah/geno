@@ -207,3 +207,11 @@ button:hover {
     margin-top: 2px;
     /* -webkit-appearance: button-bevel; */
 }
+
+.closePopoverButton {
+    color: black;
+    height: 8px;
+    width: 8px;
+    cursor: pointer;
+    float: right;
+}

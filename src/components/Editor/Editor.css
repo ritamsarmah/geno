@@ -49,6 +49,10 @@
     background-color: rgb(50, 50, 50);
 }
 
+.CodeMirror {
+    font-size: 13px;
+}
+
 /* Gutter */
 
 .commands {
