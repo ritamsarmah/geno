@@ -2,6 +2,7 @@ const { ipcRenderer } = require('electron')
 
 var clickedElements = [];
 var parameters = [];            // Generate indices for text input elements to create parameters
+var documentSnapshot;           // Use last snapshot before each recorded interaction cause HTML might change
 
 var contextElement;
 var mouseState = {
@@ -16,6 +17,7 @@ var mouseState = {
 var hoverTimer;
 
 ipcRenderer.on('recordEvents', () => {
+    documentSnapshot = document.cloneNode(true); 
     document.onclick = recordEvents;
     highlightElements();
     console.log("Geno: Recording events");
@@ -36,35 +38,52 @@ ipcRenderer.on('stopRecordingEvents', () => {
 
 /* Record interaction events for programming by demo */
 function recordEvents(e) {
-    isRecordingMouseEvents = true;
-
-    var clickedElement = (window.event)
-        ? window.event.srcElement
-        : e.target;
-    var tags = document.getElementsByTagName(clickedElement.tagName);
-
-    for (var i = 0; i < tags.length; ++i) {
-        if (tags[i] == clickedElement) {
-            var isClickable = (typeof clickedElement.click === "function");
+    function compareNodes(targetNode, clickedNode) {
+        if (targetNode.isEqualNode(clickedNode) || targetNode == clickedNode) {
+            var isClickable = (typeof clickedNode.click === "function");
             if (isClickable) {
-                clickedElements.push({ tag: clickedElement.tagName, index: i });
+                clickedElements.push({ tag: clickedNode.tagName, index: i });
             }
 
             ipcRenderer.sendToHost("clickEvent", {
-                tagName: clickedElement.tagName,
-                className: clickedElement.className.toString(),
+                tagName: clickedNode.tagName,
+                className: clickedNode.className.toString(),
                 numClicks: clickedElements.length,
                 isClickable: isClickable
             });
 
             // If the element allows for typing, we can create a parameter for voice input
-            if (clickedElement.tagName === "TEXTAREA"
-                || (clickedElement.tagName === "INPUT" && /^(?:text|email|number|search|tel|url|password)$/i.test(el.type))
-                || (clickedElement.isContentEditable)) {
+            if (clickedNode.tagName === "TEXTAREA"
+                || (clickedNode.tagName === "INPUT" && /^(?:text|email|number|search|tel|url|password)$/i.test(el.type))
+                || (clickedNode.isContentEditable)) {
                 window.addEventListener("keypress", keyPressListener);
             } else {
                 window.removeEventListener("keypress", keyPressListener);
             }
+            return true;
+        }
+    }
+
+    isRecordingMouseEvents = true;
+
+    var clickedElement = (window.event)
+        ? window.event.srcElement
+        : e.target;
+        
+    var tags = documentSnapshot.getElementsByTagName(clickedElement.tagName);
+    documentSnapshot = document.cloneNode(true);
+
+    for (var i = 0; i < tags.length; ++i) {
+        if (compareNodes(tags[i], clickedElement)) {
+            return;
+        }
+    }
+
+    tags = document.getElementsByTagName(clickedElement.tagName);
+
+    for (var i = 0; i < tags.length; ++i) {
+        if (compareNodes(tags[i], clickedElement)) {
+            return;
         }
     }
 }
