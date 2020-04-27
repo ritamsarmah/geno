@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import Marker from './Marker/Marker';
 import AddCommandButton from '../AddCommandButton/AddCommandButton';
+import builder from '../../common/Builder';
 import database from '../../common/Database';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -175,6 +176,7 @@ export default class Editor extends Component {
 
     saveFileListener() {
         this.saveFile(this.state.file, true);
+        builder.build();
     }
 
     onChange(editor, data, value) {

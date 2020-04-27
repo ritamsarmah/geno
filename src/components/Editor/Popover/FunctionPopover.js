@@ -1,6 +1,7 @@
 import React from 'react';
 import Popover from './Popover';
 import database from '../../../common/Database';
+import builder from '../../../common/Builder';
 import { ContextType } from '../../../common/constants';
 
 import './Popover.css'
@@ -126,6 +127,7 @@ export default class FunctionPopover extends Popover {
                 window.alert(error);
             }
         });
+        builder.build();
     }
 
     /* UI Rendering Functions */
