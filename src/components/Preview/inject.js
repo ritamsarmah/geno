@@ -5,15 +5,6 @@ var parameters = [];            // Generate indices for text input elements to c
 var documentSnapshot;           // Use last snapshot before each recorded interaction cause HTML might change
 
 var contextElement;
-var mouseState = {
-    isMouseDown: false,
-    selection: {
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-    }
-}
 var hoverTimer;
 
 ipcRenderer.on('recordEvents', () => {
@@ -181,20 +172,16 @@ function stopHighlightElements() {
 /*** Context Tracking ***/
 
 ipcRenderer.on('trackContext', () => {
-    document.addEventListener("mouseout", onMouseOut);
-    document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousedown", onMouseDown, true);
     document.body.style.setProperty('cursor', 'crosshair', 'important');
 });
 
 ipcRenderer.on('stopTrackingContext', () => {
     clearMasks();
 
-    document.removeEventListener("mouseout", onMouseOut);
-    document.removeEventListener("mousedown", onMouseDown);
     document.removeEventListener("mousemove", onMouseMove);
-    document.removeEventListener("mouseup", onMouseUp);
+    document.removeEventListener("mousedown", onMouseDown, true);
     document.body.style.setProperty('cursor', 'inherit');
 });
 
@@ -233,35 +220,23 @@ function shareContext() {
     });
 }
 
-/** Event listener for mouseut events */
-function onMouseOut(event) {
-    clearTimeout(hoverTimer);
-}
+/** Event listener for click events */
+function onMouseDown(e) {
+    // Cancel click events
+    e.stopPropagation();
+    e.preventDefault();
 
-/** Event listener for mousedown events */
-function onMouseDown(event) {
-    mouseState.isMouseDown = true;
-    clearMasks();
-    clearTimeout(hoverTimer);
+    // Complete tracking
+    shareContext();
+    ipcRenderer.sendToHost("stopTrackingContext");
 }
 
 /** event listener for mousemove events */
 function onMouseMove(event) {
-    if (!mouseState.isMouseDown) {
-        clearTimeout(hoverTimer);
-        hoverTimer = setTimeout(() => {
-            clearMasks(contextElement);
-            contextElement = selectPointContext({ x: event.clientX, y: event.clientY });
-            applyMask(contextElement, 'skyblue');
-            shareContext();
-        }, 200);
-    }
-}
-
-/** Event listener for mouseup events */
-function onMouseUp(event) {
-    contextElement = null;
-    mouseState.isMouseDown = false;
+    clearMasks(contextElement);
+    contextElement = selectPointContext({ x: event.clientX, y: event.clientY });
+    applyMask(contextElement, 'skyblue');
+    shareContext();
 }
 
 function selectPointContext(mousePosition) {

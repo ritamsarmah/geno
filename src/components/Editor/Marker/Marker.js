@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import FunctionPopover from '../Popover/FunctionPopover';
 import Tippy from '@tippy.js/react';
 import database from '../../../common/Database';
+import emitter from '../../../common/Emitter';
+import { GenoEvent } from '../../../common/constants';
 
 import './Marker.css'
 import 'tippy.js/themes/light-border.css';
@@ -31,6 +33,7 @@ export default class Marker extends Component {
 
         this.placement = this.props.placement == null ? "right-end" : this.props.placement;
 
+        this.onHide = this.onHide.bind(this);
         this.onClick = this.onClick.bind(this);
         this.handlePopoverUnmount = this.handlePopoverUnmount.bind(this);
     }
@@ -41,6 +44,11 @@ export default class Marker extends Component {
             var command = database.addFunctionCommand(this.props.file, this.props.triggerFn, this.props.params);
             this.setState({ command: command });
         }
+    }
+
+    onHide() {
+        emitter.emit(GenoEvent.StopTrackContext);
+        document.body.style.setProperty('cursor', 'inherit');
     }
 
     handlePopoverUnmount() {
@@ -60,6 +68,7 @@ export default class Marker extends Component {
             <Tippy content={this.renderTippyContent()}
                 arrow={true}
                 trigger="click"
+                onHide={this.onHide}
                 placement={this.placement}
                 flipOnUpdate={true}
                 theme="light-border"

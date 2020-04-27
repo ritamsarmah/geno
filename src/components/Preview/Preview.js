@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import DemoPopover from '../Editor/Popover/DemoPopover';
 import Tippy from '@tippy.js/react';
-import { Colors, GenoEvent } from '../../common/constants';
+import { GenoEvent } from '../../common/constants';
 import './Preview.css'
 import 'tippy.js/themes/light-border.css';
 
@@ -67,6 +67,8 @@ export default class Preview extends Component {
                 this.createDemoCommand(event.args[0]);
             } else if (event.channel === "trackedContext") {
                 this.shareContextWithPopover(event.args[0]);
+            } else if (event.channel === "stopTrackingContext") {
+                emitter.emit(GenoEvent.StopTrackContext);
             }
         });
 
@@ -283,14 +285,14 @@ export default class Preview extends Component {
             )
             : (
                 <div className="buttons">
-                    <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faHammer} size="lg" color={Colors.Theme}></FontAwesomeIcon></button>
+                    {/* <button title="Build and Run" className="previewBtn" onClick={this.buildApp}><FontAwesomeIcon icon={faHammer} size="lg" color={Colors.Theme}></FontAwesomeIcon></button> */}
                     <button title="Go Back" className="previewBtn" onClick={this.goBack}><FontAwesomeIcon icon={faChevronLeft} size="lg"></FontAwesomeIcon></button>
                     <button title="Go Forward" className="previewBtn" onClick={this.goForward}><FontAwesomeIcon icon={faChevronRight} size="lg" disabled></FontAwesomeIcon></button>
                     <button title="Reload" className="previewBtn" onClick={this.reloadPreview}><FontAwesomeIcon icon={faRedoAlt} size="lg"></FontAwesomeIcon></button>
                     {addressBar}
                     <button title="Toggle Developer Tools" className="previewBtn" onClick={this.openDevTools}><FontAwesomeIcon icon={faCode} size="lg"></FontAwesomeIcon></button>
                     <Tippy content={content} arrow={true} trigger="click" placement="bottom" theme="light-border" animation="scale" inertia={true} interactive={true} isVisible={this.state.recordState === this.POPOVER}>
-                        <button title="Create Command for Button" className="previewBtn" onClick={this.getRecordOnClick()}>
+                        <button title="Record Demonstration Intent" className="previewBtn" onClick={this.getRecordOnClick()}>
                             {this.getRecordIcon()}
                         </button>
                     </Tippy>

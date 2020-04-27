@@ -45,15 +45,13 @@ export default class Popover extends Component {
         this.onToggleContextAttribute = this.onToggleContextAttribute.bind(this);
         this.clearContextInfo = this.clearContextInfo.bind(this);
         this.toggleTrackingContext = this.toggleTrackingContext.bind(this);
+        this.stopTrackingContext = this.stopTrackingContext.bind(this);
         this.processContext = this.processContext.bind(this);
     }
 
     /* Dismisses this component */
     dismiss() {
         emitter.emit(GenoEvent.StopTrackContext);
-        emitter.removeListener(GenoEvent.ShareContext, this.processContext);
-        document.body.style.setProperty('cursor', 'inherit');
-        this.setState({ renderAnalysis: false });
         this.props.unmountMe();
     }
 
@@ -71,7 +69,7 @@ export default class Popover extends Component {
     }
 
     /* Function for changing command name */
-    changeCommandName(name) {}
+    changeCommandName(name) { }
 
     /* Function for delete command button */
     deleteCommand() {
@@ -91,16 +89,16 @@ export default class Popover extends Component {
     }
 
     /* Function for updating query (called from AnalysisView) */
-    updateQuery(queryId, oldText, newText, callback) {}
+    updateQuery(queryId, oldText, newText, callback) { }
 
     /* Function for deleting query */
-    deleteQuery(query) {}
+    deleteQuery(query) { }
 
     /* Function for changing backup query */
-    changeBackupQuery(event, paramName) {}
+    changeBackupQuery(event, paramName) { }
 
     /* Function for changing context parameter */
-    changeContextParameter(param) {}
+    changeContextParameter(param) { }
 
     /* Dropdown event handler for adding a query */
     onChangeContextParameter(event) {
@@ -112,7 +110,7 @@ export default class Popover extends Component {
     }
 
     /* Function for changing context attribute */
-    toggleContextAttribute(attribute) {}
+    toggleContextAttribute(attribute) { }
 
     /* Checkbox event handler for changing context attribute */
     onToggleContextAttribute(event) {
@@ -121,25 +119,35 @@ export default class Popover extends Component {
     }
 
     /* Function for clearing context information */
-    clearContextInfo() {}
+    clearContextInfo() { }
 
     /* Toggle tracking context in Preview */
     toggleTrackingContext() {
         this.setState((state, _props) => ({ isTrackingContext: !state.isTrackingContext }), () => {
             if (this.state.isTrackingContext) {
                 emitter.on(GenoEvent.ShareContext, this.processContext);
+                emitter.on(GenoEvent.StopTrackContext, this.stopTrackingContext);
                 emitter.emit(GenoEvent.TrackContext);
                 document.body.style.setProperty('cursor', 'crosshair', 'important');
             } else {
                 emitter.emit(GenoEvent.StopTrackContext);
-                emitter.removeListener(GenoEvent.ShareContext, this.processContext);
-                document.body.style.setProperty('cursor', 'inherit');
             }
         });
     }
 
+    /* Stop tracking context */
+    stopTrackingContext() {
+        emitter.removeListener(GenoEvent.ShareContext, this.processContext);
+        emitter.removeListener(GenoEvent.StopTrackContext, this.stopTrackingContext);
+        document.body.style.setProperty('cursor', 'inherit');
+        this.setState({
+            renderAnalysis: false,
+            isTrackingContext: false
+        })
+    }
+
     /* Processes received context elements and displays to user */
-    processContext(context) {}
+    processContext(context) { }
 
     /* Returns if command context info is default selector */
     isContextDefault() {
@@ -152,12 +160,12 @@ export default class Popover extends Component {
     }
 
     /* UI Rendering Functions */
-    
+
     // NOTE: Unused
     renderSummary() { return null; }
 
     renderButtons() { return null; }
-    
+
     renderContextDescription() {
         var description = "";
 
@@ -308,7 +316,7 @@ export default class Popover extends Component {
                                     interactive={true}
                                     theme="light-border"
                                     placement="right"
-                                    trigger={this.isContextDefault() ? "" : "mouseenter click"}
+                                    trigger={this.isContextDefault() ? "" : "click"}
                                     animateFill={false}
                                     maxWidth="none">
                                     <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")}
