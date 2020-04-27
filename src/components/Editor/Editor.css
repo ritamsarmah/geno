@@ -13,7 +13,7 @@
 
 .CodeMirror {
     height: calc(100vh - 40px);
-    font-size: 12px;
+    font-size: 14px;
     font-family: "Lucida Console", Monaco, monospace;
 }
 
@@ -47,10 +47,6 @@
 #saveButton:hover {
     cursor: pointer;
     background-color: rgb(50, 50, 50);
-}
-
-.CodeMirror {
-    font-size: 13px;
 }
 
 /* Gutter */

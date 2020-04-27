@@ -459,7 +459,7 @@ var Geno = /** @class */ (function () {
             }
             console.log("NLP Backend Result", json);
             if (info == null) {
-                console.error("There was an error finding the specified intent. After creating or modifying commands, ensure that you press the build button. The backend model might also have an unused intent.");
+                console.error("Error finding info for the recognized intent. Check that you pressed the build button after creating or modifying commands.");
                 return;
             }
             var context = _this.extractContext(info.contextInfo);

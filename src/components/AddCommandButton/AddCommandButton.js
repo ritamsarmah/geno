@@ -48,7 +48,7 @@ export default class AddCommandButton extends Component {
                 interactive={true}
                 onShow={this.onShow}>
                 <div id="newCommandBtn">
-                    <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
+                    <FontAwesomeIcon title="Create Function Intent" icon={faPlus}></FontAwesomeIcon>
                 </div>
             </Tippy>
         );
