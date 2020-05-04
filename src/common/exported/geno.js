@@ -459,7 +459,7 @@ var Geno = /** @class */ (function () {
             }
             console.log("NLP Backend Result", json);
             if (info == null) {
-                console.error("Error finding info for the recognized intent. Check that you pressed the build button after creating or modifying commands.");
+                console.error("Error finding info for the recognized intent. Refresh this webpage after adding or modifying commands.");
                 return;
             }
             var context = _this.extractContext(info.contextInfo);
@@ -467,7 +467,7 @@ var Geno = /** @class */ (function () {
                 console.log("Context:", context);
             }
             if (info == null) {
-                _this.say("Sorry, I didn't understand.");
+                _this.say("Sorry, I didn't understand. Could you try again?");
                 _this.setBorderColor(GenoState.Error);
             }
             else if (info.type === "demo") {
@@ -477,31 +477,43 @@ var Geno = /** @class */ (function () {
                     _this.clickElements();
                 }
                 else {
-                    _this.say("Sorry, I didn't understand.");
+                    _this.say("Sorry, I didn't understand. Could you try again?");
                     _this.setBorderColor(GenoState.Error);
                 }
             }
             else if (info.type === "function") {
-                import("../" + info.file)
-                    .then(function (module) {
-                    // Retrieve order of arguments from module
-                    var fn = module[info.triggerFn];
-                    var argString = fn.toString().split('\n')[0].match(/\([^)]*\)/)[0];
-                    var expectedParams = argString.substring(1, argString.length - 1).split(/\s*,\s*/);
-                    _this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+                if (Object.keys(info.parameters).length !== 0) {
+                    import("../" + info.file)
+                        .then(function (module) {
+                        // Retrieve order of arguments from module
+                        var fn = module[info.triggerFn];
+                        var argString = fn.toString().split('\n')[0].match(/\([^)]*\)/)[0];
+                        var expectedParams = argString.substring(1, argString.length - 1).split(/\s*,\s*/);
+                        _this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+                        if (json.intent_ranking.length === 0 || confidence > 0.50) {
+                            _this.extractParameters();
+                        }
+                        else {
+                            _this.say("Sorry, I didn't understand. Could you try again?");
+                            _this.setBorderColor(GenoState.Error);
+                        }
+                    }).catch(function (err) {
+                        console.error("Failed to load module " + err);
+                    });
+                }
+                else {
+                    _this.currentCommand = new GenoCommand(query, json.entities, [], info, context);
                     if (json.intent_ranking.length === 0 || confidence > 0.50) {
                         _this.extractParameters();
                     }
                     else {
-                        _this.say("Sorry, I didn't understand.");
+                        _this.say("Sorry, I didn't understand. Could you try again?");
                         _this.setBorderColor(GenoState.Error);
                     }
-                }).catch(function (err) {
-                    console.error("Failed to load module " + err);
-                });
+                }
             }
             else {
-                _this.say("Sorry, I didn't understand.");
+                _this.say("Sorry, I didn't understand. Could you try again?");
                 _this.setBorderColor(GenoState.Error);
             }
         };
@@ -517,8 +529,10 @@ var Geno = /** @class */ (function () {
                 var fn = module[_this.currentCommand.info.triggerFn];
                 console.log("Executing function: " + _this.currentCommand.info.triggerFn + "(" + _this.currentCommand.extractedParams.join(', ') + ")");
                 if (fn) {
-                    var result = module[_this.currentCommand.info.triggerFn].apply(null, _this.currentCommand.extractedParams);
-                    console.log("Return value: " + result);
+                    var result = fn.apply(null, _this.currentCommand.extractedParams);
+                    if (result != null) {
+                        console.log("Function returned: " + result);
+                    }
                 }
                 else {
                     console.error("Error: Could not find function '" + _this.currentCommand.info.triggerFn + "' in module '" + _this.currentCommand.info.file + "'");
@@ -530,6 +544,8 @@ var Geno = /** @class */ (function () {
             return;
         }
         // Retrieve arguments
+        console.log("GENO:", this.currentCommand.extractedParams.length);
+        console.log("GENO:", this.currentCommand.expectedParams.length);
         for (var index = this.currentCommand.extractedParams.length; index < this.currentCommand.expectedParams.length; index++) {
             var expectedParam = this.currentCommand.expectedParams[index];
             var entity = this.currentCommand.entityForParameter(expectedParam);

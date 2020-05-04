@@ -542,7 +542,7 @@ export class Geno {
             console.log("NLP Backend Result", json);
 
             if (info == null) {
-                console.error("Error finding info for the recognized intent. Check that you pressed the build button after creating or modifying commands.")
+                console.error("Error finding info for the recognized intent. Refresh this webpage after adding or modifying commands.")
                 return;
             }
             var context = this.extractContext(info.contextInfo)
@@ -551,7 +551,7 @@ export class Geno {
             }
 
             if (info == null) {
-                this.say("Sorry, I didn't understand.");
+                this.say("Sorry, I didn't understand. Could you try again?");
                 this.setBorderColor(GenoState.Error);
             } else if (info.type === "demo") {
                 var expectedParams = Object.keys(info.parameters);
@@ -561,30 +561,40 @@ export class Geno {
                 if (json.intent_ranking.length === 0 || confidence > 0.50) {
                     this.clickElements();
                 } else {
-                    this.say("Sorry, I didn't understand.");
+                    this.say("Sorry, I didn't understand. Could you try again?");
                     this.setBorderColor(GenoState.Error);
                 }
             } else if (info.type === "function") {
-                import("../" + info.file)
-                    .then((module) => {
-                        // Retrieve order of arguments from module
-                        var fn = module[info.triggerFn];
-                        var argString = fn.toString().split('\n')[0].match(/\([^)]*\)/)[0];
-                        var expectedParams = argString.substring(1, argString.length - 1).split(/\s*,\s*/);
+                if (Object.keys(info.parameters).length !== 0) {
+                    import("../" + info.file)
+                        .then((module) => {
+                            // Retrieve order of arguments from module
+                            var fn = module[info.triggerFn];
+                            var argString = fn.toString().split('\n')[0].match(/\([^)]*\)/)[0];
+                            var expectedParams = argString.substring(1, argString.length - 1).split(/\s*,\s*/);
 
-                        this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
+                            this.currentCommand = new GenoCommand(query, json.entities, expectedParams, info, context);
 
-                        if (json.intent_ranking.length === 0 || confidence > 0.50) {
-                            this.extractParameters();
-                        } else {
-                            this.say("Sorry, I didn't understand.");
-                            this.setBorderColor(GenoState.Error);
-                        }
-                    }).catch(err => {
-                        console.error(`Failed to load module ${err}`);
-                    });
+                            if (json.intent_ranking.length === 0 || confidence > 0.50) {
+                                this.extractParameters();
+                            } else {
+                                this.say("Sorry, I didn't understand. Could you try again?");
+                                this.setBorderColor(GenoState.Error);
+                            }
+                        }).catch(err => {
+                            console.error(`Failed to load module ${err}`);
+                        });
+                } else {
+                    this.currentCommand = new GenoCommand(query, json.entities, [], info, context);
+                    if (json.intent_ranking.length === 0 || confidence > 0.50) {
+                        this.extractParameters();
+                    } else {
+                        this.say("Sorry, I didn't understand. Could you try again?");
+                        this.setBorderColor(GenoState.Error);
+                    }
+                }
             } else {
-                this.say("Sorry, I didn't understand.");
+                this.say("Sorry, I didn't understand. Could you try again?");
                 this.setBorderColor(GenoState.Error);
             }
         };
@@ -601,8 +611,10 @@ export class Geno {
                     var fn = module[this.currentCommand.info.triggerFn];
                     console.log(`Executing function: ${this.currentCommand.info.triggerFn}(${this.currentCommand.extractedParams.join(', ')})`);
                     if (fn) {
-                        var result = module[this.currentCommand.info.triggerFn].apply(null, this.currentCommand.extractedParams);
-                        console.log(`Return value: ${result}`);
+                        var result = fn.apply(null, this.currentCommand.extractedParams);
+                        if (result != null) {
+                            console.log(`Function returned: ${result}`);
+                        }
                     } else {
                         console.error(`Error: Could not find function '${this.currentCommand.info.triggerFn}' in module '${this.currentCommand.info.file}'`);
                     }
