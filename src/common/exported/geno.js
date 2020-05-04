@@ -544,8 +544,6 @@ var Geno = /** @class */ (function () {
             return;
         }
         // Retrieve arguments
-        console.log("GENO:", this.currentCommand.extractedParams.length);
-        console.log("GENO:", this.currentCommand.expectedParams.length);
         for (var index = this.currentCommand.extractedParams.length; index < this.currentCommand.expectedParams.length; index++) {
             var expectedParam = this.currentCommand.expectedParams[index];
             var entity = this.currentCommand.entityForParameter(expectedParam);
