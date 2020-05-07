@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import FunctionPopover from '../Popover/FunctionPopover';
 import Tippy from '@tippy.js/react';
+import builder from '../../../common/Builder';
 import database from '../../../common/Database';
 import emitter from '../../../common/Emitter';
 import { GenoEvent } from '../../../common/constants';
@@ -49,12 +50,13 @@ export default class Marker extends Component {
     onHide() {
         emitter.emit(GenoEvent.StopTrackContext);
         document.body.style.setProperty('cursor', 'inherit');
+        builder.build();
     }
 
-    handlePopoverUnmount() {
-        this.setState({
-            command: null,
-        });
+    handlePopoverUnmount(clearCommand = true) {
+        if (clearCommand) {
+            this.setState({ command: null });
+        }
         document.body.click(); // Really hacky way to dismiss the popover
     }
 

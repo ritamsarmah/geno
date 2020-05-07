@@ -172,11 +172,11 @@ export default class Editor extends Component {
             }
             this.props.setSelectFile(true);
         });
+        builder.build();
     }
 
     saveFileListener() {
         this.saveFile(this.state.file, true);
-        builder.build();
     }
 
     onChange(editor, data, value) {

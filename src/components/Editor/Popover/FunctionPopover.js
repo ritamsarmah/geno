@@ -5,6 +5,8 @@ import builder from '../../../common/Builder';
 import { ContextType } from '../../../common/constants';
 
 import './Popover.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt, faCog } from '@fortawesome/free-solid-svg-icons';
 
 export default class FunctionPopover extends Popover {
 
@@ -106,15 +108,15 @@ export default class FunctionPopover extends Popover {
 
     /* Processes received context elements and displays to user */
     processContext(context) {
-        this.setState({
-            command: database.updateCommandContext(this.state.command.id, {
+        this.setState((state, _props) => ({
+            command: database.updateCommandContext(state.command.id, {
                 selector: context.selector,
                 type: ContextType.Element,
                 attributes: [], // reset attributes if we are changing selector, since old attributes are meaningless
                 allAttributes: context.attributes,
                 attributeExamples: context.attributeExamples
             })
-        });
+        }));
     }
 
     /* Train model */
@@ -131,14 +133,19 @@ export default class FunctionPopover extends Popover {
     }
 
     /* UI Rendering Functions */
-    
+
     renderButtons() {
         return (
             <div>
                 <input className="conditionalButton" style={{ margin: "10px 0" }} type="button" value={this.state.buttonValue} onClick={this.trainModel} disabled={this.isCommandValid()}></input>
                 <div id="bottomButtons">
-                    <input type="button" value="Options" onClick={this.showOptions}></input>
-                    <input type="button" style={{ marginLeft: "8px", color: "red" }} value="Delete" onClick={this.deleteCommand}></input>
+                    <button type="button" class="popoverButton" style={{ color: "red", flexBasis: "25%" }} onClick={this.deleteCommand}>
+                        <FontAwesomeIcon icon={faTrashAlt}></FontAwesomeIcon>
+                    </button>
+                    <button type="button" class="popoverButton" style={{ marginLeft: "8px", flexBasis: "25%" }} onClick={this.showOptions}>
+                        <FontAwesomeIcon icon={faCog}></FontAwesomeIcon>
+                    </button>
+                    <input type="button" style={{ marginLeft: "8px" }} value="Save & Close" onClick={() => this.dismiss(false)}></input>
                 </div>
             </div>
         );

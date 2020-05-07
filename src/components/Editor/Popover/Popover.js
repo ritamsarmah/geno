@@ -50,9 +50,9 @@ export default class Popover extends Component {
     }
 
     /* Dismisses this component */
-    dismiss() {
+    dismiss(clearCommand = true) {
         emitter.emit(GenoEvent.StopTrackContext);
-        this.props.unmountMe();
+        this.props.unmountMe(clearCommand);
     }
 
     /* Shows AnalysisView for editing a selected query */
@@ -227,7 +227,8 @@ export default class Popover extends Component {
     }
 
     renderAttributeSelect() {
-        if (this.state.command.contextInfo.allAttributes.length == 0) {
+        var allAttributes = this.state.command.contextInfo.allAttributes;
+        if (allAttributes.length == 0) {
             return (
                 <div className="attributeBox">
                     No attributes available
@@ -236,7 +237,7 @@ export default class Popover extends Component {
         } else {
             return (
                 <div className="attributeBox">
-                    {this.state.command.contextInfo.allAttributes.map(attr =>
+                    {allAttributes.map(attr =>
                         <div key={`context-${attr}`}>
                             <input type="checkbox" name={attr}
                                 defaultChecked={this.state.command.contextInfo.attributes.includes(attr)}
@@ -316,7 +317,8 @@ export default class Popover extends Component {
                                     interactive={true}
                                     theme="light-border"
                                     placement="right"
-                                    trigger={this.isContextDefault() ? "" : "click"}
+                                    trigger={this.isContextDefault() ? "" : "mouseenter"}
+                                    hideOnClick={false}
                                     animateFill={false}
                                     maxWidth="none">
                                     <span className={"contextItem " + (this.isContextDefault() ? "" : "customContext")}

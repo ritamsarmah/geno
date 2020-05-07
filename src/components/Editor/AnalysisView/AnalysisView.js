@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faTrash, faSyncAlt, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faTrashAlt, faSyncAlt, faPen } from '@fortawesome/free-solid-svg-icons';
 
 import database from '../../../common/Database';
 import utils from '../../../common/utils';
@@ -222,7 +222,7 @@ export default class AnalysisView extends Component {
                     <FontAwesomeIcon icon={this.state.editMode ? faSyncAlt : faPen}></FontAwesomeIcon>
                 </div>
                 <div id="delete" onClick={this.delete}>
-                    <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
+                    <FontAwesomeIcon icon={faTrashAlt}></FontAwesomeIcon>
                 </div>
                 {this.state.editMode ?
                     <span id="editableQuery" contentEditable={true} suppressContentEditableWarning={true}>{this.state.query.text}</span> :

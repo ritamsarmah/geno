@@ -24,7 +24,7 @@ input[type=text]:focus, textarea:focus {
     border: 1px solid var(--theme-color);
 }
 
-input[type=button] {
+input[type=button], .popoverButton {
     background-color: #F2F2F2;
     color: #5F6368;
     padding: 8px 16px;
@@ -34,18 +34,18 @@ input[type=button] {
     border-radius: 4px;
 }
 
-input[type="button"]:enabled:hover {
+input[type="button"]:enabled:hover, .popoverButton:enabled:hover {
     border-color: darkgray;
     color: black;
     box-shadow: none;
 }
 
-input[type="button"]:enabled:active {
+input[type="button"]:enabled:active, .popoverButton:enabled:active {
     border-color: var(--theme-color);
     box-shadow: none;
 }
 
-button, input[type="button"]:focus {
+button, input[type="button"]:focus, .popoverButton:focus {
     outline: none;
 }
 

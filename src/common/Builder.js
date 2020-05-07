@@ -17,6 +17,7 @@ class Builder {
 
     /* Copies over files and database info into developer's project */ 
     build() {
+        console.log("Building...")
         var commandMap = {}
         database.getCommands().forEach(cmd => {
             // Only copy over commands that have been trained

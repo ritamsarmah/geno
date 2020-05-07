@@ -29,7 +29,9 @@ export default class UniversalPopover extends Popover {
         builder.createSkeleton(this.state.command.name, this.state.command.parameters, this.props.file);
         database.addCommandByPrototype(this.state.command, this.props.relativePath);
         database.trainModel(this.state.command.id, (error) => {
-            console.log(error);
+            if (error) {
+                console.log(error);
+            }
         });
         this.dismiss();
     }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Marker from "../../../Editor/Marker/Marker";
 import DemoMarker from "../../../Editor/Marker/DemoMarker";
 
@@ -48,7 +48,7 @@ export default class CommandItem extends Component {
                 <p className="cmdPath"> {path.basename(this.props.command.file)} </p>
                 {this.renderSummary()}
                 <div className="deleteBtn" onClick={() => this.props.delete(this.props.command.id)}>
-                    <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
+                    <FontAwesomeIcon icon={faTrashAlt}></FontAwesomeIcon>
                 </div>
             </div>
         );

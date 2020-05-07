@@ -200,8 +200,10 @@ function extractContextInfo(element) {
     attributes.forEach(attr => attributeExamples[attr] = element.getAttribute(attr));
     
     // Add special "attributes"
-    attributes.push('innerText');
-    attributeExamples['innerText'] = element.innerText;
+    if (element.innerText.trim() !== "") {
+        attributes.push('innerText');
+        attributeExamples['innerText'] = element.innerText;
+    }
 
     return {
         selector: selector,

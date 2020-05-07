@@ -1,4 +1,5 @@
 import { Paths, ContextType } from "./constants";
+import builder from './Builder';
 import preferences from './Preferences';
 
 const lodashId = require('lodash-id')
@@ -70,6 +71,7 @@ class Database {
         command.file = file;
         command.triggerFn = command.name;
         this.db.get('commands').insert(command).write();
+        builder.build();
     }
 
     /* Add a command */
@@ -81,7 +83,8 @@ class Database {
         cmd.file = file;
         cmd.triggerFn = triggerFn;
 
-        this.db.get('commands').insert(cmd).write()
+        this.db.get('commands').insert(cmd).write();
+        builder.build();
         return cmd;
     }
 
@@ -97,19 +100,22 @@ class Database {
         cmd.file = file;
         cmd.delay = 0;
 
-        this.db.get('commands').insert(cmd).write()
+        this.db.get('commands').insert(cmd).write();
+        builder.build();
         return cmd;
     }
 
     /* Update a command */
     updateCommand(id, data) {
         this.db.get('commands').getById(id).assign(data).write();
+        builder.build();
         return this.getCommandForId(id);
     }
 
     /* Update command context info */
     updateCommandContext(id, data) {
         this.db.get('commands').getById(id).get('contextInfo').assign(data).write();
+        builder.build();
         return this.getCommandForId(id);
     }
 
@@ -119,7 +125,8 @@ class Database {
             "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(id).name,
         });
-        return this.db.get('commands').removeById(id).write();
+        this.db.get('commands').removeById(id).write();
+        builder.build();
     }
 
     /*** Query Functions ***/
@@ -234,17 +241,20 @@ class Database {
             return (oldParam != null) ? oldParam : { name: p, backupQuery: "" }
         });
         command.assign({ parameters: newParams }).write();
+        builder.build();
     }
 
     /* Change name for a parameter */
     updateParameterName(commandId, oldName, newName) {
         this.db.get('commands').getById(commandId).get('parameters').find({ name: oldName }).assign({ name: newName }).write();
+        builder.build();
         return this.getCommandForId(commandId);
     }
 
     /* Change backup query to ask if a parameter entity is not detected in user's voice input */
     updateBackupQuery(commandId, parameter, backupQuery) {
         this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
+        builder.build();
         return this.getCommandForId(commandId);
     }
 
@@ -306,7 +316,8 @@ class Database {
 
     /* Change delay */
     updateDelay(commandId, delay) {
-        this.db.get('commands').getById(commandId).assign({ delay: delay }).write();
+        this.db.get('commands').getById(commandId).assign({ delay: delay }).write()
+        builder.build()
         return this.getCommandForId(commandId);
     }
 

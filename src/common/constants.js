@@ -30,7 +30,7 @@ const GenoEvent = {
 
 const HelpText = {
     ExampleQueries: "Add 2 or more example utterances for training intent recognition. Click on a query in the list to assign parameters using the dropdown under each word.",
-    Multimodal: "Select context by clicking the crosshairs and hovering or clicking on an element in the preview. Select attributes by clicking the selector text in popover."
+    Multimodal: "Select context by clicking the crosshairs and hovering or clicking on an element in the preview. Select attributes by hovering over the selector text in popover."
 }
 
 module.exports = { Colors, Paths, ContextType, GenoEvent, HelpText }
