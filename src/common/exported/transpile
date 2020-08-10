@@ -1,3 +1,5 @@
 #!/bin/bash
+# Run this script after making changes to geno.ts
+# to generate the geno.js file that gets copied into the user's project
 
 ../../../node_modules/typescript/bin/tsc -p tsconfig.json
