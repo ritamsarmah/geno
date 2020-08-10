@@ -1,22 +1,22 @@
 :root {
-    /* Colors */
-    --main-bg-color: #21252B;
-    --light-bg-color: #282d34;
-    --lighter-bg-color: #333842;
-    --very-light-bg-color: rgb(55, 60, 70);
-    --editor-bg-color: #151515; 
-    --theme-color: #3190FF;
-    --highlight-color: white;
-    --disabled-color: rgb(88, 93, 97);
+  /* Colors */
+  --main-bg-color: #21252b;
+  --light-bg-color: #282d34;
+  --lighter-bg-color: #333842;
+  --very-light-bg-color: rgb(55, 60, 70);
+  --editor-bg-color: #151515;
+  --theme-color: #3190ff;
+  --highlight-color: white;
+  --disabled-color: rgb(88, 93, 97);
 }
 
 .centered {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .vcentered {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }

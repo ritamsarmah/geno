@@ -3,19 +3,19 @@
 /* Decorator Header */
 
 .headerBase {
-    user-select: none;
-    padding-left: 5px;
-    border-radius: 2px;
+  user-select: none;
+  padding-left: 5px;
+  border-radius: 2px;
 }
 
 .selected {
-    background-color: var(--lighter-bg-color);
+  background-color: var(--lighter-bg-color);
 }
 
 .validFile {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .invalidFile {
-    color: var(--disabled-color);
+  color: var(--disabled-color);
 }

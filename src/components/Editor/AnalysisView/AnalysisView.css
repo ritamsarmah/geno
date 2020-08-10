@@ -1,95 +1,110 @@
 .textSegment {
-    position: relative;
-    border-bottom: 3px solid;
+  position: relative;
+  border-bottom: 3px solid;
 }
 
 #analysisView {
-    z-index: 999999999;
-    position: absolute;
-    top: 144px; /* If including summary info, top: 213px; */
-    width: 400px;
-    padding: 30px 30px 50px 30px;
-    
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  z-index: 999999999;
+  position: absolute;
+  top: 144px; /* If including summary info, top: 213px; */
+  width: 400px;
+  padding: 30px 30px 50px 30px;
+
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .analysis-right {
-    left: 300px;
+  left: 300px;
 }
 
 .analysis-left {
-    right: 300px;
+  right: 300px;
 }
 
-#editableQuery, #nlpQuery {
-    text-align: center;
-    border: none;
-    border-color: transparent;
-    resize: none;
-    margin: 0;
-    padding: 0;
-    overflow: auto;
+#editableQuery,
+#nlpQuery {
+  text-align: center;
+  border: none;
+  border-color: transparent;
+  resize: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
 
-    font-size: 20px;
-    line-height: 48px;
+  font-size: 20px;
+  line-height: 48px;
 }
 
-#editableQuery:focus, #nlpQuery:focus {
-    outline: none;
+#editableQuery:focus,
+#nlpQuery:focus {
+  outline: none;
 }
 
 #close {
-    position: absolute;
-    top: 6px;
-    left: 10px;
-    cursor: pointer;
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  cursor: pointer;
 }
 
 #delete {
-    position: absolute;
-    top: 6px;
-    right: 10px;
-    cursor: pointer;
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  cursor: pointer;
 }
 
 #refresh {
-    position: absolute;
-    top: 6px;
-    right: 45px;
-    cursor: pointer;
+  position: absolute;
+  top: 6px;
+  right: 45px;
+  cursor: pointer;
 }
 
 .entitySelect {
-    position: absolute;
-    top: 24px;
-    left: 0;
-    width: 100%;
-    padding: 0px 3px;
-    margin-top: 2px;
-    text-align-last: center;
-    background-color: white;
+  position: absolute;
+  top: 24px;
+  left: 0;
+  width: 100%;
+  padding: 0px 3px;
+  margin-top: 2px;
+  text-align-last: center;
+  background-color: white;
 
-    -webkit-appearance: button-bevel;
+  -webkit-appearance: button-bevel;
 }
 
 .entitySelect:focus {
-    outline: none;
+  outline: none;
 }
 
 .entitySelect:hover {
-    background-color: rgb(230, 230, 230);
-    cursor: pointer;
+  background-color: rgb(230, 230, 230);
+  cursor: pointer;
 }
 
 .spin {
-    pointer-events: none;
-    -webkit-animation:spin 1s linear infinite;
-    -moz-animation:spin 1s linear infinite;
-    animation:spin 1s linear infinite;
+  pointer-events: none;
+  -webkit-animation: spin 1s linear infinite;
+  -moz-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
-@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
-@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
-@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); }}
+@-moz-keyframes spin {
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

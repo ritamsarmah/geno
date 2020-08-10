@@ -1,31 +1,31 @@
 @import "../../../theme.css";
 
 .prefsList {
-    width: auto;
-    height: calc(100vh - 65px);
-    color: whitesmoke;
-    margin: 16px;
+  width: auto;
+  height: calc(100vh - 65px);
+  color: whitesmoke;
+  margin: 16px;
 }
 
 #prefsForm {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .prefsLabel {
-    margin-right: 4px;
+  margin-right: 4px;
 }
 
 .prefsInput {
-    background-color: var(--very-light-bg-color);
-    color: whitesmoke;
-    overflow: hidden;
-    padding: 5px 7px;
-    margin: 0px 4px;
-    display: inline-block;
-    border-radius: 4px;
-    border: none;
-    box-sizing: border-box;
-    flex: 1;
-    font-size: 14px;
+  background-color: var(--very-light-bg-color);
+  color: whitesmoke;
+  overflow: hidden;
+  padding: 5px 7px;
+  margin: 0px 4px;
+  display: inline-block;
+  border-radius: 4px;
+  border: none;
+  box-sizing: border-box;
+  flex: 1;
+  font-size: 14px;
 }

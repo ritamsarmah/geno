@@ -1,218 +1,225 @@
 @import "../../../theme.css";
 
 .popover {
-    width: 250px;
-    margin: 10px;
+  width: 250px;
+  margin: 10px;
 }
 
 :focus {
-    outline: 0;
+  outline: 0;
 }
 
-input[type=text], textarea {
-    width: 100%;
-    margin-bottom: 14px;
-    padding: 6px 6px;
-    display: inline-block;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+input[type="text"],
+textarea {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 6px 6px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
-input[type=text]:focus, textarea:focus {
-    outline: none;
-    border: 1px solid var(--theme-color);
+input[type="text"]:focus,
+textarea:focus {
+  outline: none;
+  border: 1px solid var(--theme-color);
 }
 
-input[type=button], .popoverButton {
-    background-color: #F2F2F2;
-    color: #5F6368;
-    padding: 8px 16px;
-    width: 100%;
-    cursor: pointer;
-    border: 1px solid #F2F2F2;
-    border-radius: 4px;
+input[type="button"],
+.popoverButton {
+  background-color: #f2f2f2;
+  color: #5f6368;
+  padding: 8px 16px;
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid #f2f2f2;
+  border-radius: 4px;
 }
 
-input[type="button"]:enabled:hover, .popoverButton:enabled:hover {
-    border-color: darkgray;
-    color: black;
-    box-shadow: none;
+input[type="button"]:enabled:hover,
+.popoverButton:enabled:hover {
+  border-color: darkgray;
+  color: black;
+  box-shadow: none;
 }
 
-input[type="button"]:enabled:active, .popoverButton:enabled:active {
-    border-color: var(--theme-color);
-    box-shadow: none;
+input[type="button"]:enabled:active,
+.popoverButton:enabled:active {
+  border-color: var(--theme-color);
+  box-shadow: none;
 }
 
-button, input[type="button"]:focus, .popoverButton:focus {
-    outline: none;
+button,
+input[type="button"]:focus,
+.popoverButton:focus {
+  outline: none;
 }
 
 button:hover {
-    text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 
 #bottomButtons {
-    display: flex;
-    justify-content: space-around;
-    align-items: stretch;
-    width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  width: 100%;
 }
 
 .popoverTitle {
-    margin: 0 0 5px 0;
-    padding: 0px;
-    text-align: left;
-    user-select: none;
+  margin: 0 0 5px 0;
+  padding: 0px;
+  text-align: left;
+  user-select: none;
 }
 
 /* Icon Button */
 .iconButton {
-    color: black;
-    padding: 5px 8px;
-    height: 8px;
-    width: 8px;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-left: 4px;
+  color: black;
+  padding: 5px 8px;
+  height: 8px;
+  width: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 4px;
 }
 
 .iconButton:active {
-    background-color: rgb(220, 220, 220);
+  background-color: rgb(220, 220, 220);
 }
 
 .iconButton:focus {
-    outline: none;
+  outline: none;
 }
 
 .popoverFn {
-    background-color: clear;
-    border-radius: 3px;
-    border: 1px solid var(--theme-color);
-    padding: 4px 6px;
-    font-size: 11px;
-    margin-right: 5px;
-    margin-bottom: 5px;
-    float: left;
-    color: var(--theme-color);
+  background-color: clear;
+  border-radius: 3px;
+  border: 1px solid var(--theme-color);
+  padding: 4px 6px;
+  font-size: 11px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  float: left;
+  color: var(--theme-color);
 }
 
 /* Queries */
 #addQueryInput {
-    width: 87%;
+  width: 87%;
 }
 
 .listView {
-    height: 105px;
-    min-height: 105px;
-    max-height: 200px;
-    resize: vertical;
+  height: 105px;
+  min-height: 105px;
+  max-height: 200px;
+  resize: vertical;
 
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    overflow: scroll;
-    margin-bottom: 4px;
-    padding: 4px;
-    user-select: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: scroll;
+  margin-bottom: 4px;
+  padding: 4px;
+  user-select: none;
 }
 
 .listItem {
-    text-align: left;
-    font-size: 12px;
-    padding: 5px;
+  text-align: left;
+  font-size: 12px;
+  padding: 5px;
 }
 
 .listItem:hover {
-    background-color: var(--theme-color);
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
+  background-color: var(--theme-color);
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 .contextSelectText {
-    margin-top: 10px;
-    width: 95%;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 4px;
-    justify-content: space-between;
+  margin-top: 10px;
+  width: 95%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  justify-content: space-between;
 }
 
 .contextItem {
-    font-family: 'Courier New', Courier, monospace;
-    word-wrap: break-word;
-    padding: 3px 6px;
-    user-select: none;
-    cursor: pointer;
+  font-family: "Courier New", Courier, monospace;
+  word-wrap: break-word;
+  padding: 3px 6px;
+  user-select: none;
+  cursor: pointer;
 }
 
 .customContext:hover {
-    background-color: var(--theme-color);
-    color: white;
-    border-radius: 4px;
+  background-color: var(--theme-color);
+  color: white;
+  border-radius: 4px;
 }
 
 .attributeBox {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    font-family: 'Courier New', Courier, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .checkBoxLabel {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 .conditionalButton:disabled {
-    cursor: not-allowed;
-    color: lightgray;
+  cursor: not-allowed;
+  color: lightgray;
 }
 
 /* Options View */
 .paramTitle {
-    margin: 0 0 5px 0;
-    padding: 0px;
-    text-align: left;
-    user-select: none;
-    font-family: 'Courier New', Courier, monospace;
+  margin: 0 0 5px 0;
+  padding: 0px;
+  text-align: left;
+  user-select: none;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .popoverSubtitle {
-    margin: 0 0 5px 0;
-    padding: 0px;
-    text-align: left;
-    user-select: none;
-    font-size: 12px;
-    color: gray;
+  margin: 0 0 5px 0;
+  padding: 0px;
+  text-align: left;
+  user-select: none;
+  font-size: 12px;
+  color: gray;
 }
 
 .popoverLabel {
-    padding: 0px;
-    text-align: left;
-    user-select: none;
-    font-size: 12px;
-    color: gray;
+  padding: 0px;
+  text-align: left;
+  user-select: none;
+  font-size: 12px;
+  color: gray;
 }
 
 .popoverDropdown {
-    margin: 0 6px;
+  margin: 0 6px;
 }
 
 .paramType {
-    all: none;
-    margin-top: 2px;
-    /* -webkit-appearance: button-bevel; */
+  all: none;
+  margin-top: 2px;
+  /* -webkit-appearance: button-bevel; */
 }
 
 .closePopoverButton {
-    color: black;
-    height: 8px;
-    width: 8px;
-    cursor: pointer;
-    float: right;
+  color: black;
+  height: 8px;
+  width: 8px;
+  cursor: pointer;
+  float: right;
 }

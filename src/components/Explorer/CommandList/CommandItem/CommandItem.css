@@ -1,50 +1,50 @@
 @import "../../../../theme.css";
 
 .cmdItem {
-    background-color: var(--lighter-bg-color);
-    width: auto;
-    margin: 16px;
-    padding: 0px 14px 10px;
-    border-radius: 4px;
-    overflow: hidden;
+  background-color: var(--lighter-bg-color);
+  width: auto;
+  margin: 16px;
+  padding: 0px 14px 10px;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .cmdName {
-    margin-bottom: 0;
-    font-weight: 500;
-    font-size: 14px;
-    color: whitesmoke;
-    display: inline-block;
+  margin-bottom: 0;
+  font-weight: 500;
+  font-size: 14px;
+  color: whitesmoke;
+  display: inline-block;
 }
 
 .cmdMarker {
-    padding-top: 16px;
-    float: right;
+  padding-top: 16px;
+  float: right;
 }
 
 .cmdPath {
-    font-size: 12px;
-    color: lightgray; 
-    margin: 8px 0 10px 0;
+  font-size: 12px;
+  color: lightgray;
+  margin: 8px 0 10px 0;
 }
 
 .fn {
-    background-color: clear;
-    border-radius: 3px;
-    border: 1px solid var(--theme-color);
-    padding: 4px 6px;
-    font-size: 11px;
-    margin-right: 5px;
-    margin-bottom: 5px;
-    display: inline-block;
-    color: var(--theme-color);
+  background-color: clear;
+  border-radius: 3px;
+  border: 1px solid var(--theme-color);
+  padding: 4px 6px;
+  font-size: 11px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  display: inline-block;
+  color: var(--theme-color);
 }
 
 .deleteBtn {
-    float: right;
-    bottom: 0;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    color: whitesmoke;
+  float: right;
+  bottom: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: whitesmoke;
 }

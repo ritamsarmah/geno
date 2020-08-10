@@ -1,14 +1,14 @@
 #newCommandBtn {
-    cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 50%;
-    text-align: center;
-    text-decoration: none;
-    background-color: transparent;
-    color: white;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 50%;
+  text-align: center;
+  text-decoration: none;
+  background-color: transparent;
+  color: white;
 }
 
 #newCommandBtn:hover {
-    background-color: rgb(50, 50, 50);
-    color: white;
+  background-color: rgb(50, 50, 50);
+  color: white;
 }

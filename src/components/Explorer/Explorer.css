@@ -1,32 +1,32 @@
 @import "../../theme.css";
 
 .tabBar {
-    height: 40px;
-    top: 0;
-    left: 0;
-    right: 0;
-    position: sticky;
-    padding: 4px;
-    background-color: var(--light-bg-color);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
-    z-index: 9999;
+  height: 40px;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: sticky;
+  padding: 4px;
+  background-color: var(--light-bg-color);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  z-index: 9999;
 }
 
 .tabButton {
-    cursor: pointer;
-    margin: 10px;
+  cursor: pointer;
+  margin: 10px;
 }
 
 .loading {
-    display: flex;
-    justify-content:center;
-    align-items:center;
-    flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .loadingText {
-    color: white;
+  color: white;
 }

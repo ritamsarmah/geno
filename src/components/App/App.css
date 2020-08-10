@@ -2,94 +2,95 @@
 
 /* Initial Splash Screen */
 .splash {
-    background-color: var(--main-bg-color);
-    width: 100vw;
-    height: 100vh;
+  background-color: var(--main-bg-color);
+  width: 100vw;
+  height: 100vh;
 
-    display: flex;
-    justify-content:center;
-    align-items:center;
-    flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .splash > h1 {
-    color: whitesmoke;
-    margin: 0;
+  color: whitesmoke;
+  margin: 0;
 }
 
 .splash > p {
-    color: lightgray;
+  color: lightgray;
 }
 
 .splash > a {
-    margin-top: 10px;
-    color: var(--theme-color);
+  margin-top: 10px;
+  color: var(--theme-color);
 }
 
 .openBtn {
-    background-color: var(--light-bg-color);
-    color: whitesmoke;
-    padding: 10px 30px;
-    margin: 0 8px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
+  background-color: var(--light-bg-color);
+  color: whitesmoke;
+  padding: 10px 30px;
+  margin: 0 8px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
 }
 
 .openBtn:hover {
-    background-color: var(--very-light-bg-color);
+  background-color: var(--very-light-bg-color);
 }
 
 .openBtn:focus {
-    outline: none;
+  outline: none;
 }
 
 .openBtn:active {
-    background-color: var(--very-light-bg-color);
+  background-color: var(--very-light-bg-color);
 }
 
 /* App */
 body {
-    padding: 0px;
-    margin: 0px;
+  padding: 0px;
+  margin: 0px;
 }
 
 .editor {
-    background-color: var(--editor-bg-color);
+  background-color: var(--editor-bg-color);
 }
 
 /* Split Pane CSS Rules */
 
 .split,
 .gutter.gutter-horizontal {
-    float: left;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+  float: left;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .split {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    background-color: var(--main-bg-color);
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  background-color: var(--main-bg-color);
 }
 
 .gutter {
-    background-color: #eee;
-    
-    background-repeat: no-repeat;
-    background-position: 50%;
+  background-color: #eee;
+
+  background-repeat: no-repeat;
+  background-position: 50%;
 }
 
 .gutter.gutter-horizontal {
-    cursor: col-resize;
+  cursor: col-resize;
 }
 
 .gutter.gutter-vertical {
-    cursor: row-resize;
+  cursor: row-resize;
 }
 
-.gutter.gutter-vertical, .gutter.gutter-horizontal {
-    background-color: #151515;
+.gutter.gutter-vertical,
+.gutter.gutter-horizontal {
+  background-color: #151515;
 }

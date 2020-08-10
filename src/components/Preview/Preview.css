@@ -1,49 +1,49 @@
 @import "../../theme.css";
 
 .buttons {
-    height: 40px;
-    background-color: var(--main-bg-color);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+  height: 40px;
+  background-color: var(--main-bg-color);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 #preview {
-    height: calc(100vh - 40px);
-    width: 100%;
-    background-color: white;
+  height: calc(100vh - 40px);
+  width: 100%;
+  background-color: white;
 }
 
 .demoCtrls {
-    right: 0;
+  right: 0;
 }
 
 .previewBtn {
-    background-color: var(--main-bg-color);
-    color: whitesmoke;
-    width: 30px;
-    padding: 8px;
-    margin: 8px 4px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    flex-shrink: 0;
+  background-color: var(--main-bg-color);
+  color: whitesmoke;
+  width: 30px;
+  padding: 8px;
+  margin: 8px 4px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .previewBtn:hover {
-    background-color: var(--light-bg-color)
+  background-color: var(--light-bg-color);
 }
 
 .previewBtn:focus {
-    outline: none;
+  outline: none;
 }
 
 .previewBtn:active {
-    background-color: var(--very-light-bg-color);
+  background-color: var(--very-light-bg-color);
 }
 
 .disabled {
@@ -52,20 +52,20 @@
 }
 
 .pill {
-    background-color: var(--very-light-bg-color);
-    color: whitesmoke;
-    overflow: hidden;
-    padding: 5px 7px;
-    margin: 0px 4px;
-    display: inline-block;
-    border-radius: 4px;
-    border: none;
-    box-sizing: border-box;
-    font-size: 13px; 
+  background-color: var(--very-light-bg-color);
+  color: whitesmoke;
+  overflow: hidden;
+  padding: 5px 7px;
+  margin: 0px 4px;
+  display: inline-block;
+  border-radius: 4px;
+  border: none;
+  box-sizing: border-box;
+  font-size: 13px;
 }
 
 #addressBar {
-    flex: 1;
+  flex: 1;
 }
 
 /* #addressBar:focus {
@@ -74,14 +74,14 @@
 } */
 
 #recordTutorial {
-    flex: 1;
-    font-size: 13px;
-    text-align: left;
-    color: whitesmoke;
-    max-lines: 1;
-    white-space: nowrap; 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-    padding-left: 12px;
+  flex: 1;
+  font-size: 13px;
+  text-align: left;
+  color: whitesmoke;
+  max-lines: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  padding-left: 12px;
 }
