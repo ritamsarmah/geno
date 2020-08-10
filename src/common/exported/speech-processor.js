@@ -19,4 +19,4 @@ class SpeechProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('speech-processor', SpeechProcessor);
+registerProcessor("speech-processor", SpeechProcessor);

@@ -6,11 +6,7 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "jsx": "preserve",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -21,7 +17,5 @@
     "isolatedModules": true,
     "noEmit": false
   },
-  "include": [
-    "geno.ts"
-  ]
+  "include": ["geno.ts"]
 }
