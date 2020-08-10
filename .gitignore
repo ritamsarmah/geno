@@ -1,3 +1,7 @@
+build/*
+dist/*
+.vscode/*
+
 # Node.js, JS, etc.
 # Logs
 logs

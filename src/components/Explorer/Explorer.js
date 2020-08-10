@@ -1,27 +1,36 @@
 import React, { Component } from 'react';
 import FileTree from './FileTree/FileTree';
 import CommandList from './CommandList/CommandList';
+import PreferencesTab from './PreferencesTab/PreferencesTab';
 
-import { faMicrophone, faFolder } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
+import { faMicrophone, faFolder, faCog } from "@fortawesome/free-solid-svg-icons";
 import { Colors } from '../../common/constants';
 
 import './Explorer.css';
 
 const fs = window.require('fs');
 const path = require('path');
+const chokidar = window.require('chokidar');
 
 export default class Explorer extends Component {
     constructor(props) {
         super(props);
-        this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands
+        this.state = { tab: 0 } // 0 - File Tree, 1 - Voice Commands, 2 - Settings
 
         this.showFileTree = this.showFileTree.bind(this);
         this.showVoiceCommands = this.showVoiceCommands.bind(this);
+        this.showSettings = this.showSettings.bind(this);
         this.walkDone = this.walkDone.bind(this);
 
         this.walk(this.props.dir, this.walkDone);
+
+        this.watcher = chokidar.watch(this.props.dir);
+        this.watcher
+            .on('add', () => this.walk(this.props.dir, this.walkDone))
+            .on('unlink', () => this.walk(this.props.dir, this.walkDone))
+            .on('addDir', () => this.walk(this.props.dir, this.walkDone))
+            .on('unlinkDir', () => this.walk(this.props.dir, this.walkDone));
     }
 
     walk(dir, done) {
@@ -37,7 +46,7 @@ export default class Explorer extends Component {
             files.forEach((file) => {
                 file = path.resolve(dir, file);
                 fs.stat(file, (err, stat) => {
-                    if (stat && stat.isDirectory()) {
+                    if (stat && stat.isDirectory() && path.basename(file) !== "node_modules") {
                         this.walk(file, (err, res) => {
                             results.push({
                                 path: path,
@@ -64,7 +73,19 @@ export default class Explorer extends Component {
     };
 
     walkDone(err, results) {
-        // TODO: Maybe sort results alphabetically
+        results.sort((a, b) => {
+            if (a.type === "dir" && b.type !== "dir") {
+                return -1
+            } else if (b.type === "dir" && a.type !== "dir") {
+                return 1
+            } else if (a.name < b.name) {
+                return -1;
+            } else if (a.name > b.name) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
         this.setState({
             dirData: results
         })
@@ -84,6 +105,10 @@ export default class Explorer extends Component {
         this.setState({ tab: 1 });
     }
 
+    showSettings() {
+        this.setState({ tab: 2 });
+    }
+
     render() {
         var content;
         switch (this.state.tab) {
@@ -95,7 +120,10 @@ export default class Explorer extends Component {
                 }
                 break;
             case 1:
-                content = (<CommandList />); // TODO: pass in prop for project path
+                content = (<CommandList />);
+                break;
+            case 2:
+                content = (<PreferencesTab />);
                 break;
             default:
                 break;
@@ -109,6 +137,9 @@ export default class Explorer extends Component {
                     </div>
                     <div className="tabButton" onClick={this.showVoiceCommands}>
                         <FontAwesomeIcon icon={faMicrophone} color={this.isTabEnabled(1)} />
+                    </div>
+                    <div className="tabButton" onClick={this.showSettings}>
+                        <FontAwesomeIcon icon={faCog} color={this.isTabEnabled(2)} />
                     </div>
                 </div>
                 {content}

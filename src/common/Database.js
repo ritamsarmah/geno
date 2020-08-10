@@ -1,8 +1,11 @@
-import { Paths } from "./constants";
+import { Paths, ContextType } from "./constants";
+import builder from './Builder';
+import preferences from './Preferences';
 
 const lodashId = require('lodash-id')
 const low = require('lowdb');
 const FileSync = window.require('lowdb/adapters/FileSync');
+
 
 class Database {
 
@@ -12,14 +15,13 @@ class Database {
         this.db = null;
 
         this.configureProject = this.configureProject.bind(this);
-        this.addQuery = this.addQuery.bind(this);
     }
 
     /* Config method to set user's project directory */
     configureProject(dir) {
         this.dir = dir;
-        const commandsPath = this.dir + Paths.Commands;
-        this.adapter = new FileSync(commandsPath);
+        this.commandsPath = this.dir + Paths.Commands;
+        this.adapter = new FileSync(this.commandsPath);
         this.db = low(this.adapter);
         this.db._.mixin(lodashId)
     }
@@ -45,209 +47,337 @@ class Database {
             .value();
     }
 
+    /* Constructs command prototype */
+    getCommandPrototype(type, parameters) {
+        return {
+            name: "untitledCommand" + (this.getCommands().length + 1),
+            parameters: parameters,
+            queries: [],
+            isTrained: false,
+            contextInfo: {
+                parameter: null,
+                type: ContextType.Element,
+                selector: "*",
+                allAttributes: [],      // list of detected attributes for the selector
+                attributes: [],         // list of selected attributes
+                attributeExamples: []   // list of example values for detected attributes
+            },
+            type: type
+        }
+    }
+
+    addCommandByPrototype(command, file) {
+        // Add queries using database command to generate proper IDs
+        command.file = file;
+        command.triggerFn = command.name;
+        this.db.get('commands').insert(command).write();
+        builder.build();
+    }
+
     /* Add a command */
-    addCommand(file, triggerFn, params) {
+    addFunctionCommand(file, triggerFn, params) {
         var parameters = params.map((p) => {
             return { name: p, backupQuery: "" }
         });
-        var cmd = {
-            name: "untitled_command",
-            file: file,
-            triggerFn: triggerFn,
-            parameters: parameters,
-            queries: [],
-            isTrained: false
-        };
+        var cmd = this.getCommandPrototype("function", parameters);
+        cmd.file = file;
+        cmd.triggerFn = triggerFn;
 
-        this.db.get('commands').insert(cmd).write()
+        this.db.get('commands').insert(cmd).write();
+        builder.build();
         return cmd;
     }
 
-    updateCommand(id, data) {
-        return this.db.get('commands').getById(id).assign(data).write();
+    /* Add a command for programming by demo */
+    addDemoCommand(elements, params, file) {
+        var index = 0;
+        var parameters = params.map((p) => {
+            index += 1;
+            return { name: "param" + index, index: p, backupQuery: "" }
+        });
+        var cmd = this.getCommandPrototype("demo", parameters)
+        cmd.elements = elements;
+        cmd.file = file;
+        cmd.delay = 0;
+
+        this.db.get('commands').insert(cmd).write();
+        builder.build();
+        return cmd;
     }
 
+    /* Update a command */
+    updateCommand(id, data) {
+        this.db.get('commands').getById(id).assign(data).write();
+        builder.build();
+        return this.getCommandForId(id);
+    }
+
+    /* Update command context info */
+    updateCommandContext(id, data) {
+        this.db.get('commands').getById(id).get('contextInfo').assign(data).write();
+        builder.build();
+        return this.getCommandForId(id);
+    }
+
+    /* Remove a command */
     removeCommand(id) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/intent/delete');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        xhr.send(JSON.stringify({
-            "dev_id": 1,
+        this.sendBackendRequest("intent/delete", {
+            "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(id).name,
-        }));
-
-        return this.db.get('commands').removeById(id).write();
+        });
+        this.db.get('commands').removeById(id).write();
+        builder.build();
     }
 
     /*** Query Functions ***/
-    
+
+    /* Get query for ID */
     getQueryForId(commandId, queryId) {
-        return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value()
+        return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
-    addQuery(commandId, query) {
-        var data = {
-            query: query,
-            entities: []
-        }
-        this.db.get('commands').getById(commandId).get('queries').insert(data).write();
-        // TODO perform entity analysis and execute some callback...
+    /* Constructs query prototype given text */
+    getQueryPrototype(queryText) {
+        return {
+            text: queryText,
+            entities: this.splitIntoEntities(queryText)
+        };
+    }
+
+    /* Add a query to a command */
+    addQuery(commandId, queryText) {
+        this.db.get('commands').getById(commandId).get('queries').insert(this.getQueryPrototype(queryText)).write();
         return this.getCommandForId(commandId);
     }
 
-    updateQuery(commandId, oldText, updatedQuery, callback) {
-        // Perform entity analysis and execute callback
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/query/update');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    /* Make changes to a query and train model */
+    updateQuery(commandId, queryId, oldText, newText, callback) {
+        var command = this.getCommandForId(commandId);
+        var query = this.getQueryForId(commandId, queryId);
 
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                this.db.get('commands').getById(commandId).get('queries').updateById(updatedQuery.id, updatedQuery).write();
-                if (xhr.status === 200) {
-                    // Only update if successful request
-                    var json = JSON.parse(xhr.responseText);
-                    console.log("JSON", json);
-                    updatedQuery.entities = json.entities
-                    this.analyzeEntities(commandId, json.entities);
-                }
-                callback(this.getCommandForId(commandId), this.getQueryForId(commandId, updatedQuery.id));
+        // Don't make changes if old text and new text are the same
+        if (oldText === newText) {
+            callback(command, query);
+            return;
+        }
+
+        // Create updated query with new text
+        query.text = newText;
+
+        this.sendBackendRequest("query/update", {
+            "dev_id": preferences.getDevId(),
+            "intent": command.name,
+            "old_text": oldText,
+            "new_query": query
+        }, (_xhr, error) => {
+            if (error) {
+                console.log(error);
+            } else {
+                query.entities = this.splitIntoEntities(newText)
+                this.db.get('commands').getById(commandId).get('queries')
+                    .updateById(queryId, query).write();
+
+                callback(this.getCommandForId(commandId), this.getQueryForId(commandId, queryId));
             }
-        };
-
-        xhr.send(JSON.stringify({
-            "dev_id": 1,
-            "intent": this.getCommandForId(commandId).name,
-            "old_query": oldText,
-            "new_query": updatedQuery.query
-        }));
+        });
     }
 
+    /* Delete a query and train model */
     removeQuery(commandId, queryId) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/query/delete');
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        xhr.send(JSON.stringify({
-            "dev_id": 1,
+        this.sendBackendRequest('query/delete', {
+            "dev_id": preferences.getDevId(),
             "intent": this.getCommandForId(commandId).name,
-            "query": this.getQueryForId(commandId, queryId).query
-        }));
+            "query": this.getQueryForId(commandId, queryId).text
+        }, (xhr, error) => {
+            if (error) console.log(error);
+        });
 
         this.db.get('commands').getById(commandId).get('queries').removeById(queryId).write();
         return this.getCommandForId(commandId);
     }
 
-    swapEntityNames(commandId, queryId, first, second) {
-        var firstEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: first });
-        var secondEntity = this.db.get('commands').getById(commandId).get('queries').getById(queryId).get('entities').find({ entity: second });
-        firstEntity.assign({ entity: second }).write();
-        secondEntity.assign({ entity: first }).write();
-        // TODO: network request to model to tell it about changes
+    /* Update label for entity */
+    updateEntity(commandId, queryId, entity, label) {
+        this.db.get('commands').getById(commandId)
+            .get('queries').getById(queryId)
+            .get('entities')
+            .get(entity.start)
+            .assign({ label: label }).write();
+
+        // NOTE: We don't inform backend until developer manually trains model
         return this.db.get('commands').getById(commandId).get('queries').getById(queryId).value();
     }
 
-    analyzeEntities(commandId, entities) {
-        console.log("LE", entities);
+    /* Parse data from backend and convert it into representation for our database */
+    parseEntityResponse(commandId, entities) {
         entities.forEach(ex => {
-            var entities = [];
-
             if ('entities' in ex) {
-                var entityStartIndices = {}
+                var query = this.db.get('commands').getById(commandId)
+                    .get('queries').find({ text: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
+                    .get('entities');
 
-                ex.entities.forEach(entity => {
-                    entityStartIndices[entity.start] = entity;
-                });
-
-                var startIndex = 0;
-                var endIndex = 0;
-                // Create new "entity" objects for non-entities
-                loop1:
-                while (endIndex < ex.text.length) {
-                    // Skip pre-discovered entities
-                    while (startIndex in entityStartIndices) {
-                        entities.push(entityStartIndices[startIndex]);
-                        startIndex = entityStartIndices[startIndex].end + 1;
-                        endIndex = startIndex;
-
-                        // Reached end of string
-                        if (startIndex >= ex.text.length) {
-                            break loop1;
-                        }
-                    }
-
-                    // Reached non-entity, lengthen substring until next pre-discovered entity found
-                    // Can modify to be per word split by adding "&& ex.text[endIndex] !== ' '"
-                    while (!(endIndex in entityStartIndices) && endIndex <= ex.text.length) {
-                        endIndex++;
-                    }
-
-                    entities.push({
-                        start: startIndex,
-                        end: endIndex - 1,
-                        entity: null
+                ex.entities.forEach(en => {
+                    var index = en.start;
+                    // Split multi-word entities for our database
+                    en.text.split(" ").forEach(word => {
+                        query.get(index).assign({
+                            "label": en.entity
+                        }).write();
+                        index += word.length + 1;
                     });
-
-                    startIndex = endIndex;
-                }
+                });
             }
-
-            this.db
-                .get('commands').getById(commandId)
-                .get('queries').find({ query: ex.text }) // FIXME: Match using queryId, instead of text (will need to send queryId to backend)
-                .assign({ entities: entities })
-                .write()
         });
     }
 
     /*** Parameter Functions ***/
-    
+
+    /* Change parameters for command */
     updateParameters(commandId, params) {
         var command = this.db.get('commands').getById(commandId);
         var oldParams = command.get('parameters');
         var newParams = params.map(p => {
-            var oldParam = oldParams.find({ name: p }).value()
-            return oldParam ? oldParam : { name: p, backupQuery: "" }
+            var oldParam = oldParams.find({ name: p }).value();
+            return (oldParam != null) ? oldParam : { name: p, backupQuery: "" }
         });
         command.assign({ parameters: newParams }).write();
+        builder.build();
     }
 
-    updateBackupQuery(commandId, parameter, backupQuery) {
-        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
+    /* Change name for a parameter */
+    updateParameterName(commandId, oldName, newName) {
+        this.db.get('commands').getById(commandId).get('parameters').find({ name: oldName }).assign({ name: newName }).write();
+        builder.build();
         return this.getCommandForId(commandId);
     }
+
+    /* Change backup query to ask if a parameter entity is not detected in user's voice input */
+    updateBackupQuery(commandId, parameter, backupQuery) {
+        this.db.get('commands').getById(commandId).get('parameters').find({ name: parameter }).assign({ backupQuery: backupQuery }).write();
+        builder.build();
+        return this.getCommandForId(commandId);
+    }
+
+    /* Change entity to map multimodal input */
+    updateContextParameter(commandId, parameter) {
+        this.updateCommandContext(commandId, { parameter: parameter });
+        return this.getCommandForId(commandId);
+    }
+
+    /* Change selector for elements to match context */
+    updateContextSelector(commandId, selector) {
+        this.updateCommandContext(commandId, { selector: selector });
+        return this.getCommandForId(commandId);
+    }
+
+    /* Change element attribute(s) to return as a parameter for multimodal input */
+    updateContextAttributes(commandId, attributes) {
+        this.updateCommandContext(commandId, { attributes: attributes });
+        return this.getCommandForId(commandId);
+    }
+
+    /* Toggle element attribute in list of return attributes */
+    toggleContextAttribute(commandId, attribute) {
+        var command = this.getCommandForId(commandId);
+        var attributes = command.contextInfo.attributes;
+        if (attributes.includes(attribute)) {
+            attributes = attributes.filter(attr => attr !== attribute);
+        } else {
+            attributes.push(attribute);
+        }
+
+        this.updateContextType(commandId,
+            (attributes.length === 0)
+                ? ContextType.Element
+                : ContextType.Attribute);
+
+        return this.updateContextAttributes(commandId, attributes);
+    }
+
+    /* Change context type for multimodal */
+    updateContextType(commandId, type) {
+        this.updateCommandContext(commandId, { type: type });
+        return this.getCommandForId(commandId);
+    }
+
+    /* Reset information about context */
+    clearContextInfo(commandId) {
+        var command = this.getCommandForId(commandId);
+        this.updateCommandContext(commandId, {
+            type: command.contextInfo.type === ContextType.Text ? ContextType.Text : ContextType.Element,
+            selector: "*",
+            allAttributes: [],
+            attributes: []
+        });
+        return this.getCommandForId(commandId)
+    }
+
+    /*** Demo Command Functions ***/
+
+    /* Change delay */
+    updateDelay(commandId, delay) {
+        this.db.get('commands').getById(commandId).assign({ delay: delay }).write()
+        builder.build()
+        return this.getCommandForId(commandId);
+    }
+
+    /*** Training ***/
 
     trainModel(commandId, callback) {
         var command = this.getCommandForId(commandId)
 
+        this.sendBackendRequest('intent/train', {
+            "dev_id": preferences.getDevId(),
+            "intent": command.name,
+            "queries": command.queries,
+            "parameters": command.parameters.map(p => p.name)
+        }, (xhr, error) => {
+            if (error) {
+                console.log(error);
+            } else {
+                this.updateCommand(commandId, { "isTrained": true });
+
+                // Add entity information for command
+                var json = JSON.parse(xhr.responseText);
+                this.parseEntityResponse(commandId,
+                    json['rasa_nlu_data']['common_examples'].filter(ex => ex.intent === command.name))
+            }
+            callback(error);
+        });
+    }
+
+    /*** Utility Functions ***/
+    
+    sendBackendRequest(endpoint, body, completion) {
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:3001/intent/train');
+        xhr.open("POST", `http://localhost:3313/${endpoint}`);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        var thisDb = this;
-
-        xhr.onreadystatechange = function () {
-            if (this.readyState === XMLHttpRequest.DONE) {
-                if (this.status === 200) {
-                    thisDb.updateCommand(commandId, { "isTrained": true });
-                    // Add entity information for command
-                    var json = JSON.parse(this.responseText);
-                    thisDb.analyzeEntities(commandId,
-                        json['rasa_nlu_data']['common_examples'].filter(ex => ex.intent === command.name))
-                }
-                callback(this.response, this.status);
+        xhr.send(JSON.stringify(body));
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                var error = (xhr.status === 200) ? null : xhr.responseText;
+                if (completion) completion(xhr, error);
             }
         }
+    }
 
-        var params = {
-            "dev_id": 1,
-            "intent": command.name,
-            "queries": command.queries.map(q => q.query),
-            "parameters": command.parameters.map(q => q.name)
-        }
+    splitIntoEntities(text) {
+        var words = text.split(" ");
+        var entities = {};
 
-        xhr.send(JSON.stringify(params));
+        // Map start index of entity in queryText to entity info
+        var index = 0;
+        words.forEach(word => {
+            entities[index] = {
+                label: null,
+                text: word,
+                start: index,
+                end: index + word.length
+            };
+            index += word.length + 1;
+        });
+
+        return entities;
     }
 }
 

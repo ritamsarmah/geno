@@ -1,22 +1,38 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import Marker from './Marker/Marker';
-
+import AddCommandButton from '../AddCommandButton/AddCommandButton';
+import builder from '../../common/Builder';
+import database from '../../common/Database';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
-
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/base16-dark.css';
-import './Editor.css';
-
-import 'codemirror/mode/xml/xml';
-import 'codemirror/mode/javascript/javascript';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSave } from '@fortawesome/free-solid-svg-icons';
 
-const fs = window.require('fs');
-const path = require('path');
+// Styles
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/base16-dark.css';
+import 'codemirror/addon/dialog/dialog.css';
+import './Editor.css';
 
-var acorn = require("acorn-loose/dist/acorn-loose.js");
+// Language support
+import 'codemirror/mode/xml/xml';
+import 'codemirror/mode/css/css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/htmlmixed/htmlmixed';
+
+// Addons
+import 'codemirror/addon/search/search';
+import 'codemirror/addon/search/searchcursor';
+import 'codemirror/addon/search/jump-to-line';
+import 'codemirror/addon/dialog/dialog';
+import 'codemirror/addon/edit/closebrackets';
+
+const electron = window.require('electron').remote;
+const electronLocalShortcut = window.require('electron-localshortcut');
+const fs = window.require('fs');
+const chokidar = window.require('chokidar');
+const path = require('path');
+const acorn = require("acorn-loose/dist/acorn-loose.js");
 
 function makeAnchor(type) {
     var marker = document.createElement("div");
@@ -70,10 +86,13 @@ function astSearch(node) {
                 }
             }
         }
+    } else if (node.type === "ExportNamedDeclaration") {
+        if (node.declaration != null) {
+            return functions.concat(astSearch(node.declaration));
+        }
     }
 
     // Arrow Functions
-
     if ("body" in node) {
         for (let i = 0; i < node.body.length; i++) {
             functions = functions.concat(astSearch(node.body[i]));
@@ -94,12 +113,27 @@ export default class Editor extends Component {
         this.editorDidMount = this.editorDidMount.bind(this);
         this.onChange = this.onChange.bind(this);
         this.saveFile = this.saveFile.bind(this);
+        this.saveFileListener = this.saveFileListener.bind(this);
+        this.getLanguageMode = this.getLanguageMode.bind(this);
+        this.onCreateCommand = this.onCreateCommand.bind(this);
         this.codeMirror = null;
+        
+        // Add Ctrl-S and Cmd-S functionality
+        electronLocalShortcut.register(electron.getCurrentWindow(), 'CmdOrCtrl+S', this.saveFileListener);
     }
 
     editorDidMount(editor) {
         this.addGutterCircles(editor);
         this.codeMirror = editor;
+
+        this.watcher = chokidar.watch(database.commandsPath).on('all', (event, path) => {
+            this.addGutterCircles(editor);
+        });
+    }
+
+    editorDidUnmount() {
+        this.watcher.close();
+        electronLocalShortcut.unregister(electron.getCurrentWindow(), 'CmdOrCtrl+S', this.saveFileListener);
     }
 
     componentDidUpdate(prevProps) {
@@ -117,7 +151,7 @@ export default class Editor extends Component {
         }
     }
 
-    readFile(file) {
+    readFile(file, callback) {
         fs.readFile(file, "utf8", (err, data) => {
             this.setState({
                 lastSavedText: data,
@@ -125,6 +159,7 @@ export default class Editor extends Component {
             });
             this.codeMirror.doc.clearHistory();
             this.props.setSelectFile(true);
+            if (callback != null) callback();
         });
     }
 
@@ -137,6 +172,11 @@ export default class Editor extends Component {
             }
             this.props.setSelectFile(true);
         });
+        builder.build();
+    }
+
+    saveFileListener() {
+        this.saveFile(this.state.file, true);
     }
 
     onChange(editor, data, value) {
@@ -166,6 +206,25 @@ export default class Editor extends Component {
         });
     }
 
+    getLanguageMode() {
+        switch (this.state.file.split('.').pop()) {
+            case 'xml':
+                return 'xml';
+            case 'html':
+                return 'htmlmixed';
+            case 'css':
+                return 'css';
+            default:
+                return 'javascript';
+        }
+    }
+
+    onCreateCommand() {
+        this.readFile(this.state.file, () => {
+            this.saveFile(this.state.file, true);
+        });
+    }
+
     render() {
         if (this.state.file) {
             return (
@@ -175,14 +234,17 @@ export default class Editor extends Component {
                             <FontAwesomeIcon icon={faSave} size="lg" />
                         </span>
                         {path.basename(this.state.file)}
+                        <AddCommandButton relativePath={path.relative(this.props.dir, this.state.file)} file={this.state.file} onCreateCommand={this.onCreateCommand}/>
                     </div>
                     <CodeMirror
                         value={this.state.lastSavedText}
                         options={{
                             theme: "base16-dark",
-                            mode: "javascript",
+                            mode: this.getLanguageMode(),
+                            tabSize: 2,
                             lineNumbers: true,
-                            gutters: ["commands"]
+                            gutters: ["commands"],
+                            autoCloseBrackets: true
                         }}
                         editorDidMount={this.editorDidMount}
                         onChange={this.onChange}

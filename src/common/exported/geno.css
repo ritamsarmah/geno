@@ -1,3 +1,10 @@
+/*
+ **************************
+ * Geno Stylesheet
+ *
+ * DO NOT MODIFY THIS FILE
+ **************************
+ */
 :root {
     /* Colors */
     --theme-color: #4A90E2;
@@ -43,6 +50,7 @@
     font-family: var(--body-font);
     font-size: 13px;
     text-align: right;
+    z-index: 1;
 }
 
 .geno-bubble:after {
@@ -160,6 +168,22 @@
 #geno-close:hover {
     cursor: pointer;
     color: var(--theme-color);
+}
+
+/* Context Selection */
+#geno-select-rect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* background: skyblue; */
+    opacity: 0;
+    pointer-events: none;
+    border: 2px dotted var(--theme-color);
+}
+
+.geno-highlight {
+    background-color: rgba(135, 206, 235, 0.3);
+    border: solid 1px black;
 }
 
 /* Animations */

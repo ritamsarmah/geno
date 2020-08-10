@@ -1,4 +1,5 @@
 import database from './Database';
+import { Paths } from '../common/constants';
 
 const electron = window.require('electron');
 const app = electron.remote.app;
@@ -9,31 +10,45 @@ class Builder {
         this.dir = null;
     }
 
+    /* Config method to set user's project directory */
     configureProject(dir) {
         this.dir = dir;
     }
 
+    /* Copies over files and database info into developer's project */ 
     build() {
+        console.log("Building...")
         var commandMap = {}
-        // TODO: ONLY COPY OVER COMMANDS THAT HAVE BEEN TRAINED!!
         database.getCommands().forEach(cmd => {
-            var parameterMap = {}
+            // Only copy over commands that have been trained
+            if (cmd.isTrained) {
+                if (cmd.type === "demo") {
+                    commandMap[cmd.name] = {
+                        type: cmd.type,
+                        elements: cmd.elements,
+                        parameters: cmd.parameters,
+                        delay: cmd.delay,
+                        contextInfo: cmd.contextInfo
+                    };
+                } else if (cmd.type === "function") {
+                    var parameterMap = {}
 
-            cmd.parameters.forEach(p => {
-                parameterMap[p.name] = p.backupQuery
-            });
-            commandMap[cmd.name] = {
-                file: cmd.file,
-                triggerFn: cmd.triggerFn,
-                parameters: parameterMap // TODO: later include info on what to convert data type to
-            };
+                    cmd.parameters.forEach(p => {
+                        parameterMap[p.name] = p.backupQuery
+                    });
+                    commandMap[cmd.name] = {
+                        type: cmd.type,
+                        file: cmd.file,
+                        triggerFn: cmd.triggerFn,
+                        parameters: parameterMap,
+                        contextInfo: cmd.contextInfo
+                    };
+                }
+            }
         });
 
-        // TODO: Optional code that shows the popover
-        // TODO: check if this is the right file with the function name (function might not exist and could cause error)
-
         // Add function to output function for a provided query
-        var generatedCode = `\n\ngeno.intentMap = ${JSON.stringify(commandMap)}`;
+        var generatedCode = `\n\ngeno.commands = ${JSON.stringify(commandMap)}`;
         var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
         var jsDest = this.dir + '/geno/geno.js';
 
@@ -41,7 +56,6 @@ class Builder {
         var cssDest = this.dir + '/geno/geno.css';
 
         // Copy over backup sample queries
-
         fs.mkdir(this.dir + '/geno', (err) => {
             fs.copyFile(jsSource, jsDest, (err) => {
                 fs.appendFileSync(jsDest, generatedCode);
@@ -49,8 +63,17 @@ class Builder {
             fs.copyFile(jsSource, jsDest, (err) => {});
             fs.copyFile(cssSource, cssDest, (err) => {});
         });
-        
     }
+
+    /* Generate function skeleton for command in custom.js */
+    createSkeleton(name, parameters, file) {
+        if (file == null) {
+            file = this.dir + Paths.Custom;
+        }
+        var skeleton = `\n\nexport function ${name}(${parameters.map(p => p.name).join(', ')}) {\n  // TODO: Implement\n}`;
+        fs.appendFileSync(file, skeleton); 
+    }
+    
 }
 
 var builder = new Builder();

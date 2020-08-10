@@ -6,15 +6,21 @@
 #analysisView {
     z-index: 999999999;
     position: absolute;
-    top: 213px;
-    left: 300px;
-    
+    top: 144px; /* If including summary info, top: 213px; */
     width: 400px;
     padding: 30px 30px 50px 30px;
     
     background-color: white;
     border-radius: 4px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.analysis-right {
+    left: 300px;
+}
+
+.analysis-left {
+    right: 300px;
 }
 
 #editableQuery, #nlpQuery {

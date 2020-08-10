@@ -1,27 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "allowJs": false,
-    "noImplicitAny": false,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "jsx": "preserve",
+    "target": "es5",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
+    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "strictNullChecks": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": false
+    "noEmit": true,
+    "jsx": "preserve"
   },
   "include": [
-    "geno.ts"
+    "src", "public/electron.js", "public/menu.js"
+  ],
+  "exclude": [
+    "src/common/exported/*"
   ]
 }

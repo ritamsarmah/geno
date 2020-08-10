@@ -21,6 +21,11 @@
     color: lightgray;
 }
 
+.splash > a {
+    margin-top: 10px;
+    color: var(--theme-color);
+}
+
 .openBtn {
     background-color: var(--light-bg-color);
     color: whitesmoke;

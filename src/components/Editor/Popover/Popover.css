@@ -5,6 +5,10 @@
     margin: 10px;
 }
 
+:focus {
+    outline: 0;
+}
+
 input[type=text], textarea {
     width: 100%;
     margin-bottom: 14px;
@@ -20,28 +24,28 @@ input[type=text]:focus, textarea:focus {
     border: 1px solid var(--theme-color);
 }
 
-input[type=button] {
+input[type=button], .popoverButton {
     background-color: #F2F2F2;
     color: #5F6368;
-    padding: 8px 20px;
+    padding: 8px 16px;
     width: 100%;
     cursor: pointer;
     border: 1px solid #F2F2F2;
     border-radius: 4px;
 }
 
-input[type="button"]:hover {
+input[type="button"]:enabled:hover, .popoverButton:enabled:hover {
     border-color: darkgray;
     color: black;
     box-shadow: none;
 }
 
-input[type="button"]:active {
+input[type="button"]:enabled:active, .popoverButton:enabled:active {
     border-color: var(--theme-color);
     box-shadow: none;
 }
 
-button, input[type="button"]:focus {
+button, input[type="button"]:focus, .popoverButton:focus {
     outline: none;
 }
 
@@ -99,12 +103,12 @@ button:hover {
     width: 87%;
 }
 
-#queriesView {
-    height: 70px;
-    min-height: 70px;
-}
+.listView {
+    height: 105px;
+    min-height: 105px;
+    max-height: 200px;
+    resize: vertical;
 
-#queriesView {
     border: 1px solid #ccc;
     border-radius: 4px;
     overflow: scroll;
@@ -113,28 +117,60 @@ button:hover {
     user-select: none;
 }
 
-#queryToggle {
-    color: rgb(90, 90, 90);
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-
-#queryToggle:hover {
-    background: rgb(230, 230, 230);
-    cursor: pointer;
-}
-
-.nlpQuery {
+.listItem {
     text-align: left;
     font-size: 12px;
     padding: 5px;
 }
 
-.nlpQuery:hover {
+.listItem:hover {
     background-color: var(--theme-color);
     color: white;
     cursor: pointer;
     border-radius: 4px;
+}
+
+.contextSelectText {
+    margin-top: 10px;
+    width: 95%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px;
+    justify-content: space-between;
+}
+
+.contextItem {
+    font-family: 'Courier New', Courier, monospace;
+    word-wrap: break-word;
+    padding: 3px 6px;
+    user-select: none;
+    cursor: pointer;
+}
+
+.customContext:hover {
+    background-color: var(--theme-color);
+    color: white;
+    border-radius: 4px;
+}
+
+.attributeBox {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.checkBoxLabel {
+    font-size: 12px;
+}
+
+.conditionalButton:disabled {
+    cursor: not-allowed;
+    color: lightgray;
 }
 
 /* Options View */
@@ -155,8 +191,28 @@ button:hover {
     color: gray;
 }
 
+.popoverLabel {
+    padding: 0px;
+    text-align: left;
+    user-select: none;
+    font-size: 12px;
+    color: gray;
+}
+
+.popoverDropdown {
+    margin: 0 6px;
+}
+
 .paramType {
     all: none;
     margin-top: 2px;
     /* -webkit-appearance: button-bevel; */
+}
+
+.closePopoverButton {
+    color: black;
+    height: 8px;
+    width: 8px;
+    cursor: pointer;
+    float: right;
 }

@@ -5,10 +5,22 @@ import database from '../../../common/Database';
 
 import './CommandList.css';
 
+const chokidar = window.require('chokidar');
+
 export default class CommandList extends Component {
     constructor(props) {
         super(props);
         this.delete = this.delete.bind(this);
+    }
+
+    componentDidMount() {
+        this.watcher = chokidar.watch(database.commandsPath).on('all', (event, path) => {
+            this.forceUpdate()
+        });
+    }
+
+    componentWillUnmount() {
+        this.watcher.close();
     }
 
     delete(commandId) {
@@ -17,9 +29,9 @@ export default class CommandList extends Component {
     }
 
     render() {
-        const commands = database.getCommands(); 
+        const commands = database.getCommands();
         const listItems = commands.map((command) =>
-            <CommandItem key={command.id} command={command} delete={this.delete}/>
+            <CommandItem key={command.id} command={command} delete={this.delete} />
         );
         return (
             <div className="commandList">

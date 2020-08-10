@@ -56,7 +56,7 @@ export default class FileTree extends Component {
 
     // Directory or JavaScript/TypeScript File
     validNode(node) {
-        return node.type === 'dir' || node.type === '.js' || node.type === '.ts';
+        return ['dir', '.js', '.ts', '.html', '.htm', '.css', '.json'].includes(node.type);
     }
 
     onToggle(node, toggled) {
