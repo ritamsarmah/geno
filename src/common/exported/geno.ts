@@ -751,11 +751,11 @@ export class Geno {
     var expectedParam = parameters.find((p) => p.index === i);
     if (expectedParam) {
       var entity = this.currentCommand.entityForParameter(expectedParam.name);
+
       if (entity == null) {
         if (this.currentCommand.canUseContextForParameter(expectedParam.name)) {
           el.textContent += this.currentCommand.context.toString();
         } else {
-          // TODO: Check if backup question works
           this.ask(
             this.currentCommand.backupQuestion(expectedParam),
             true,
