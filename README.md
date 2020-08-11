@@ -2,7 +2,7 @@
 
 Geno is a developer tool for adding voice input modality to existing web apps without requiring significant NLP expertise. It provides a high-level workflow for developers to specify functionalities to be supported by voice (intents), create language models for detecting intents and the relevant information (parameters) from user utterances, and fulfill the intents by either programmatically invoking the corresponding functions or replaying GUI actions on the web app. Geno further supports multimodal references to GUI context in voice commands (e.g. "move this [event] to next week" while pointing at an event with the cursor).
 
-See [the paper](https://arxiv.org/abs/2007.09809) for more details.
+See [the paper](https://arxiv.org/abs/2007.09809) or [Geno's documentation](https://docs.google.com/document/d/1Tu7FbmXWysCZwJYgZSPlmJnMojC-0SAIBHDVTFtRKrM/edit#heading=h.bv51z1v7q9ks) for more details.
 
 ## Getting Started
 
