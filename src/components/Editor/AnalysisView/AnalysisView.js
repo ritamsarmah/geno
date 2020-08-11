@@ -205,13 +205,6 @@ export default class AnalysisView extends Component {
     if (entityCount === 0) {
       content.innerHTML = this.state.query.text;
     } else {
-      // TODO: Create multiple divs inside nlpQuery, splitting text segments by width in case string exceeds view widt
-      // Iterate through length of string
-      // Keep track of current width
-      // Check the entity.start + entity.text.length + currentWidth < maxWidth
-      //      if yes then add it to currentWidth and create span for current div
-      //      if not then render current div, create a new div and create span for new div
-
       const maxWidth = 28;
       var lineWidth = 0;
       Object.keys(this.state.query.entities).forEach((index, i) => {
