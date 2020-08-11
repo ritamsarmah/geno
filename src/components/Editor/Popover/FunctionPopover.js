@@ -162,7 +162,7 @@ export default class FunctionPopover extends Popover {
         <div id="bottomButtons">
           <button
             type="button"
-            class="popoverButton"
+            className="popoverButton"
             style={{ color: "red", flexBasis: "25%" }}
             onClick={this.deleteCommand}
           >
@@ -170,7 +170,7 @@ export default class FunctionPopover extends Popover {
           </button>
           <button
             type="button"
-            class="popoverButton"
+            className="popoverButton"
             style={{ marginLeft: "8px", flexBasis: "25%" }}
             onClick={this.showOptions}
           >
