@@ -2,8 +2,8 @@ import database from "./Database";
 import { Paths } from "../common/constants";
 
 const electron = window.require("electron");
-const app = electron.remote.app;
 const fs = window.require("fs");
+const path = window.require("path");
 
 class Builder {
   constructor() {
@@ -16,7 +16,6 @@ class Builder {
   }
 
   /* Copies over files and database info into developer's project */
-
   build() {
     console.log("Building...");
     var commandMap = {};
@@ -50,19 +49,36 @@ class Builder {
 
     // Add function to output function for a provided query
     var generatedCode = `\n\ngeno.commands = ${JSON.stringify(commandMap)}`;
-    var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
-    var jsDest = this.dir + "/geno/geno.js";
+    var jsSource = path.join(
+      electron.remote.process.resourcesPath,
+      "exported",
+      "geno.js"
+    );
+    var jsDest = this.dir + Paths.Library;
 
-    var cssSource = `${app.getAppPath()}/src/common/exported/geno.css`;
-    var cssDest = this.dir + "/geno/geno.css";
+    var cssSource = path.join(
+      electron.remote.process.resourcesPath,
+      "exported",
+      "geno.css"
+    );
+    var cssDest = this.dir + Paths.Styles;
 
     // Copy over backup sample queries
     fs.mkdir(this.dir + "/geno", (err) => {
+      if (err) console.error(err);
+
       fs.copyFile(jsSource, jsDest, (err) => {
+        if (err) console.error(err);
         fs.appendFileSync(jsDest, generatedCode);
       });
-      fs.copyFile(jsSource, jsDest, (err) => {});
-      fs.copyFile(cssSource, cssDest, (err) => {});
+
+      fs.copyFile(jsSource, jsDest, (err) => {
+        if (err) console.error(err);
+      });
+
+      fs.copyFile(cssSource, cssDest, (err) => {
+        if (err) console.error(err);
+      });
     });
   }
 

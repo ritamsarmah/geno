@@ -65,6 +65,9 @@
       "build/**/*",
       "node_modules/**/*"
     ],
+    "extraResources": [
+      "exported"
+    ],
     "directories": {
       "buildResources": "assets"
     }

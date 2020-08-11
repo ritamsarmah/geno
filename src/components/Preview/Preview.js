@@ -21,7 +21,7 @@ import database from "../../common/Database";
 import emitter from "../../common/Emitter";
 
 const electron = window.require("electron");
-const app = electron.remote.app;
+const path = window.require("path");
 
 export default class Preview extends Component {
   // States for programming by demo
@@ -32,8 +32,16 @@ export default class Preview extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-      src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+      address: `file://${path.join(
+        electron.remote.process.resourcesPath,
+        "exported",
+        "preview.html"
+      )}`,
+      src: `file://${path.join(
+        electron.remote.process.resourcesPath,
+        "exported",
+        "preview.html"
+      )}`,
       recordState: this.STOPPED,
       demoCommand: null,
     };
@@ -129,7 +137,11 @@ export default class Preview extends Component {
     this.stopRecordEvents();
     if (this.state.address === "") {
       this.setState({
-        src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+        src: `file://${path.join(
+          electron.remote.process.resourcesPath,
+          "exported",
+          "preview.html"
+        )}`,
       });
     } else if (
       !this.state.address.startsWith("http") &&
@@ -408,7 +420,11 @@ export default class Preview extends Component {
           id="preview"
           src={this.state.src}
           autosize="on"
-          preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}
+          preload={`file://${path.join(
+            electron.remote.process.resourcesPath,
+            "exported",
+            "inject.js"
+          )}`}
         ></webview>
       </div>
     );

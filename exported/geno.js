@@ -592,7 +592,6 @@ var Geno = /** @class */ (function () {
                     el.textContent += this.currentCommand.context.toString();
                 }
                 else {
-                    // TODO: Check if backup question works
                     this.ask(this.currentCommand.backupQuestion(expectedParam), true, function (answer) {
                         _this.onfinalmessage = null;
                         el.textContent += answer.text;
