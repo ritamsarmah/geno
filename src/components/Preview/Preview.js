@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import DemoPopover from "../Editor/Popover/DemoPopover";
 import Tippy from "@tippy.js/react";
 import { GenoEvent } from "../../common/constants";
+import { getResourcePath } from "../../common/utils";
 import "./Preview.css";
 import "tippy.js/themes/light-border.css";
 
@@ -20,9 +21,6 @@ import builder from "../../common/Builder";
 import database from "../../common/Database";
 import emitter from "../../common/Emitter";
 
-const electron = window.require("electron");
-const app = electron.remote.app;
-
 export default class Preview extends Component {
   // States for programming by demo
   STOPPED = 0;
@@ -32,8 +30,8 @@ export default class Preview extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      address: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
-      src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+      address: `file://${getResourcePath("preview.html")}`,
+      src: `file://${getResourcePath("preview.html")}`,
       recordState: this.STOPPED,
       demoCommand: null,
     };
@@ -129,7 +127,7 @@ export default class Preview extends Component {
     this.stopRecordEvents();
     if (this.state.address === "") {
       this.setState({
-        src: `file://${app.getAppPath()}/src/components/Preview/preview.html`,
+        src: `file://${getResourcePath("preview.html")}`,
       });
     } else if (
       !this.state.address.startsWith("http") &&
@@ -408,7 +406,7 @@ export default class Preview extends Component {
           id="preview"
           src={this.state.src}
           autosize="on"
-          preload={`file://${app.getAppPath()}/src/components/Preview/inject.js`}
+          preload={`file://${getResourcePath("inject.js")}`}
         ></webview>
       </div>
     );

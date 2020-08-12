@@ -1,3 +1,7 @@
+const electron = window.require("electron");
+const isDev = window.require("electron-is-dev");
+const path = window.require("path");
+
 /* Return a color based on hashed string */
 export function stringToColor(str) {
   if (str == null) {
@@ -27,4 +31,14 @@ export function createCountMessage(length, units) {
   return message;
 }
 
-export default { stringToColor, createCountMessage };
+export function getResourcePath(resource) {
+  return path.join(
+    isDev
+      ? electron.remote.app.getAppPath()
+      : electron.remote.process.resourcesPath,
+    "exported",
+    resource
+  );
+}
+
+export default { stringToColor, createCountMessage, getResourcePath };

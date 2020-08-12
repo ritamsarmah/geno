@@ -1,8 +1,7 @@
 import database from "./Database";
+import { getResourcePath } from "../common/utils";
 import { Paths } from "../common/constants";
 
-const electron = window.require("electron");
-const app = electron.remote.app;
 const fs = window.require("fs");
 
 class Builder {
@@ -16,9 +15,7 @@ class Builder {
   }
 
   /* Copies over files and database info into developer's project */
-
   build() {
-    console.log("Building...");
     var commandMap = {};
     database.getCommands().forEach((cmd) => {
       // Only copy over commands that have been trained
@@ -50,11 +47,11 @@ class Builder {
 
     // Add function to output function for a provided query
     var generatedCode = `\n\ngeno.commands = ${JSON.stringify(commandMap)}`;
-    var jsSource = `${app.getAppPath()}/src/common/exported/geno.js`;
-    var jsDest = this.dir + "/geno/geno.js";
+    var jsSource = getResourcePath("geno.js");
+    var jsDest = this.dir + Paths.Library;
 
-    var cssSource = `${app.getAppPath()}/src/common/exported/geno.css`;
-    var cssDest = this.dir + "/geno/geno.css";
+    var cssSource = getResourcePath("geno.css");
+    var cssDest = this.dir + Paths.Styles;
 
     // Copy over backup sample queries
     fs.mkdir(this.dir + "/geno", (err) => {

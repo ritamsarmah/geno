@@ -11,6 +11,8 @@ const Colors = {
 
 const Paths = {
   Geno: "/geno",
+  Library: "/geno/geno.js",
+  Styles: "/geno/geno.css",
   Commands: "/geno/commands.json",
   Preferences: "/geno/preferences.json",
   Custom: "/geno/custom.js",
