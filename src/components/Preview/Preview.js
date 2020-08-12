@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import DemoPopover from "../Editor/Popover/DemoPopover";
 import Tippy from "@tippy.js/react";
 import { GenoEvent } from "../../common/constants";
+import { getResourcePath } from "../../common/utils";
 import "./Preview.css";
 import "tippy.js/themes/light-border.css";
 
@@ -20,9 +21,6 @@ import builder from "../../common/Builder";
 import database from "../../common/Database";
 import emitter from "../../common/Emitter";
 
-const electron = window.require("electron");
-const path = window.require("path");
-
 export default class Preview extends Component {
   // States for programming by demo
   STOPPED = 0;
@@ -32,16 +30,8 @@ export default class Preview extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      address: `file://${path.join(
-        electron.remote.process.resourcesPath,
-        "exported",
-        "preview.html"
-      )}`,
-      src: `file://${path.join(
-        electron.remote.process.resourcesPath,
-        "exported",
-        "preview.html"
-      )}`,
+      address: `file://${getResourcePath("preview.html")}`,
+      src: `file://${getResourcePath("preview.html")}`,
       recordState: this.STOPPED,
       demoCommand: null,
     };
@@ -137,11 +127,7 @@ export default class Preview extends Component {
     this.stopRecordEvents();
     if (this.state.address === "") {
       this.setState({
-        src: `file://${path.join(
-          electron.remote.process.resourcesPath,
-          "exported",
-          "preview.html"
-        )}`,
+        src: `file://${getResourcePath("preview.html")}`,
       });
     } else if (
       !this.state.address.startsWith("http") &&
@@ -420,11 +406,7 @@ export default class Preview extends Component {
           id="preview"
           src={this.state.src}
           autosize="on"
-          preload={`file://${path.join(
-            electron.remote.process.resourcesPath,
-            "exported",
-            "inject.js"
-          )}`}
+          preload={`file://${getResourcePath("inject.js")}`}
         ></webview>
       </div>
     );
